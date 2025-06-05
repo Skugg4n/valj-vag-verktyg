@@ -17,7 +17,7 @@ export default function LinearView({ nodes = [], updateNodeText, onClose }) {
   )
 
   const activeId = useRef(null)
-  const textAreas = useRef({})
+  const editors = useRef({})
 
   const onChange = (id, e) => {
     let value = e.target.value
@@ -28,7 +28,7 @@ export default function LinearView({ nodes = [], updateNodeText, onClose }) {
   const wrapSelected = (before, after = before) => {
     const id = activeId.current
     if (!id) return
-    const area = textAreas.current[id]
+    const area = editors.current[id]
     if (!area) return
     const start = area.selectionStart
     const end = area.selectionEnd
@@ -46,7 +46,7 @@ export default function LinearView({ nodes = [], updateNodeText, onClose }) {
   const applyHeading = level => {
     const id = activeId.current
     if (!id) return
-    const area = textAreas.current[id]
+    const area = editors.current[id]
     if (!area) return
     const start = area.selectionStart
     const end = area.selectionEnd
@@ -87,17 +87,19 @@ export default function LinearView({ nodes = [], updateNodeText, onClose }) {
               <span className="node-id">#{n.id}</span>
               {n.data.title && <span className="node-title">{n.data.title}</span>}
             </h2>
-            <textarea
-              className="linear-edit"
-              ref={el => (textAreas.current[n.id] = el)}
-              onFocus={() => (activeId.current = n.id)}
-              value={n.data.text}
-              onChange={e => onChange(n.id, e)}
-            />
-            <div
-              className="linear-preview"
-              dangerouslySetInnerHTML={{ __html: parseHtml(n.data.text) }}
-            />
+            <div className="linear-editor">
+              <div
+                className="linear-render"
+                dangerouslySetInnerHTML={{ __html: parseHtml(n.data.text) }}
+              />
+              <textarea
+                className="linear-input"
+                ref={el => (editors.current[n.id] = el)}
+                onFocus={() => (activeId.current = n.id)}
+                value={n.data.text}
+                onChange={e => onChange(n.id, e)}
+              />
+            </div>
           </article>
         ))}
       </div>
