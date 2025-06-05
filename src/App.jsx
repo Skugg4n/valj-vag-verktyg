@@ -22,6 +22,7 @@ import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
 import Playthrough from './Playthrough.jsx'
+import LinearView from './LinearView.jsx'
 import Button from './Button.jsx'
 import pkg from '../package.json'
 
@@ -540,12 +541,6 @@ export default function App() {
     localStorage.setItem('cyoa-data', JSON.stringify(data))
   }, [nodes, nextId])
 
-  const linearList = () =>
-    nodes
-      .slice()
-      .sort((a, b) => Number(a.id) - Number(b.id))
-      .map(n => `--- Node #${n.id} ${n.data.title || ''} ---\n${n.data.text || ''}`)
-      .join('\n\n')
 
   return (
     <>
@@ -623,12 +618,7 @@ export default function App() {
         </section>
       </main>
       {showModal && (
-        <div id="modal" role="dialog" aria-modal="true" className="show">
-          <button className="btn ghost" id="closeModal" aria-label="Close linear view" onClick={() => setShowModal(false)}>
-            Close
-          </button>
-          <pre id="modalList">{linearList()}</pre>
-        </div>
+        <LinearView nodes={nodes} onClose={() => setShowModal(false)} />
       )}
       {showPlay && (
         <Playthrough
