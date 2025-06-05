@@ -281,11 +281,9 @@ main {
   opacity: 0.5;
 }
 
-#version {
+#settingsButton {
   margin-left: auto;
   align-self: center;
-  font-size: 0.8rem;
-  color: var(--text-dim);
 }
 
 /* React Flow UI elements */

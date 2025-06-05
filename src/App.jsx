@@ -8,7 +8,9 @@ import {
   FileText,
   Upload,
   List,
-  Play
+  Play,
+  Cloud,
+  Settings
 } from 'lucide-react'
 import ReactFlow, {
   applyNodeChanges,
@@ -27,7 +29,6 @@ import AiSettingsModal from './AiSettingsModal.jsx'
 import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 import { useAiSettings, getSuggestions } from './useAi.js'
 import Button from './Button.jsx'
-import pkg from '../package.json'
 
 function scanEdges(nodes) {
   const pattern = /\[#(\d{3})]|#(\d{3})/g
@@ -673,7 +674,14 @@ export default function App() {
         <Button variant="ghost" icon={Play} onClick={() => setShowPlay(true)}>
           Playthrough
         </Button>
-        <div id="version">v{pkg.version}</div>
+        <Button
+          id="settingsButton"
+          variant="ghost"
+          icon={Settings}
+          aria-label="Settings"
+          style={{ marginLeft: 'auto' }}
+          onClick={() => setShowAiSettings(true)}
+        />
       </header>
       <main>
         <div id="graph">
@@ -708,13 +716,18 @@ export default function App() {
           <button className="btn ghost" type="button" onClick={() => wrapSelected('__')}>U</button>
           <button className="btn ghost" type="button" onClick={() => applyHeading(1)}>H1</button>
           <button className="btn ghost" type="button" onClick={() => applyHeading(2)}>H2</button>
-          <button className="btn ghost" type="button" onClick={fetchAiSuggestions}>AI</button>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={fetchAiSuggestions}
+            aria-label="AI suggestions"
+          >
+            <Cloud aria-hidden="true" />
+          </button>
           <span className={`ai-loading${loadingAi ? ' show' : ''}`} aria-live="polite">
             Genererar förslag…
           </span>
-          <button className="btn ghost" type="button" onClick={() => setShowAiSettings(true)}>
-            Settings
-          </button>
+          {/* Settings button moved to header */}
         </div>
           <textarea id="text" ref={textRef} value={text} onChange={onTextChange} />
         </section>
