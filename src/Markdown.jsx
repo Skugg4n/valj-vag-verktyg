@@ -1,4 +1,5 @@
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 export function parseHtml(text = '') {
   let html = marked.parse(text)
@@ -6,7 +7,7 @@ export function parseHtml(text = '') {
     const id = p1 || p2
     return `<a href="#${id}">#${id}</a>`
   })
-  return html
+  return DOMPurify.sanitize(html)
 }
 
 export default function Markdown({ children = '', className = '' }) {

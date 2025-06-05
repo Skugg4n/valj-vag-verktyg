@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 function renderHtml(text = '') {
   let html = marked.parse(text)
@@ -7,7 +8,7 @@ function renderHtml(text = '') {
     const id = p1 || p2
     return `<button type="button" class="choice" data-id="${id}">#${id}</button>`
   })
-  return html
+  return DOMPurify.sanitize(html)
 }
 
 export default function Playthrough({ nodes, startId, onClose }) {
