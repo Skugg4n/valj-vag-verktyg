@@ -60,18 +60,18 @@ export default function App() {
     if (!source || !target) return
     setNodes(ns => {
       const updated = ns.map(n => {
-        if (n.id !== target) return n
+        if (n.id !== source) return n
         const text = n.data.text || ''
         const sep = text.trim() ? ' ' : ''
-        return { ...n, data: { ...n.data, text: `${text}${sep}[#${source}]` } }
+        return { ...n, data: { ...n.data, text: `${text}${sep}[#${target}]` } }
       })
       setEdges(scanEdges(updated))
       return updated
     })
-    if (currentId === target) {
+    if (currentId === source) {
       setText(t => {
         const sep = t.trim() ? ' ' : ''
-        return `${t}${sep}[#${source}]`
+        return `${t}${sep}[#${target}]`
       })
     }
   }, [currentId])
