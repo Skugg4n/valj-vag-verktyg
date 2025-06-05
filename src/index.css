@@ -176,57 +176,27 @@ main {
   text-decoration: underline;
 }
 #modalList .linear-node {
+  background: none;
+  border: none;
+  padding: 0;
   margin-top: 2rem;
+  max-width: 700px;
 }
 #modalList .linear-node:first-child {
   margin-top: 0;
 }
-#modalList .linear-heading {
-  margin-bottom: 0.25rem;
+#modalList .linear-meta {
+  margin: 0 0 0.5rem;
 }
-#modalList .linear-heading .node-id {
-  font-size: 0.9rem;
-  color: var(--text-dim);
-  margin-right: 0.25rem;
+#modalList .linear-id {
+  font: 0.75rem/1 monospace;
+  color: #666;
 }
-#modalList .linear-heading .node-title {
-  font-size: 1.2rem;
+#modalList .linear-title {
   font-weight: 600;
-  color: #fff;
 }
-#modalList .linear-editor {
-  position: relative;
-  width: 100%;
-  border: 1px solid var(--panel);
-  background: var(--panel);
-  margin-bottom: 0.5rem;
-  font-family: ui-monospace, SFMono-Regular;
-}
-#modalList .linear-editor .linear-render {
-  white-space: pre-wrap;
-  line-height: 1.6;
-  padding: 0.25rem 0.5rem;
-  color: var(--text);
-}
-#modalList .linear-editor .linear-render p {
-  margin-block: 0;
-}
-#modalList .linear-editor .linear-input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  resize: none;
-  background: transparent;
-  color: transparent;
-  caret-color: var(--text);
-  border: none;
-  padding: 0.25rem 0.5rem;
-  font-family: inherit;
-  line-height: 1.6;
-}
-#modalList .linear-editor .linear-input:focus {
-  outline: none;
+#modalList .linear-body p {
+  margin: 0.5rem 0;
 }
 
 .node-card {
