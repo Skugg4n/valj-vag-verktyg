@@ -135,8 +135,8 @@ main {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  color: var(--text);
+  background: #121212;
+  color: #f0f0f0;
   display: none;
   flex-direction: column;
 }
@@ -152,10 +152,20 @@ main {
 
 #modalList {
   flex: 1;
-  overflow: auto;
-  padding: 0.5rem;
-  white-space: pre-wrap;
+  overflow-y: auto;
+  padding: 1rem;
+  max-width: 800px;
+  margin: auto;
+  line-height: 1.6;
+  font-family: system-ui, sans-serif;
   user-select: text;
+}
+#modalList a {
+  color: #70b8ff;
+}
+#modalList h2 {
+  font-size: 1.4rem;
+  margin-top: 2rem;
 }
 
 .node-card {
