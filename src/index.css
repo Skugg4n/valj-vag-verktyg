@@ -97,7 +97,13 @@ main {
   font-family: monospace;
   font-size: 0.75rem;
   opacity: 0.8;
+  margin-right: 0.25rem;
+}
+.node-card .node-header {
   margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .node-card .node-title {
   font-weight: bold;
