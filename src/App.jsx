@@ -3,6 +3,7 @@ import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
   Background,
+  MarkerType,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import './App.css'
@@ -34,6 +35,10 @@ function scanEdges(nodes) {
 
 export default function App() {
   const nodeTypes = useMemo(() => ({ card: NodeCard }), [])
+  const defaultEdgeOptions = useMemo(
+    () => ({ markerEnd: { type: MarkerType.ArrowClosed } }),
+    []
+  )
   const [nodes, setNodes] = useState([])
   const [edges, setEdges] = useState([])
   const [nextId, setNextId] = useState(1)
@@ -198,6 +203,7 @@ export default function App() {
             style={{ width: '100%', height: '100%' }}
             nodes={nodes}
             edges={edges}
+            defaultEdgeOptions={defaultEdgeOptions}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
