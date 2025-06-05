@@ -405,29 +405,59 @@ export default function App() {
   }
 
   const onTextChange = e => {
-    pushUndoState()
+    if (!currentId) return
     let value = e.target.value
     value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
-    setText(value)
-    setNodes(ns => {
-      const updated = ns.map(n =>
-        n.id === currentId ? { ...n, data: { ...n.data, text: value } } : n
-      )
-      setEdges(scanEdges(updated))
-      return updated
-    })
+    updateNodeText(currentId, value)
   }
 
   const updateNodeText = useCallback(
     (id, value) => {
       pushUndoState()
+      let created = []
       setNodes(ns => {
-        const updated = ns.map(n =>
+        let updated = ns.map(n =>
           n.id === id ? { ...n, data: { ...n.data, text: value } } : n
         )
+        const existing = new Set(updated.map(n => n.id))
+        const src = updated.find(n => n.id === id)
+        const baseX = src?.position.x ?? 0
+        const baseY = src?.position.y ?? 0
+        const pattern = /\[#(\d{3})]/g
+        let m
+        let idx = 0
+        while ((m = pattern.exec(value))) {
+          const refId = m[1]
+          if (!existing.has(refId)) {
+            existing.add(refId)
+            created.push(refId)
+            updated = [
+              ...updated,
+              {
+                id: refId,
+                type: 'card',
+                position: { x: baseX + 300, y: baseY + idx * 100 },
+                data: { text: '', title: '' },
+                width: 220,
+                height: 100,
+              },
+            ]
+            idx += 1
+          }
+        }
         setEdges(scanEdges(updated))
         return updated
       })
+      if (created.length > 0) {
+        setNextId(n => {
+          let max = n
+          for (const cid of created) {
+            const num = Number(cid)
+            if (!Number.isNaN(num) && num >= max) max = num + 1
+          }
+          return max
+        })
+      }
       if (currentId === id) {
         setText(value)
       }
