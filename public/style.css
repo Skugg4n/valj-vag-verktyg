@@ -66,4 +66,5 @@ main {
   overflow: auto;
   padding: 0.5rem;
   white-space: pre-wrap;
+  user-select: text;
 }

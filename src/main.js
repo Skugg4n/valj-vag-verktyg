@@ -83,7 +83,7 @@ textArea.addEventListener('input', () => {
 function openModal() {
   const list = nodes
     .get()
-    .sort((a, b) => a.id.localeCompare(b.id))
+    .sort((a, b) => Number(a.id) - Number(b.id))
     .map(n => `--- Node #${n.id} ---\n${n.text || ''}`)
     .join('\n\n');
   modalList.textContent = list;
@@ -94,11 +94,19 @@ function closeModal() {
   modal.classList.remove('show');
 }
 
-document.getElementById('linearView').addEventListener('click', openModal);
+function toggleModal() {
+  if (modal.classList.contains('show')) {
+    closeModal();
+  } else {
+    openModal();
+  }
+}
+
+document.getElementById('linearView').addEventListener('click', toggleModal);
 closeModalBtn.addEventListener('click', closeModal);
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && modal.classList.contains('show')) {
-    closeModal();
+  if (e.key === 'Escape') {
+    toggleModal();
   }
 });
 
