@@ -3,6 +3,30 @@ const nodes = new vis.DataSet();
 const edges = new vis.DataSet();
 const network = new vis.Network(container, { nodes, edges }, {});
 
+function scanEdges() {
+  const pattern = /\[#(\d{3})]/g;
+  const unique = new Set();
+  const newEdges = [];
+
+  nodes.forEach(node => {
+    const text = node.text || '';
+    let match;
+    while ((match = pattern.exec(text))) {
+      const target = match[1];
+      if (nodes.get(target)) {
+        const id = `${node.id}->${target}`;
+        if (!unique.has(id)) {
+          unique.add(id);
+          newEdges.push({ id, from: node.id, to: target });
+        }
+      }
+    }
+  });
+
+  edges.clear();
+  edges.add(newEdges);
+}
+
 let nodeCounter = 1;
 let currentNodeId = null;
 let textTimer;
@@ -18,6 +42,7 @@ document.getElementById('newNode').addEventListener('click', () => {
   const id = String(nodeCounter).padStart(3, '0');
   nodes.add({ id, label: `#${id}`, text: '' });
   nodeCounter += 1;
+  scanEdges();
 });
 
 // select node
@@ -36,6 +61,7 @@ textArea.addEventListener('input', () => {
   textTimer = setTimeout(() => {
     if (currentNodeId) {
       nodes.update({ id: currentNodeId, text });
+      scanEdges();
     }
   }, 400);
 });
