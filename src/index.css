@@ -179,6 +179,11 @@ main {
   display: flex;
 }
 
+#closePlay {
+  align-self: flex-end;
+  margin: 0.5rem;
+}
+
 #playthrough .play-text {
   flex: 1;
   overflow-y: auto;
