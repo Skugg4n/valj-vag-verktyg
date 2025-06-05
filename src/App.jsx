@@ -30,7 +30,7 @@ function scanEdges(nodes) {
 }
 
 export default function App() {
-  const nodeTypes = { card: NodeCard }
+  const nodeTypes = { default: NodeCard }
   const [nodes, setNodes] = useState([])
   const [edges, setEdges] = useState([])
   const [nextId, setNextId] = useState(1)
@@ -59,7 +59,7 @@ export default function App() {
       }
       const updated = [
         ...ns,
-        { id, type: 'card', position, data: { text: '' } },
+        { id, position, data: { text: '' } },
       ]
       setEdges(scanEdges(updated))
       return updated
@@ -122,7 +122,6 @@ export default function App() {
       const data = JSON.parse(json)
       const loaded = (data.nodes || []).map(n => ({
         id: n.id,
-        type: 'card',
         position: n.position || { x: 0, y: 0 },
         data: { text: n.text || '' },
       }))
