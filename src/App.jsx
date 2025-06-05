@@ -70,6 +70,7 @@ export default function App() {
   const [edges, setEdges] = useState([])
   const [nextId, setNextId] = useState(1)
   const [currentId, setCurrentId] = useState(null)
+  const [spawnCounts, setSpawnCounts] = useState({})
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
@@ -402,7 +403,10 @@ export default function App() {
       if (currentId) {
         const cur = ns.find(n => n.id === currentId)
         if (cur) {
-          position = { x: cur.position.x + 300, y: cur.position.y }
+          const count = spawnCounts[currentId] || 0
+          const baseY = cur.position.y
+          const offset = count === 0 ? 0 : Math.ceil(count / 2) * 150 * (count % 2 === 0 ? 1 : -1)
+          position = { x: cur.position.x + 300, y: baseY + offset }
           const text = cur.data.text || ''
           const sep = text.trim() ? ' ' : ''
           const link = `[#${id}]`
@@ -427,6 +431,7 @@ export default function App() {
     })
     setNextId(n => n + 1)
     if (currentId) {
+      setSpawnCounts(c => ({ ...c, [currentId]: (c[currentId] || 0) + 1 }))
       setText(t => {
         const sep = t.trim() ? ' ' : ''
         return `${t}${sep}[#${id}]`
@@ -740,6 +745,8 @@ export default function App() {
             edgesUpdatable
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
+            snapToGrid
+            snapGrid={[16, 16]}
             fitView
           >
           <Background color="#374151" variant="dots" gap={16} size={1} />
