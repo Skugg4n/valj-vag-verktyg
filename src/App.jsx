@@ -236,6 +236,20 @@ export default function App() {
     setShowSuggestions(false)
   }
 
+  const insertNextNodeNumber = () => {
+    const area = textRef.current
+    if (!area) return
+    const start = area.selectionStart
+    const end = area.selectionEnd
+    const nodeId = `#${String(nextId).padStart(3, '0')}`
+    const updatedText = text.slice(0, start) + nodeId + text.slice(end)
+    updateNodeText(currentId, updatedText)
+    requestAnimationFrame(() => {
+      area.focus()
+      area.selectionStart = area.selectionEnd = start + nodeId.length
+    })
+  }
+
   const onConnect = useCallback(({ source, target }) => {
     if (!source || !target) return
     pushUndoState()
@@ -732,6 +746,9 @@ export default function App() {
           <button className="btn ghost" type="button" onClick={() => wrapSelected('__')}>U</button>
           <button className="btn ghost" type="button" onClick={() => applyHeading(1)}>H1</button>
           <button className="btn ghost" type="button" onClick={() => applyHeading(2)}>H2</button>
+          <button className="btn ghost" type="button" onClick={insertNextNodeNumber} aria-label="Next node number">
+            <Plus aria-hidden="true" />
+          </button>
           <button
             className="btn ghost"
             type="button"
