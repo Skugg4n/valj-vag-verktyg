@@ -23,6 +23,9 @@ import './App.css'
 import NodeCard from './NodeCard.jsx'
 import Playthrough from './Playthrough.jsx'
 import LinearView from './LinearView.jsx'
+import AiSettingsModal from './AiSettingsModal.jsx'
+import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
+import { useAiSettings, getSuggestions } from './useAi.js'
 import Button from './Button.jsx'
 import pkg from '../package.json'
 
@@ -63,6 +66,10 @@ export default function App() {
   const [linearText, setLinearText] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [showPlay, setShowPlay] = useState(false)
+  const [aiSettings, setAiSettings] = useAiSettings()
+  const [suggestions, setSuggestions] = useState([])
+  const [showAiSettings, setShowAiSettings] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const textRef = useRef(null)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -201,6 +208,27 @@ export default function App() {
       area.selectionStart = start
       area.selectionEnd = start + lines.length
     })
+  }
+
+  const fetchAiSuggestions = async () => {
+    const result = await getSuggestions(nodes, currentId, aiSettings)
+    setSuggestions(result)
+    setShowSuggestions(true)
+  }
+
+  const applySuggestion = suggestion => {
+    const area = textRef.current
+    if (!area) return
+    const start = area.selectionStart
+    const end = area.selectionEnd
+    const updatedText =
+      text.slice(0, start) + suggestion + text.slice(end)
+    updateNodeText(currentId, updatedText)
+    requestAnimationFrame(() => {
+      area.focus()
+      area.selectionStart = area.selectionEnd = start + suggestion.length
+    })
+    setShowSuggestions(false)
   }
 
   const onConnect = useCallback(({ source, target }) => {
@@ -677,6 +705,10 @@ export default function App() {
           <button className="btn ghost" type="button" onClick={() => wrapSelected('__')}>U</button>
           <button className="btn ghost" type="button" onClick={() => applyHeading(1)}>H1</button>
           <button className="btn ghost" type="button" onClick={() => applyHeading(2)}>H2</button>
+          <button className="btn ghost" type="button" onClick={fetchAiSuggestions}>AI</button>
+          <button className="btn ghost" type="button" onClick={() => setShowAiSettings(true)}>
+            Settings
+          </button>
         </div>
           <textarea id="text" ref={textRef} value={text} onChange={onTextChange} />
         </section>
@@ -694,6 +726,20 @@ export default function App() {
           nodes={nodes}
           startId={currentId || undefined}
           onClose={() => setShowPlay(false)}
+        />
+      )}
+      {showAiSettings && (
+        <AiSettingsModal
+          settings={aiSettings}
+          onChange={setAiSettings}
+          onClose={() => setShowAiSettings(false)}
+        />
+      )}
+      {showSuggestions && (
+        <AiSuggestionsPanel
+          suggestions={suggestions}
+          onPick={applySuggestion}
+          onClose={() => setShowSuggestions(false)}
         />
       )}
     </>
