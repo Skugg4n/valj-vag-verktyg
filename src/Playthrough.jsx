@@ -34,6 +34,7 @@ export default function Playthrough({ nodes, startId, onClose }) {
     <div id="playthrough" role="dialog" aria-modal="true" className="show">
       <button
         id="closePlay"
+        className="btn ghost"
         aria-label="Close playthrough"
         onClick={onClose}
       >
