@@ -1,0 +1,10 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --card: #1f2937;
+  --accent: #3b82f6;
+  --text: #f3f4f6;
+  --text-dim: #9ca3af;
+  --radius: 6px;
+  --gap: 0.5rem;
+}

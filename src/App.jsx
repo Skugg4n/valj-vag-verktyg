@@ -1,4 +1,14 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import {
+  Plus,
+  Trash2,
+  RotateCcw,
+  RotateCw,
+  Download,
+  Upload,
+  List,
+  Play
+} from 'lucide-react'
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
@@ -11,6 +21,7 @@ import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
 import Playthrough from './Playthrough.jsx'
+import Button from './Button.jsx'
 import pkg from '../package.json'
 
 function scanEdges(nodes) {
@@ -499,15 +510,36 @@ export default function App() {
   return (
     <>
       <header>
-        <button onClick={addNode}>New Node</button>
-        <button onClick={deleteNode}>Delete Node</button>
-        <button onClick={undo}>Undo</button>
-        <button onClick={redo}>Redo</button>
-        <button onClick={exportProject}>Export</button>
-        <button onClick={() => importRef.current?.click()}>Import</button>
-        <input ref={importRef} type="file" onChange={importProject} style={{ display: 'none' }} />
-        <button onClick={() => setShowModal(s => !s)}>Linear View</button>
-        <button onClick={() => setShowPlay(true)}>Playthrough</button>
+        <Button variant="primary" icon={Plus} onClick={addNode}>
+          New Node
+        </Button>
+        <Button variant="danger" icon={Trash2} onClick={deleteNode}>
+          Delete Node
+        </Button>
+        <Button variant="ghost" icon={RotateCcw} onClick={undo}>
+          Undo
+        </Button>
+        <Button variant="ghost" icon={RotateCw} onClick={redo}>
+          Redo
+        </Button>
+        <Button variant="ghost" icon={Download} onClick={exportProject}>
+          Export
+        </Button>
+        <Button variant="ghost" icon={Upload} onClick={() => importRef.current?.click()}>
+          Import
+        </Button>
+        <input
+          ref={importRef}
+          type="file"
+          onChange={importProject}
+          style={{ display: 'none' }}
+        />
+        <Button variant="ghost" icon={List} onClick={() => setShowModal(s => !s)}>
+          Linear View
+        </Button>
+        <Button variant="ghost" icon={Play} onClick={() => setShowPlay(true)}>
+          Playthrough
+        </Button>
         <div id="version">v{pkg.version}</div>
       </header>
       <main>
@@ -537,19 +569,19 @@ export default function App() {
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'} {title}</h2>
           <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
-          <div id="formatting-toolbar">
-            <button type="button" onClick={() => wrapSelected('**')}>B</button>
-            <button type="button" onClick={() => wrapSelected('*')}>I</button>
-            <button type="button" onClick={() => wrapSelected('__')}>U</button>
-            <button type="button" onClick={() => applyHeading(1)}>H1</button>
-            <button type="button" onClick={() => applyHeading(2)}>H2</button>
-          </div>
+        <div id="formatting-toolbar">
+          <button className="btn ghost" type="button" onClick={() => wrapSelected('**')}>B</button>
+          <button className="btn ghost" type="button" onClick={() => wrapSelected('*')}>I</button>
+          <button className="btn ghost" type="button" onClick={() => wrapSelected('__')}>U</button>
+          <button className="btn ghost" type="button" onClick={() => applyHeading(1)}>H1</button>
+          <button className="btn ghost" type="button" onClick={() => applyHeading(2)}>H2</button>
+        </div>
           <textarea id="text" ref={textRef} value={text} onChange={onTextChange} />
         </section>
       </main>
       {showModal && (
         <div id="modal" role="dialog" aria-modal="true" className="show">
-          <button id="closeModal" aria-label="Close linear view" onClick={() => setShowModal(false)}>
+          <button className="btn ghost" id="closeModal" aria-label="Close linear view" onClick={() => setShowModal(false)}>
             Close
           </button>
           <pre id="modalList">{linearList()}</pre>
