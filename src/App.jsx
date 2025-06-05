@@ -631,7 +631,7 @@ export default function App() {
             const md = nodes
               .slice()
               .sort((a, b) => Number(a.id) - Number(b.id))
-              .map(n => `#${n.id} ${n.data.title}\n${n.data.text}`)
+              .map(n => `## #${n.id} ${n.data.title}\n${n.data.text}`)
               .join('\n')
             setLinearText(md)
             setShowModal(true)

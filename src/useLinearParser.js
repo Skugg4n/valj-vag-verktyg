@@ -3,11 +3,11 @@ import { useEffect } from 'react'
 export default function useLinearParser(raw = '', setNodes) {
   useEffect(() => {
     if (typeof setNodes !== 'function') return
-    const blocks = raw.split(/\n(?=#\d{3}\s)/)
+    const blocks = raw.split(/\n(?=(?:##\s+)?#\d{3}\s)/)
     const parsed = blocks
       .map(block => {
         const [first, ...rest] = block.split('\n')
-        const match = first.match(/^#(\d{3})\s+(.*)$/)
+        const match = first.match(/^(?:##\s+)?#(\d{3})\s+(.*)$/)
         if (!match) return null
         const [, id, title] = match
         return { id, title, text: rest.join('\n').trim() }
