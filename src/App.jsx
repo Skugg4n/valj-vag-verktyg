@@ -46,10 +46,14 @@ export default function App() {
 
   const addNode = () => {
     const id = String(nextId).padStart(3, '0')
-    setNodes(ns => [
-      ...ns,
-      { id, position: { x: 0, y: 0 }, data: { label: `#${id}`, text: '' } },
-    ])
+    setNodes(ns => {
+      const updated = [
+        ...ns,
+        { id, position: { x: 0, y: 0 }, data: { label: `#${id}`, text: '' } },
+      ]
+      setEdges(scanEdges(updated))
+      return updated
+    })
     setNextId(n => n + 1)
   }
 
