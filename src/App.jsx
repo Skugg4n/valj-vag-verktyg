@@ -146,6 +146,7 @@ export default function App() {
       <main>
         <div id="graph">
           <ReactFlow
+            style={{ width: '100%', height: '100%' }}
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
