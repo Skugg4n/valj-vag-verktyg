@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 
 const STORAGE_KEY = 'ai-settings'
 
+export const defaultPrompt =
+  'Du skriver en interaktiv berättelse. Här är tidigare noder...\n\n'
+
 const defaultSettings = {
   enabled: false,
   apiKey: '',
@@ -9,6 +12,7 @@ const defaultSettings = {
   contextDepth: 3,
   maxTokens: 60,
   temperature: 0.7,
+  customPrompt: defaultPrompt,
 }
 
 export function useAiSettings() {
@@ -48,7 +52,7 @@ export async function getSuggestions(nodes, currentId, settings) {
   const context = history
     .map(n => `#${n.id} ${n.data.title || ''}\n${n.data.text || ''}`)
     .join('\n\n')
-  const prompt = `Du hjälper till att skriva en interaktiv berättelse. Här är tidigare delar:\n\n${context}\n\nAktuell nod:\n#${current.id} ${current.data.title || ''}\nDu har skrivit: "${current.data.text || ''}"\n\nSkriv tre förslag på hur det kan fortsätta härifrån. Varje förslag bör vara 1–2 meningar.`
+  const prompt = `${settings.customPrompt || defaultPrompt}${context}\n\nAktuell nod:\n#${current.id} ${current.data.title || ''}\nDu har skrivit: "${current.data.text || ''}"\n\nSkriv tre förslag på hur det kan fortsätta härifrån. Varje förslag bör vara 1–2 meningar.`
 
   const body = {
     model: settings.model,

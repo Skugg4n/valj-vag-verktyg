@@ -70,6 +70,7 @@ export default function App() {
   const [suggestions, setSuggestions] = useState([])
   const [showAiSettings, setShowAiSettings] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [loadingAi, setLoadingAi] = useState(false)
   const textRef = useRef(null)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -211,7 +212,9 @@ export default function App() {
   }
 
   const fetchAiSuggestions = async () => {
+    setLoadingAi(true)
     const result = await getSuggestions(nodes, currentId, aiSettings)
+    setLoadingAi(false)
     setSuggestions(result)
     setShowSuggestions(true)
   }
@@ -706,6 +709,9 @@ export default function App() {
           <button className="btn ghost" type="button" onClick={() => applyHeading(1)}>H1</button>
           <button className="btn ghost" type="button" onClick={() => applyHeading(2)}>H2</button>
           <button className="btn ghost" type="button" onClick={fetchAiSuggestions}>AI</button>
+          <span className={`ai-loading${loadingAi ? ' show' : ''}`} aria-live="polite">
+            Genererar förslag…
+          </span>
           <button className="btn ghost" type="button" onClick={() => setShowAiSettings(true)}>
             Settings
           </button>

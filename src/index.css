@@ -120,6 +120,22 @@ main {
   background: var(--panel);
 }
 
+.ai-loading {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+  align-self: center;
+}
+
+.ai-loading.show {
+  opacity: 1;
+}
+
+.reset-btn {
+  margin-left: 0.5rem;
+}
+
 #linear-toolbar {
   display: flex;
   gap: 0.25rem;
