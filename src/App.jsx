@@ -30,6 +30,14 @@ import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 import { useAiSettings, getSuggestions } from './useAi.js'
 import Button from './Button.jsx'
 
+function estimateNodeHeight(text) {
+  const charsPerLine = 32
+  const lines = text
+    .split(/\r?\n/)
+    .reduce((sum, line) => sum + Math.ceil(line.length / charsPerLine), 0)
+  return Math.min(300, Math.max(100, 50 + lines * 18))
+}
+
 function scanEdges(nodes) {
   const pattern = /\[#(\d{3})]|#(\d{3})/g
   const unique = new Set()
@@ -90,8 +98,8 @@ export default function App() {
           type: 'card',
           position: n.position || { x: 0, y: 0 },
           data: { text: n.text || '', title: n.title || '' },
-          width: n.width ?? 220,
-          height: n.height ?? 100,
+          width: n.width ?? 254,
+          height: n.height ?? estimateNodeHeight(n.text || ''),
         }))
         setNodes(loaded)
         setEdges(scanEdges(loaded))
@@ -410,7 +418,7 @@ export default function App() {
           position,
           type: 'card',
           data: { text: '', title: '' },
-          width: 220,
+          width: 254,
           height: 100,
         },
       ]
@@ -465,7 +473,9 @@ export default function App() {
       let created = []
       setNodes(ns => {
         let updated = ns.map(n =>
-          n.id === id ? { ...n, data: { ...n.data, text: value } } : n
+          n.id === id
+            ? { ...n, data: { ...n.data, text: value }, height: estimateNodeHeight(value) }
+            : n
         )
         const existing = new Set(updated.map(n => n.id))
         const src = updated.find(n => n.id === id)
@@ -486,7 +496,7 @@ export default function App() {
                 type: 'card',
                 position: { x: baseX + 300, y: baseY + idx * 100 },
                 data: { text: '', title: '' },
-                width: 220,
+                width: 254,
                 height: 100,
               },
             ]
@@ -595,8 +605,8 @@ export default function App() {
         type: 'card',
         position: n.position || { x: 0, y: 0 },
         data: { text: n.text || '', title: n.title || '' },
-        width: n.width ?? 220,
-        height: n.height ?? 100,
+        width: n.width ?? 254,
+        height: n.height ?? estimateNodeHeight(n.text || ''),
       }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
