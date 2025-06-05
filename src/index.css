@@ -120,6 +120,15 @@ main {
   background: var(--panel);
 }
 
+#linear-toolbar {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-bottom: 1px solid var(--panel);
+  background: var(--panel);
+  margin: 0 var(--gap);
+}
+
 #text {
   flex: 1;
   width: 100%;
