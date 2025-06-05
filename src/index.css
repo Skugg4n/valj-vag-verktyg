@@ -215,6 +215,20 @@ main {
   margin: 0.5rem 0;
 }
 
+.suggestion {
+  background: var(--card);
+  border: 1px solid var(--panel);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  cursor: pointer;
+  white-space: pre-wrap;
+}
+
+.suggestion:hover {
+  background: var(--btn-hover);
+}
+
 .node-card {
   width: 100%;
   height: 100%;
