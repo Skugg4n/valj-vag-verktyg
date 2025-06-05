@@ -7,6 +7,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
+import { parseText } from './parseText.js'
 import pkg from '../package.json'
 
 function scanEdges(nodes) {
@@ -39,6 +40,7 @@ export default function App() {
   const [currentId, setCurrentId] = useState(null)
   const [text, setText] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const { title } = useMemo(() => parseText(text), [text])
 
   const onNodesChange = useCallback(
     changes => setNodes(ns => applyNodeChanges(changes, ns)),
@@ -186,7 +188,7 @@ export default function App() {
           </ReactFlow>
         </div>
         <section id="editor">
-          <h2 id="nodeId">#{currentId || '000'}</h2>
+          <h2 id="nodeId">#{currentId || '000'} {title}</h2>
           <textarea id="text" value={text} onChange={onTextChange} />
         </section>
       </main>
