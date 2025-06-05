@@ -4,6 +4,8 @@ import ReactFlow, {
   applyEdgeChanges,
   Background,
   MarkerType,
+  MiniMap,
+  Controls,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import './App.css'
@@ -233,13 +235,15 @@ export default function App() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
-            onPaneClick={onPaneClick}
-            nodeTypes={nodeTypes}
-            fitView
-          >
-            <Background color="#374151" variant="dots" gap={16} size={1} />
-          </ReactFlow>
-        </div>
+          onPaneClick={onPaneClick}
+          nodeTypes={nodeTypes}
+          fitView
+        >
+          <Background color="#374151" variant="dots" gap={16} size={1} />
+          <MiniMap zoomable pannable />
+          <Controls />
+        </ReactFlow>
+      </div>
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'} {title}</h2>
           <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
