@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Button from './Button.jsx'
+import { defaultPrompt } from './useAi.js'
 
 export default function AiSettingsModal({ settings, onChange, onClose }) {
   const [local, setLocal] = useState(settings)
@@ -83,6 +84,21 @@ export default function AiSettingsModal({ settings, onChange, onClose }) {
             value={local.temperature}
             onChange={e => update({ temperature: Number(e.target.value) })}
           />
+        </div>
+        <div>
+          <label>Base prompt</label>
+          <textarea
+            value={local.customPrompt}
+            onChange={e => update({ customPrompt: e.target.value })}
+            rows="4"
+          />
+          <Button
+            className="reset-btn"
+            type="button"
+            onClick={() => update({ customPrompt: defaultPrompt })}
+          >
+            Reset to default
+          </Button>
         </div>
         <Button variant="primary" onClick={save}>
           Save
