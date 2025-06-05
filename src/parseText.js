@@ -8,6 +8,6 @@ export function parseText(text = '') {
       bodyParts.push(t.text)
     }
   }
-  const body = bodyParts.join(' ').trim()
-  return { snippet: body.slice(0, 50) }
+  const snippet = bodyParts.join(' ').trim().slice(0, 50)
+  return { snippet }
 }
