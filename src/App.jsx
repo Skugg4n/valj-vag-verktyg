@@ -53,20 +53,33 @@ export default function App() {
     const id = String(nextId).padStart(3, '0')
     setNodes(ns => {
       let position = { x: 0, y: 0 }
+      let updatedNodes = ns
       if (currentId) {
         const cur = ns.find(n => n.id === currentId)
         if (cur) {
           position = { x: cur.position.x + 300, y: cur.position.y }
+          const text = cur.data.text || ''
+          const sep = text.trim() ? ' ' : ''
+          const link = `[#${id}]`
+          updatedNodes = ns.map(n =>
+            n.id === currentId ? { ...n, data: { ...n.data, text: `${text}${sep}${link}` } } : n
+          )
         }
       }
       const updated = [
-        ...ns,
+        ...updatedNodes,
         { id, position, type: 'card', data: { text: '' } },
       ]
       setEdges(scanEdges(updated))
       return updated
     })
     setNextId(n => n + 1)
+    if (currentId) {
+      setText(t => {
+        const sep = t.trim() ? ' ' : ''
+        return `${t}${sep}[#${id}]`
+      })
+    }
   }
 
   const deleteNode = () => {

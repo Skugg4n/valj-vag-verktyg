@@ -19,10 +19,10 @@ function parseText(text = '') {
   return { title, snippet: body.slice(0, 50) }
 }
 
-const NodeCard = memo(({ id, data }) => {
+const NodeCard = memo(({ id, data, selected }) => {
   const { title, snippet } = parseText(data.text)
   return (
-    <div className="node-card">
+    <div className={`node-card${selected ? ' selected' : ''}`}>
       <div className="node-id">[{id}]</div>
       {title && <div className="node-title">{title}</div>}
       {snippet && <div className="node-preview">{snippet}</div>}
