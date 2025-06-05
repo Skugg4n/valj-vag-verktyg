@@ -10,6 +10,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
+import Playthrough from './Playthrough.jsx'
 import pkg from '../package.json'
 
 function scanEdges(nodes) {
@@ -47,6 +48,7 @@ export default function App() {
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [showPlay, setShowPlay] = useState(false)
   const textRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
 
@@ -379,6 +381,7 @@ export default function App() {
         <button onClick={save}>Save</button>
         <input type="file" onChange={load} />
         <button onClick={() => setShowModal(s => !s)}>Linear View</button>
+        <button onClick={() => setShowPlay(true)}>Playthrough</button>
         <div id="version">v{pkg.version}</div>
       </header>
       <main>
@@ -425,6 +428,13 @@ export default function App() {
           </button>
           <pre id="modalList">{linearList()}</pre>
         </div>
+      )}
+      {showPlay && (
+        <Playthrough
+          nodes={nodes}
+          startId={currentId || undefined}
+          onClose={() => setShowPlay(false)}
+        />
       )}
     </>
   )
