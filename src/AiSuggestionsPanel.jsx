@@ -1,5 +1,3 @@
-import Button from './Button.jsx'
-
 export default function AiSuggestionsPanel({ suggestions = [], onPick, onClose }) {
   return (
     <div id="modal" role="dialog" aria-modal="true" className="show">
@@ -14,15 +12,11 @@ export default function AiSuggestionsPanel({ suggestions = [], onPick, onClose }
       <div id="modalList">
         <h3>AI Suggestions</h3>
         {suggestions.length === 0 && <p>No suggestions</p>}
-        <ul>
-          {suggestions.map((s, i) => (
-            <li key={i}>
-              <Button variant="ghost" onClick={() => onPick(s)}>
-                {s}
-              </Button>
-            </li>
-          ))}
-        </ul>
+        {suggestions.map((s, i) => (
+          <div key={i} className="suggestion" onClick={() => onPick(s)}>
+            {s}
+          </div>
+        ))}
       </div>
     </div>
   )

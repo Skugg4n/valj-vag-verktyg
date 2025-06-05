@@ -52,7 +52,7 @@ export async function getSuggestions(nodes, currentId, settings) {
   const context = history
     .map(n => `#${n.id} ${n.data.title || ''}\n${n.data.text || ''}`)
     .join('\n\n')
-  const prompt = `${settings.customPrompt || defaultPrompt}${context}\n\nAktuell nod:\n#${current.id} ${current.data.title || ''}\nDu har skrivit: "${current.data.text || ''}"\n\nSkriv tre förslag på hur det kan fortsätta härifrån. Varje förslag bör vara 1–2 meningar.`
+  const prompt = `${settings.customPrompt || defaultPrompt}${context}\n\nAktuell nod:\n#${current.id} ${current.data.title || ''}\nDu har skrivit: "${current.data.text || ''}"\n\nSkriv tre förslag på hur det kan fortsätta härifrån. Varje förslag bör vara 1–2 meningar.\nReturnera tre olika fortsättningar, börja varje med • och använd samma berättarstil som tidigare. Om du ger val, använd markdownlänkar som [#004].`
 
   const body = {
     model: settings.model,
@@ -73,7 +73,7 @@ export async function getSuggestions(nodes, currentId, settings) {
   const data = await res.json()
   const text = data.choices?.[0]?.message?.content || ''
   return text
-    .split('\n')
+    .split(/\n(?=\u2022)/)
     .map(t => t.trim())
     .filter(Boolean)
 }
