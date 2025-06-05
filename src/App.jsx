@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
@@ -47,6 +47,7 @@ export default function App() {
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const textRef = useRef(null)
 
   const onNodesChange = useCallback(
     changes => setNodes(ns => applyNodeChanges(changes, ns)),
@@ -56,6 +57,49 @@ export default function App() {
     changes => setEdges(es => applyEdgeChanges(changes, es)),
     []
   )
+
+  const wrapSelected = (before, after = before) => {
+    const area = textRef.current
+    if (!area) return
+    const start = area.selectionStart
+    const end = area.selectionEnd
+    const selected = text.slice(start, end)
+    const updatedText =
+      text.slice(0, start) + before + selected + after + text.slice(end)
+    setText(updatedText)
+    setNodes(ns =>
+      ns.map(n =>
+        n.id === currentId ? { ...n, data: { ...n.data, text: updatedText } } : n
+      )
+    )
+    requestAnimationFrame(() => {
+      area.focus()
+      area.selectionStart = start + before.length
+      area.selectionEnd = end + before.length
+    })
+  }
+
+  const applyHeading = level => {
+    const area = textRef.current
+    if (!area) return
+    const start = area.selectionStart
+    const end = area.selectionEnd
+    const selected = text.slice(start, end)
+    const prefix = '#'.repeat(level) + ' '
+    const lines = selected.split(/\n/).map(l => prefix + l).join('\n')
+    const updatedText = text.slice(0, start) + lines + text.slice(end)
+    setText(updatedText)
+    setNodes(ns =>
+      ns.map(n =>
+        n.id === currentId ? { ...n, data: { ...n.data, text: updatedText } } : n
+      )
+    )
+    requestAnimationFrame(() => {
+      area.focus()
+      area.selectionStart = start
+      area.selectionEnd = start + lines.length
+    })
+  }
 
   const onConnect = useCallback(({ source, target }) => {
     if (!source || !target) return
@@ -247,7 +291,14 @@ export default function App() {
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'} {title}</h2>
           <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
-          <textarea id="text" value={text} onChange={onTextChange} />
+          <div id="formatting-toolbar">
+            <button type="button" onClick={() => wrapSelected('**')}>B</button>
+            <button type="button" onClick={() => wrapSelected('*')}>I</button>
+            <button type="button" onClick={() => wrapSelected('__')}>U</button>
+            <button type="button" onClick={() => applyHeading(1)}>H1</button>
+            <button type="button" onClick={() => applyHeading(2)}>H2</button>
+          </div>
+          <textarea id="text" ref={textRef} value={text} onChange={onTextChange} />
         </section>
       </main>
       {showModal && (
