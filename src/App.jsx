@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
@@ -51,17 +51,77 @@ export default function App() {
   const [showPlay, setShowPlay] = useState(false)
   const textRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
+  const undoStack = useRef([])
+  const redoStack = useRef([])
+
+  const pushUndoState = useCallback(() => {
+    undoStack.current.push({
+      nodes: structuredClone(nodes),
+      edges: structuredClone(edges),
+      nextId,
+      currentId,
+      text,
+      title,
+    })
+    redoStack.current = []
+  }, [nodes, edges, nextId, currentId, text, title])
+
+  const applyState = state => {
+    setNodes(state.nodes)
+    setEdges(state.edges)
+    setNextId(state.nextId)
+    setCurrentId(state.currentId)
+    setText(state.text)
+    setTitle(state.title)
+  }
+
+  const undo = () => {
+    const state = undoStack.current.pop()
+    if (state) {
+      redoStack.current.push({
+        nodes: nodes,
+        edges: edges,
+        nextId,
+        currentId,
+        text,
+        title,
+      })
+      applyState(state)
+    }
+  }
+
+  const redo = () => {
+    const state = redoStack.current.pop()
+    if (state) {
+      undoStack.current.push({
+        nodes: nodes,
+        edges: edges,
+        nextId,
+        currentId,
+        text,
+        title,
+      })
+      applyState(state)
+    }
+  }
 
   const onNodesChange = useCallback(
-    changes => setNodes(ns => applyNodeChanges(changes, ns)),
-    []
+    changes => {
+      pushUndoState()
+      setNodes(ns => applyNodeChanges(changes, ns))
+    },
+    [pushUndoState]
   )
   const onEdgesChange = useCallback(
-    changes => setEdges(es => applyEdgeChanges(changes, es)),
-    []
+    changes => {
+      pushUndoState()
+      setEdges(es => applyEdgeChanges(changes, es))
+    },
+    [pushUndoState]
   )
 
   const wrapSelected = (before, after = before) => {
+    pushUndoState()
     const area = textRef.current
     if (!area) return
     const start = area.selectionStart
@@ -83,6 +143,7 @@ export default function App() {
   }
 
   const applyHeading = level => {
+    pushUndoState()
     const area = textRef.current
     if (!area) return
     const start = area.selectionStart
@@ -106,6 +167,7 @@ export default function App() {
 
   const onConnect = useCallback(({ source, target }) => {
     if (!source || !target) return
+    pushUndoState()
     setNodes(ns => {
       const updated = ns.map(n => {
         if (n.id !== source) return n
@@ -130,6 +192,7 @@ export default function App() {
 
   const onReconnect = useCallback(
     (oldEdge, connection) => {
+      pushUndoState()
       reconnectInfo.current.didReconnect = true
       const newSource = connection.source || oldEdge.source
       const newTarget = connection.target || oldEdge.target
@@ -206,6 +269,7 @@ export default function App() {
 
   const onReconnectEnd = useCallback(
     (_e, edge) => {
+      pushUndoState()
       if (!reconnectInfo.current.didReconnect) {
         setNodes(ns => {
           const updated = ns.map(n =>
@@ -237,6 +301,7 @@ export default function App() {
   )
 
   const addNode = () => {
+    pushUndoState()
     const id = String(nextId).padStart(3, '0')
     setNodes(ns => {
       let position = { x: 0, y: 0 }
@@ -270,6 +335,7 @@ export default function App() {
   }
 
   const deleteNode = () => {
+    pushUndoState()
     if (!currentId) return
     if (!confirm(`Delete node #${currentId} ?`)) return
     setNodes(ns => {
@@ -295,6 +361,7 @@ export default function App() {
   }
 
   const onTextChange = e => {
+    pushUndoState()
     let value = e.target.value
     value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
     setText(value)
@@ -308,6 +375,7 @@ export default function App() {
   }
 
   const onTitleChange = e => {
+    pushUndoState()
     const value = e.target.value
     setTitle(value)
     setNodes(ns =>
@@ -344,6 +412,7 @@ export default function App() {
   const load = async e => {
     const file = e.target.files[0]
     if (!file) return
+    pushUndoState()
     try {
       const json = await file.text()
       const data = JSON.parse(json)
@@ -366,6 +435,23 @@ export default function App() {
     }
   }
 
+  useEffect(() => {
+    const handler = e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        undo()
+      } else if (
+        (e.metaKey || e.ctrlKey) &&
+        (e.key === 'Z' || (e.key === 'z' && e.shiftKey))
+      ) {
+        e.preventDefault()
+        redo()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [undo, redo])
+
   const linearList = () =>
     nodes
       .slice()
@@ -378,6 +464,8 @@ export default function App() {
       <header>
         <button onClick={addNode}>New Node</button>
         <button onClick={deleteNode}>Delete Node</button>
+        <button onClick={undo}>Undo</button>
+        <button onClick={redo}>Redo</button>
         <button onClick={save}>Save</button>
         <input type="file" onChange={load} />
         <button onClick={() => setShowModal(s => !s)}>Linear View</button>
