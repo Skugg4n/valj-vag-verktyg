@@ -208,6 +208,9 @@ main {
   padding: 0.25rem 0.5rem;
   color: var(--text);
 }
+#modalList .linear-editor .linear-render p {
+  margin-block: 0;
+}
 #modalList .linear-editor .linear-input {
   position: absolute;
   inset: 0;
