@@ -29,15 +29,19 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
+  padding: 6px 12px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: normal;
   border-radius: var(--radius);
   cursor: pointer;
   text-decoration: none;
-  border: 1px solid transparent;
-  background: none;
-  color: var(--text);
+  border: none;
+  background: var(--btn);
+  color: #fff;
+}
+
+.btn:hover {
+  background: var(--btn-hover);
 }
 
 .btn svg {
@@ -54,11 +58,11 @@ header {
 }
 
 .btn.ghost {
-  background: transparent;
-  border-color: var(--text-dim);
+  background: var(--btn);
+  color: #fff;
 }
 .btn.ghost:hover {
-  background: var(--panel);
+  background: var(--btn-hover);
 }
 
 .btn.danger {
@@ -161,7 +165,6 @@ main {
   color: var(--text);
   border: 1px solid var(--panel);
   border-radius: var(--radius);
-  box-shadow: 0 2px 6px #0005;
   padding: 0.75rem;
   font-size: 0.8rem;
   min-width: 180px;
@@ -230,20 +233,19 @@ main {
 
 /* React Flow UI elements */
 .react-flow__controls {
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-.react-flow__controls:hover {
   opacity: 1;
 }
 .react-flow__controls button {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--text-dim);
+  background: var(--btn);
+  color: #fff;
+  border: none;
   width: 32px;
   height: 32px;
   cursor: pointer;
   border-radius: var(--radius);
+}
+.react-flow__controls button:hover {
+  background: var(--btn-hover);
 }
 
 .react-flow__minimap {
@@ -280,9 +282,14 @@ main {
 }
 
 #playthrough .choice {
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--panel);
+  background: #4a5568;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 4px 8px;
   margin: 0 0.25rem;
   cursor: pointer;
+}
+#playthrough .choice:hover {
+  background: #5b667a;
 }
