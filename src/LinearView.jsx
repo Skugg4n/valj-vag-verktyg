@@ -1,14 +1,5 @@
 import { useMemo, useRef } from 'react'
-import { marked } from 'marked'
-
-function parseHtml(text = '') {
-  let html = marked.parse(text)
-  html = html.replace(/\[#(\d{3})]|#(\d{3})/g, (_m, p1, p2) => {
-    const id = p1 || p2
-    return `<a href="#${id}">#${id}</a>`
-  })
-  return html
-}
+import Markdown, { parseHtml } from './Markdown.jsx'
 
 export default function LinearView({ nodes = [], updateNodeText, onClose }) {
   const sorted = useMemo(
@@ -19,8 +10,8 @@ export default function LinearView({ nodes = [], updateNodeText, onClose }) {
   const activeId = useRef(null)
   const editors = useRef({})
 
-  const onChange = (id, e) => {
-    let value = e.target.value
+  const onBlur = (id, e) => {
+    let value = e.target.innerText
     value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
     updateNodeText(id, value)
   }
@@ -28,39 +19,34 @@ export default function LinearView({ nodes = [], updateNodeText, onClose }) {
   const wrapSelected = (before, after = before) => {
     const id = activeId.current
     if (!id) return
-    const area = editors.current[id]
-    if (!area) return
-    const start = area.selectionStart
-    const end = area.selectionEnd
-    const text = area.value
-    const selected = text.slice(start, end)
-    const updated = text.slice(0, start) + before + selected + after + text.slice(end)
-    updateNodeText(id, updated)
-    requestAnimationFrame(() => {
-      area.focus()
-      area.selectionStart = start + before.length
-      area.selectionEnd = end + before.length
-    })
+    const el = editors.current[id]
+    if (!el) return
+    const sel = window.getSelection()
+    if (!sel?.rangeCount) return
+    const range = sel.getRangeAt(0)
+    if (!el.contains(range.startContainer)) return
+    const text = sel.toString()
+    range.deleteContents()
+    range.insertNode(document.createTextNode(before + text + after))
+    sel.collapseToEnd()
+    updateNodeText(id, el.innerText)
   }
 
   const applyHeading = level => {
     const id = activeId.current
     if (!id) return
-    const area = editors.current[id]
-    if (!area) return
-    const start = area.selectionStart
-    const end = area.selectionEnd
-    const text = area.value
-    const selected = text.slice(start, end)
+    const el = editors.current[id]
+    if (!el) return
+    const sel = window.getSelection()
+    if (!sel?.rangeCount) return
+    const range = sel.getRangeAt(0)
+    if (!el.contains(range.startContainer)) return
+    const text = sel.toString()
     const prefix = '#'.repeat(level) + ' '
-    const lines = selected.split(/\n/).map(l => prefix + l).join('\n')
-    const updated = text.slice(0, start) + lines + text.slice(end)
-    updateNodeText(id, updated)
-    requestAnimationFrame(() => {
-      area.focus()
-      area.selectionStart = start
-      area.selectionEnd = start + lines.length
-    })
+    range.deleteContents()
+    range.insertNode(document.createTextNode(prefix + text))
+    sel.collapseToEnd()
+    updateNodeText(id, el.innerText)
   }
 
   return (
@@ -82,24 +68,24 @@ export default function LinearView({ nodes = [], updateNodeText, onClose }) {
       </div>
       <div id="modalList">
         {sorted.map(n => (
-          <article key={n.id} className="linear-node">
-            <h2 id={n.id} className="linear-heading">
-              <span className="node-id">#{n.id}</span>
-              {n.data.title && <span className="node-title">{n.data.title}</span>}
-            </h2>
-            <div className="linear-editor">
-              <div
-                className="linear-render"
-                dangerouslySetInnerHTML={{ __html: parseHtml(n.data.text) }}
-              />
-              <textarea
-                className="linear-input"
-                ref={el => (editors.current[n.id] = el)}
-                onFocus={() => (activeId.current = n.id)}
-                value={n.data.text}
-                onChange={e => onChange(n.id, e)}
-              />
-            </div>
+          <article
+            key={n.id}
+            data-id={n.id}
+            className="linear-node"
+          >
+            <p className="linear-meta" contentEditable={false}>
+              <span className="linear-id">#{n.id}</span>{' '}
+              <strong className="linear-title">{n.data.title}</strong>
+            </p>
+            <div
+              className="linear-body"
+              contentEditable
+              suppressContentEditableWarning
+              ref={el => (editors.current[n.id] = el)}
+              onFocus={() => (activeId.current = n.id)}
+              onBlur={e => onBlur(n.id, e)}
+              dangerouslySetInnerHTML={{ __html: parseHtml(n.data.text) }}
+            />
           </article>
         ))}
       </div>
