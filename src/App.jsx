@@ -50,9 +50,31 @@ export default function App() {
   const [showModal, setShowModal] = useState(false)
   const [showPlay, setShowPlay] = useState(false)
   const textRef = useRef(null)
+  const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
   const redoStack = useRef([])
+
+  // Restore previous session from localStorage on initial load
+  useEffect(() => {
+    const saved = localStorage.getItem('cyoa-data')
+    if (saved) {
+      try {
+        const data = JSON.parse(saved)
+        const loaded = (data.nodes || []).map(n => ({
+          id: n.id,
+          type: 'card',
+          position: n.position || { x: 0, y: 0 },
+          data: { text: n.text || '', title: n.title || '' },
+        }))
+        setNodes(loaded)
+        setEdges(scanEdges(loaded))
+        setNextId(data.nextNodeId || 1)
+      } catch {
+        // ignore corrupt data
+      }
+    }
+  }, [])
 
   const pushUndoState = useCallback(() => {
     undoStack.current.push({
@@ -385,7 +407,7 @@ export default function App() {
     )
   }
 
-  const save = () => {
+  const exportProject = () => {
     const data = {
       nextNodeId: nextId,
       nodes: nodes.map(n => ({
@@ -409,7 +431,7 @@ export default function App() {
     URL.revokeObjectURL(a.href)
   }
 
-  const load = async e => {
+  const importProject = async e => {
     const file = e.target.files[0]
     if (!file) return
     pushUndoState()
@@ -452,6 +474,21 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler)
   }, [undo, redo])
 
+  // Persist data after every change
+  useEffect(() => {
+    const data = {
+      nextNodeId: nextId,
+      nodes: nodes.map(n => ({
+        id: n.id,
+        text: n.data.text || '',
+        title: n.data.title || '',
+        position: n.position,
+        type: n.type || 'card',
+      })),
+    }
+    localStorage.setItem('cyoa-data', JSON.stringify(data))
+  }, [nodes, nextId])
+
   const linearList = () =>
     nodes
       .slice()
@@ -466,8 +503,9 @@ export default function App() {
         <button onClick={deleteNode}>Delete Node</button>
         <button onClick={undo}>Undo</button>
         <button onClick={redo}>Redo</button>
-        <button onClick={save}>Save</button>
-        <input type="file" onChange={load} />
+        <button onClick={exportProject}>Export</button>
+        <button onClick={() => importRef.current?.click()}>Import</button>
+        <input ref={importRef} type="file" onChange={importProject} style={{ display: 'none' }} />
         <button onClick={() => setShowModal(s => !s)}>Linear View</button>
         <button onClick={() => setShowPlay(true)}>Playthrough</button>
         <div id="version">v{pkg.version}</div>
