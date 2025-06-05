@@ -194,17 +194,36 @@ main {
   font-weight: 600;
   color: #fff;
 }
-#modalList .linear-edit {
+#modalList .linear-editor {
+  position: relative;
   width: 100%;
-  background: var(--panel);
-  color: var(--text);
   border: 1px solid var(--panel);
-  padding: 0.25rem 0.5rem;
-  font-family: ui-monospace, SFMono-Regular;
+  background: var(--panel);
   margin-bottom: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular;
 }
-#modalList .linear-preview {
+#modalList .linear-editor .linear-render {
+  white-space: pre-wrap;
   line-height: 1.6;
+  padding: 0.25rem 0.5rem;
+  color: var(--text);
+}
+#modalList .linear-editor .linear-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text);
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-family: inherit;
+  line-height: 1.6;
+}
+#modalList .linear-editor .linear-input:focus {
+  outline: none;
 }
 
 .node-card {
