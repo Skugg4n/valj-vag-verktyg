@@ -37,7 +37,7 @@ function scanEdges(nodes) {
 export default function App() {
   const nodeTypes = useMemo(() => ({ card: NodeCard }), [])
   const defaultEdgeOptions = useMemo(
-    () => ({ markerEnd: { type: MarkerType.ArrowClosed } }),
+    () => ({ markerEnd: { type: MarkerType.ArrowClosed }, reconnectable: true }),
     []
   )
   const [nodes, setNodes] = useState([])
@@ -48,6 +48,7 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [showModal, setShowModal] = useState(false)
   const textRef = useRef(null)
+  const reconnectInfo = useRef({ handleType: null, didReconnect: false })
 
   const onNodesChange = useCallback(
     changes => setNodes(ns => applyNodeChanges(changes, ns)),
@@ -120,6 +121,118 @@ export default function App() {
       })
     }
   }, [currentId])
+
+  const onReconnectStart = useCallback((_e, _edge, handleType) => {
+    reconnectInfo.current = { handleType, didReconnect: false }
+  }, [])
+
+  const onReconnect = useCallback(
+    (oldEdge, connection) => {
+      reconnectInfo.current.didReconnect = true
+      const newSource = connection.source || oldEdge.source
+      const newTarget = connection.target || oldEdge.target
+      setNodes(ns => {
+        let updated = ns
+        if (oldEdge.source !== newSource) {
+          updated = updated.map(n =>
+            n.id === oldEdge.source
+              ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    text: (n.data.text || '').replace(
+                      new RegExp(`\\s*\\[#${oldEdge.target}\\]`, 'g'),
+                      ''
+                    ),
+                  },
+                }
+              : n
+          )
+          updated = updated.map(n =>
+            n.id === newSource
+              ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    text: (() => {
+                      const t = n.data.text || ''
+                      const sep = t.trim() ? ' ' : ''
+                      return `${t}${sep}[#${newTarget}]`
+                    })(),
+                  },
+                }
+              : n
+          )
+        } else if (oldEdge.target !== newTarget) {
+          updated = updated.map(n =>
+            n.id === oldEdge.source
+              ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    text: (n.data.text || '').replace(
+                      new RegExp(`\\[#${oldEdge.target}\\]`, 'g'),
+                      `[#${newTarget}]`
+                    ),
+                  },
+                }
+              : n
+          )
+        }
+        setEdges(scanEdges(updated))
+        return updated
+      })
+      if (currentId === oldEdge.source) {
+        setText(t =>
+          oldEdge.source !== newSource
+            ? t.replace(new RegExp(`\\s*\\[#${oldEdge.target}\\]`, 'g'), '')
+            : t.replace(
+                new RegExp(`\\[#${oldEdge.target}\\]`, 'g'),
+                `[#${newTarget}]`
+              )
+        )
+      }
+      if (oldEdge.source !== newSource && currentId === newSource) {
+        setText(t => {
+          const sep = t.trim() ? ' ' : ''
+          return `${t}${sep}[#${newTarget}]`
+        })
+      }
+    },
+    [currentId]
+  )
+
+  const onReconnectEnd = useCallback(
+    (_e, edge) => {
+      if (!reconnectInfo.current.didReconnect) {
+        setNodes(ns => {
+          const updated = ns.map(n =>
+            n.id === edge.source
+              ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    text: (n.data.text || '').replace(
+                      new RegExp(`\\s*\\[#${edge.target}\\]`, 'g'),
+                      ''
+                    ),
+                  },
+                }
+              : n
+          )
+          setEdges(scanEdges(updated))
+          return updated
+        })
+        if (currentId === edge.source) {
+          setText(t =>
+            t.replace(new RegExp(`\\s*\\[#${edge.target}\\]`, 'g'), '')
+          )
+        }
+      }
+      reconnectInfo.current = { handleType: null, didReconnect: false }
+    },
+    [currentId]
+  )
 
   const addNode = () => {
     const id = String(nextId).padStart(3, '0')
@@ -279,10 +392,14 @@ export default function App() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
-          nodeTypes={nodeTypes}
-          fitView
-        >
+            onReconnect={onReconnect}
+            onReconnectStart={onReconnectStart}
+            onReconnectEnd={onReconnectEnd}
+            edgesUpdatable
+            onPaneClick={onPaneClick}
+            nodeTypes={nodeTypes}
+            fitView
+          >
           <Background color="#374151" variant="dots" gap={16} size={1} />
           <MiniMap zoomable pannable />
           <Controls />
