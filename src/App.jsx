@@ -8,7 +8,6 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
-import { parseText } from './parseText.js'
 import pkg from '../package.json'
 
 function scanEdges(nodes) {
@@ -44,8 +43,8 @@ export default function App() {
   const [nextId, setNextId] = useState(1)
   const [currentId, setCurrentId] = useState(null)
   const [text, setText] = useState('')
+  const [title, setTitle] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const { title } = useMemo(() => parseText(text), [text])
 
   const onNodesChange = useCallback(
     changes => setNodes(ns => applyNodeChanges(changes, ns)),
@@ -95,7 +94,7 @@ export default function App() {
       }
       const updated = [
         ...updatedNodes,
-        { id, position, type: 'card', data: { text: '' } },
+        { id, position, type: 'card', data: { text: '', title: '' } },
       ]
       setEdges(scanEdges(updated))
       return updated
@@ -119,16 +118,19 @@ export default function App() {
     })
     setCurrentId(null)
     setText('')
+    setTitle('')
   }
 
   const onNodeClick = (_e, node) => {
     setCurrentId(node.id)
     setText(node.data.text || '')
+    setTitle(node.data.title || '')
   }
 
   const onPaneClick = () => {
     setCurrentId(null)
     setText('')
+    setTitle('')
   }
 
   const onTextChange = e => {
@@ -143,10 +145,26 @@ export default function App() {
     })
   }
 
+  const onTitleChange = e => {
+    const value = e.target.value
+    setTitle(value)
+    setNodes(ns =>
+      ns.map(n =>
+        n.id === currentId ? { ...n, data: { ...n.data, title: value } } : n
+      )
+    )
+  }
+
   const save = () => {
     const data = {
       nextNodeId: nextId,
-      nodes: nodes.map(n => ({ id: n.id, text: n.data.text || '', position: n.position, type: n.type || 'card' })),
+      nodes: nodes.map(n => ({
+        id: n.id,
+        text: n.data.text || '',
+        title: n.data.title || '',
+        position: n.position,
+        type: n.type || 'card',
+      })),
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
@@ -171,13 +189,14 @@ export default function App() {
         id: n.id,
         type: 'card',
         position: n.position || { x: 0, y: 0 },
-        data: { text: n.text || '' },
+        data: { text: n.text || '', title: n.title || '' },
       }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
       setNextId(data.nextNodeId || 1)
       setCurrentId(null)
       setText('')
+      setTitle('')
     } catch {
       alert('Failed to load project')
     } finally {
@@ -189,7 +208,7 @@ export default function App() {
     nodes
       .slice()
       .sort((a, b) => Number(a.id) - Number(b.id))
-      .map(n => `--- Node #${n.id} ---\n${n.data.text || ''}`)
+      .map(n => `--- Node #${n.id} ${n.data.title || ''} ---\n${n.data.text || ''}`)
       .join('\n\n')
 
   return (
@@ -222,6 +241,7 @@ export default function App() {
         </div>
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'} {title}</h2>
+          <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
           <textarea id="text" value={text} onChange={onTextChange} />
         </section>
       </main>
