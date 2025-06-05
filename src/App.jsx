@@ -7,6 +7,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
+import pkg from '../package.json'
 
 function scanEdges(nodes) {
   const pattern = /\[#(\d{3})]/g
@@ -154,6 +155,7 @@ export default function App() {
         <button onClick={save}>Save</button>
         <input type="file" onChange={load} />
         <button onClick={() => setShowModal(s => !s)}>Linear View</button>
+        <div id="version">v{pkg.version}</div>
       </header>
       <main>
         <div id="graph">
