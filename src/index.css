@@ -343,6 +343,7 @@ main {
   padding: 1rem;
   outline: none;
   white-space: pre-wrap;
+  overflow-y: auto;
 }
 
 .linear-id {
@@ -356,7 +357,7 @@ main {
 }
 
 #linearEditor p {
-  margin: .75rem 0;
+  margin: .25rem 0;
 }
 
 .node-link {
