@@ -14,6 +14,7 @@ function scanEdges(nodes) {
   const edges = []
   for (const n of nodes) {
     const text = n.data.text || ''
+    pattern.lastIndex = 0
     let match
     while ((match = pattern.exec(text))) {
       const target = match[1]
