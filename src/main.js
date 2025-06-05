@@ -9,6 +9,9 @@ let textTimer;
 
 const nodeIdElem = document.getElementById('nodeId');
 const textArea = document.getElementById('text');
+const modal = document.getElementById('modal');
+const modalList = document.getElementById('modalList');
+const closeModalBtn = document.getElementById('closeModal');
 
 // add new node
 document.getElementById('newNode').addEventListener('click', () => {
@@ -35,4 +38,26 @@ textArea.addEventListener('input', () => {
       nodes.update({ id: currentNodeId, text });
     }
   }, 400);
+});
+
+function openModal() {
+  const list = nodes
+    .get()
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map(n => `--- Node #${n.id} ---\n${n.text || ''}`)
+    .join('\n\n');
+  modalList.textContent = list;
+  modal.classList.add('show');
+}
+
+function closeModal() {
+  modal.classList.remove('show');
+}
+
+document.getElementById('linearView').addEventListener('click', openModal);
+closeModalBtn.addEventListener('click', closeModal);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && modal.classList.contains('show')) {
+    closeModal();
+  }
 });

@@ -39,3 +39,31 @@ main {
   width: 100%;
   border: none;
 }
+
+#modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  display: none;
+  flex-direction: column;
+}
+
+#modal.show {
+  display: flex;
+}
+
+#closeModal {
+  align-self: flex-end;
+  margin: 0.5rem;
+}
+
+#modalList {
+  flex: 1;
+  overflow: auto;
+  padding: 0.5rem;
+  white-space: pre-wrap;
+}
