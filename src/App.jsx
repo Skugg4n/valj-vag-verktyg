@@ -5,6 +5,7 @@ import {
   RotateCcw,
   RotateCw,
   Download,
+  FileText,
   Upload,
   List,
   Play
@@ -446,6 +447,30 @@ export default function App() {
     URL.revokeObjectURL(a.href)
   }
 
+  const exportMarkdown = () => {
+    const md = nodes
+      .slice()
+      .sort((a, b) => Number(a.id) - Number(b.id))
+      .map(n => {
+        const heading = `## #${n.id}${n.data.title ? ` ${n.data.title}` : ''}`
+        const body = (n.data.text || '').replace(/\[#(\d{3})]|#(\d{3})/g, (_m, p1, p2) => {
+          const id = p1 || p2
+          return `[Gå vidare → #${id}](#${id})`
+        })
+        return `${heading}\n${body}`
+      })
+      .join('\n\n')
+    const blob = new Blob([md], { type: 'text/markdown' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `${Date.now()}-story.md`
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(a.href)
+  }
+
   const importProject = async e => {
     const file = e.target.files[0]
     if (!file) return
@@ -532,6 +557,9 @@ export default function App() {
         </Button>
         <Button variant="ghost" icon={Download} onClick={exportProject}>
           Export
+        </Button>
+        <Button variant="ghost" icon={FileText} onClick={exportMarkdown}>
+          Export MD
         </Button>
         <Button variant="ghost" icon={Upload} onClick={() => importRef.current?.click()}>
           Import
