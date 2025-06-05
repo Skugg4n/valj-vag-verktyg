@@ -45,6 +45,20 @@ document.getElementById('newNode').addEventListener('click', () => {
   scanEdges();
 });
 
+// delete current node
+document.getElementById('deleteNode').addEventListener('click', () => {
+  if (!currentNodeId) {
+    return;
+  }
+  if (confirm(`Delete node #${currentNodeId} ?`)) {
+    nodes.remove(currentNodeId);
+    currentNodeId = null;
+    nodeIdElem.textContent = '#000';
+    textArea.value = '';
+    scanEdges();
+  }
+});
+
 // select node
 network.on('selectNode', params => {
   const id = params.nodes[0];
