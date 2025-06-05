@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
@@ -30,7 +30,7 @@ function scanEdges(nodes) {
 }
 
 export default function App() {
-  const nodeTypes = { default: NodeCard }
+  const nodeTypes = useMemo(() => ({ card: NodeCard }), [])
   const [nodes, setNodes] = useState([])
   const [edges, setEdges] = useState([])
   const [nextId, setNextId] = useState(1)
@@ -59,7 +59,7 @@ export default function App() {
       }
       const updated = [
         ...ns,
-        { id, position, data: { text: '' } },
+        { id, position, type: 'card', data: { text: '' } },
       ]
       setEdges(scanEdges(updated))
       return updated
@@ -99,7 +99,7 @@ export default function App() {
   const save = () => {
     const data = {
       nextNodeId: nextId,
-      nodes: nodes.map(n => ({ id: n.id, text: n.data.text || '', position: n.position })),
+      nodes: nodes.map(n => ({ id: n.id, text: n.data.text || '', position: n.position, type: n.type || 'card' })),
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
@@ -122,6 +122,7 @@ export default function App() {
       const data = JSON.parse(json)
       const loaded = (data.nodes || []).map(n => ({
         id: n.id,
+        type: 'card',
         position: n.position || { x: 0, y: 0 },
         data: { text: n.text || '' },
       }))
