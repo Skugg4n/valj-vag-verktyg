@@ -20,6 +20,7 @@ import ReactFlow, {
   MiniMap,
   Controls,
 } from 'reactflow'
+import getLayoutedElements from './dagreLayout'
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
@@ -626,6 +627,17 @@ export default function App() {
     }
   }
 
+  const handleAutoLayout = useCallback(() => {
+    pushUndoState()
+    const { nodes: layouted, edges: layoutedEdges } = getLayoutedElements(
+      nodes,
+      edges,
+      'LR'
+    )
+    setNodes(layouted)
+    setEdges(layoutedEdges)
+  }, [nodes, edges, pushUndoState])
+
   useEffect(() => {
     const handler = e => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
@@ -680,6 +692,11 @@ export default function App() {
         <Button variant="ghost" icon={RotateCw} onClick={redo}>
           Redo
         </Button>
+        {!showModal && !showPlay && (
+          <Button variant="ghost" onClick={handleAutoLayout}>
+            Auto-layout
+          </Button>
+        )}
         <input
           id="projectName"
           value={projectName}
