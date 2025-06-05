@@ -418,6 +418,23 @@ export default function App() {
     })
   }
 
+  const updateNodeText = useCallback(
+    (id, value) => {
+      pushUndoState()
+      setNodes(ns => {
+        const updated = ns.map(n =>
+          n.id === id ? { ...n, data: { ...n.data, text: value } } : n
+        )
+        setEdges(scanEdges(updated))
+        return updated
+      })
+      if (currentId === id) {
+        setText(value)
+      }
+    },
+    [currentId, pushUndoState]
+  )
+
   const onTitleChange = e => {
     pushUndoState()
     const value = e.target.value
@@ -618,7 +635,11 @@ export default function App() {
         </section>
       </main>
       {showModal && (
-        <LinearView nodes={nodes} onClose={() => setShowModal(false)} />
+        <LinearView
+          nodes={nodes}
+          updateNodeText={updateNodeText}
+          onClose={() => setShowModal(false)}
+        />
       )}
       {showPlay && (
         <Playthrough
