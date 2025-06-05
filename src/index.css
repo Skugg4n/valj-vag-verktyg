@@ -112,6 +112,15 @@ main {
   font-size: 1rem;
 }
 
+#projectName {
+  background: var(--bg);
+  color: var(--text);
+  border: none;
+  border-bottom: 1px solid var(--panel);
+  padding: var(--gap);
+  font-size: 1rem;
+}
+
 #formatting-toolbar {
   display: flex;
   gap: 0.25rem;

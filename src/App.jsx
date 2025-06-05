@@ -66,6 +66,7 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
   const [aiSettings, setAiSettings] = useAiSettings()
   const [suggestions, setSuggestions] = useState([])
@@ -525,9 +526,18 @@ export default function App() {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
     })
+    const pad = n => String(n).padStart(2, '0')
+    const now = new Date()
+    const name = projectName.trim()
+      ? projectName.trim().toLowerCase().replace(/\s+/g, '-')
+      : 'projekt'
+    const date = `${String(now.getFullYear()).slice(2)}${pad(now.getMonth() + 1)}${pad(
+      now.getDate()
+    )}`
+    const time = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `${Date.now()}-project.json`
+    a.download = `${name}-${date}_${time}.json`
     a.style.display = 'none'
     document.body.appendChild(a)
     a.click()
@@ -641,6 +651,12 @@ export default function App() {
         <Button variant="ghost" icon={RotateCw} onClick={redo}>
           Redo
         </Button>
+        <input
+          id="projectName"
+          value={projectName}
+          onChange={e => setProjectName(e.target.value)}
+          placeholder="Projektnamn"
+        />
         <Button variant="ghost" icon={Download} onClick={exportProject}>
           Export
         </Button>
