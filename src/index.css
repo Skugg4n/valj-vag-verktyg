@@ -163,9 +163,39 @@ main {
 #modalList a {
   color: #70b8ff;
 }
-#modalList h2 {
-  font-size: 1.4rem;
+#modalList a:hover {
+  text-decoration: underline;
+}
+#modalList .linear-node {
   margin-top: 2rem;
+}
+#modalList .linear-node:first-child {
+  margin-top: 0;
+}
+#modalList .linear-heading {
+  margin-bottom: 0.25rem;
+}
+#modalList .linear-heading .node-id {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-right: 0.25rem;
+}
+#modalList .linear-heading .node-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+}
+#modalList .linear-edit {
+  width: 100%;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--panel);
+  padding: 0.25rem 0.5rem;
+  font-family: ui-monospace, SFMono-Regular;
+  margin-bottom: 0.5rem;
+}
+#modalList .linear-preview {
+  line-height: 1.6;
 }
 
 .node-card {
