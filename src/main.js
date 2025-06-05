@@ -101,3 +101,94 @@ document.addEventListener('keydown', e => {
     closeModal();
   }
 });
+
+async function saveProject() {
+  const positions = network.getPositions();
+  const data = {
+    nextNodeId: nodeCounter,
+    nodes: nodes.get().map(n => ({
+      id: n.id,
+      text: n.text || '',
+      position: positions[n.id] || { x: 0, y: 0 }
+    }))
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json'
+  });
+  const filename = `${Date.now()}-project.json`;
+
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [
+          {
+            description: 'JSON',
+            accept: { 'application/json': ['.json'] }
+          }
+        ]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (err) {
+      // fall back to anchor download
+    }
+  }
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }, 0);
+}
+
+async function loadProject(event) {
+  const input = event.target;
+  const file = input.files[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    const json = await file.text();
+    const data = JSON.parse(json);
+
+    nodes.clear();
+    edges.clear();
+
+    if (Array.isArray(data.nodes)) {
+      data.nodes.forEach(n => {
+        nodes.add({
+          id: n.id,
+          label: `#${n.id}`,
+          text: n.text || '',
+          x: n.position?.x,
+          y: n.position?.y
+        });
+      });
+    }
+
+    nodeCounter = data.nextNodeId || 1;
+    currentNodeId = null;
+    nodeIdElem.textContent = '#000';
+    textArea.value = '';
+
+    scanEdges();
+    network.fit();
+  } catch (err) {
+    alert('Failed to load project');
+  } finally {
+    input.value = '';
+  }
+}
+
+document.getElementById('save').addEventListener('click', saveProject);
+document.getElementById('load').addEventListener('change', loadProject);
