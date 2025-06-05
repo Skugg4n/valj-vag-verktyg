@@ -2,10 +2,8 @@ import { memo, useState } from 'react'
 import { Handle, Position, useReactFlow } from 'reactflow'
 import { NodeResizeControl, ResizeControlVariant } from '@reactflow/node-resizer'
 import '@reactflow/node-resizer/dist/style.css'
-import { parseText } from './parseText.js'
 
 const NodeCard = memo(({ id, data, selected }) => {
-  const { snippet } = parseText(data.text)
   const { setNodes } = useReactFlow()
   const [resizing, setResizing] = useState(false)
 
@@ -22,7 +20,7 @@ const NodeCard = memo(({ id, data, selected }) => {
         <span className="node-id">#{id}</span>
         {data.title && <span className="node-title">{data.title}</span>}
       </div>
-      {snippet && <div className="node-preview">{snippet}</div>}
+      {data.text && <div className="node-preview">{data.text}</div>}
       <NodeResizeControl
         variant={ResizeControlVariant.Handle}
         position="bottom-right"

@@ -77,8 +77,8 @@ export default function App() {
           type: 'card',
           position: n.position || { x: 0, y: 0 },
           data: { text: n.text || '', title: n.title || '' },
-          width: n.width,
-          height: n.height,
+          width: n.width ?? 220,
+          height: n.height ?? 100,
         }))
         setNodes(loaded)
         setEdges(scanEdges(loaded))
@@ -355,7 +355,14 @@ export default function App() {
       }
       const updated = [
         ...updatedNodes,
-        { id, position, type: 'card', data: { text: '', title: '' } },
+        {
+          id,
+          position,
+          type: 'card',
+          data: { text: '', title: '' },
+          width: 220,
+          height: 100,
+        },
       ]
       setEdges(scanEdges(updated))
       return updated
@@ -458,8 +465,8 @@ export default function App() {
         type: 'card',
         position: n.position || { x: 0, y: 0 },
         data: { text: n.text || '', title: n.title || '' },
-        width: n.width,
-        height: n.height,
+        width: n.width ?? 220,
+        height: n.height ?? 100,
       }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
