@@ -11,7 +11,7 @@ import NodeCard from './NodeCard.jsx'
 import pkg from '../package.json'
 
 function scanEdges(nodes) {
-  const pattern = /\[#(\d{3})]/g
+  const pattern = /\[#(\d{3})]|#(\d{3})/g
   const unique = new Set()
   const edges = []
   for (const n of nodes) {
@@ -19,7 +19,7 @@ function scanEdges(nodes) {
     pattern.lastIndex = 0
     let match
     while ((match = pattern.exec(text))) {
-      const target = match[1]
+      const target = match[1] || match[2]
       if (nodes.find(nn => nn.id === target)) {
         const id = `${n.id}->${target}`
         if (!unique.has(id)) {
@@ -134,7 +134,8 @@ export default function App() {
   }
 
   const onTextChange = e => {
-    const value = e.target.value
+    let value = e.target.value
+    value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
     setText(value)
     setNodes(ns => {
       const updated = ns.map(n =>
