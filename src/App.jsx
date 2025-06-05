@@ -60,6 +60,7 @@ export default function App() {
   const [currentId, setCurrentId] = useState(null)
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
+  const [linearText, setLinearText] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [showPlay, setShowPlay] = useState(false)
   const textRef = useRef(null)
@@ -571,6 +572,10 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler)
   }, [undo, redo])
 
+  useEffect(() => {
+    setEdges(scanEdges(nodes))
+  }, [nodes])
+
   // Persist data after every change
   useEffect(() => {
     const data = {
@@ -619,7 +624,19 @@ export default function App() {
           onChange={importProject}
           style={{ display: 'none' }}
         />
-        <Button variant="ghost" icon={List} onClick={() => setShowModal(s => !s)}>
+        <Button
+          variant="ghost"
+          icon={List}
+          onClick={() => {
+            const md = nodes
+              .slice()
+              .sort((a, b) => Number(a.id) - Number(b.id))
+              .map(n => `#${n.id} ${n.data.title}\n${n.data.text}`)
+              .join('\n')
+            setLinearText(md)
+            setShowModal(true)
+          }}
+        >
           Linear View
         </Button>
         <Button variant="ghost" icon={Play} onClick={() => setShowPlay(true)}>
@@ -666,8 +683,9 @@ export default function App() {
       </main>
       {showModal && (
         <LinearView
-          nodes={nodes}
-          updateNodeText={updateNodeText}
+          text={linearText}
+          setText={setLinearText}
+          setNodes={setNodes}
           onClose={() => setShowModal(false)}
         />
       )}

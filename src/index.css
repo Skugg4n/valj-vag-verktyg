@@ -334,3 +334,36 @@ main {
 #playthrough .choice:hover {
   background: #5b667a;
 }
+
+#linearEditor {
+  font: 16px/1.5 'Inter', sans-serif;
+  max-width: 720px;
+  margin: auto;
+  flex: 1;
+  padding: 1rem;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.linear-id {
+  font: 11px/1 monospace;
+  color: #777;
+}
+
+#linearEditor h3 {
+  font-size: 20px;
+  margin: 2.5rem 0 .25rem;
+}
+
+#linearEditor p {
+  margin: .75rem 0;
+}
+
+.node-link {
+  color: #2fa8ff;
+  text-decoration: none;
+}
+
+.node-link:hover {
+  text-decoration: underline;
+}
