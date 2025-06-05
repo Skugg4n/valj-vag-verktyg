@@ -773,7 +773,6 @@ export default function App() {
       </div>
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'} {title}</h2>
-          <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
         <div id="formatting-toolbar">
           <button className="btn ghost" type="button" onClick={() => wrapSelected('**')}>B</button>
           <button className="btn ghost" type="button" onClick={() => wrapSelected('*')}>I</button>
@@ -796,6 +795,7 @@ export default function App() {
           </span>
           {/* Settings button moved to header */}
         </div>
+          <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
           <textarea id="text" ref={textRef} value={text} onChange={onTextChange} />
         </section>
       </main>
