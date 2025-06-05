@@ -51,6 +51,26 @@ export default function App() {
     []
   )
 
+  const onConnect = useCallback(({ source, target }) => {
+    if (!source || !target) return
+    setNodes(ns => {
+      const updated = ns.map(n => {
+        if (n.id !== target) return n
+        const text = n.data.text || ''
+        const sep = text.trim() ? ' ' : ''
+        return { ...n, data: { ...n.data, text: `${text}${sep}[#${source}]` } }
+      })
+      setEdges(scanEdges(updated))
+      return updated
+    })
+    if (currentId === target) {
+      setText(t => {
+        const sep = t.trim() ? ' ' : ''
+        return `${t}${sep}[#${source}]`
+      })
+    }
+  }, [currentId])
+
   const addNode = () => {
     const id = String(nextId).padStart(3, '0')
     setNodes(ns => {
@@ -180,6 +200,7 @@ export default function App() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
             onNodeClick={onNodeClick}
             nodeTypes={nodeTypes}
             fitView
