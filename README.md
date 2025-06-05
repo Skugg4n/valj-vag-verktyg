@@ -18,3 +18,5 @@ npm run build
 ```
 
 Project files can be saved and loaded using the buttons in the interface. Nodes link to each other using references like `[#001]` inside the node text. The editor also understands bare references such as `#001` and will automatically convert them into the bracketed form.
+
+The graph view now provides zoom controls and a minimap for easier navigation of large node collections.
