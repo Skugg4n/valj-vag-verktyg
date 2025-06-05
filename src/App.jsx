@@ -2,9 +2,11 @@ import { useState, useCallback } from 'react'
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
+  Background,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import './App.css'
+import NodeCard from './NodeCard.jsx'
 
 function scanEdges(nodes) {
   const pattern = /\[#(\d{3})]/g
@@ -28,6 +30,7 @@ function scanEdges(nodes) {
 }
 
 export default function App() {
+  const nodeTypes = { card: NodeCard }
   const [nodes, setNodes] = useState([])
   const [edges, setEdges] = useState([])
   const [nextId, setNextId] = useState(1)
@@ -47,9 +50,16 @@ export default function App() {
   const addNode = () => {
     const id = String(nextId).padStart(3, '0')
     setNodes(ns => {
+      let position = { x: 0, y: 0 }
+      if (currentId) {
+        const cur = ns.find(n => n.id === currentId)
+        if (cur) {
+          position = { x: cur.position.x + 300, y: cur.position.y }
+        }
+      }
       const updated = [
         ...ns,
-        { id, position: { x: 0, y: 0 }, data: { label: `#${id}`, text: '' } },
+        { id, type: 'card', position, data: { text: '' } },
       ]
       setEdges(scanEdges(updated))
       return updated
@@ -112,8 +122,9 @@ export default function App() {
       const data = JSON.parse(json)
       const loaded = (data.nodes || []).map(n => ({
         id: n.id,
+        type: 'card',
         position: n.position || { x: 0, y: 0 },
-        data: { label: `#${n.id}`, text: n.text || '' },
+        data: { text: n.text || '' },
       }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
@@ -152,8 +163,11 @@ export default function App() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
+            nodeTypes={nodeTypes}
             fitView
-          />
+          >
+            <Background color="#374151" variant="dots" gap={16} size={1} />
+          </ReactFlow>
         </div>
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'}</h2>

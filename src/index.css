@@ -2,6 +2,9 @@ html,
 body {
   margin: 0;
   height: 100vh;
+  background: #0d1117;
+  color: #f9fafb;
+  font-family: system-ui, sans-serif;
 }
 #root {
   display: flex;
@@ -13,7 +16,7 @@ header {
   display: flex;
   gap: 0.5rem;
   padding: 0.5rem;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #374151;
 }
 
 main {
@@ -24,7 +27,6 @@ main {
 
 #graph {
   flex: 1;
-  border-right: 1px solid #ccc;
   height: 100%;
 }
 
@@ -33,12 +35,14 @@ main {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  border-left: 1px solid #374151;
+  background: #161b22;
 }
 
 #editor h2 {
   margin: 0;
   padding: 0.5rem;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #374151;
 }
 
 #text {
@@ -74,4 +78,32 @@ main {
   padding: 0.5rem;
   white-space: pre-wrap;
   user-select: text;
+}
+
+.node-card {
+  width: 220px;
+  background: #1f2937;
+  color: #f9fafb;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  font-size: 0.8rem;
+}
+.node-card .node-id {
+  font-family: monospace;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+}
+.node-card .node-title {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.node-card .node-preview {
+  max-height: 4em;
+  overflow: auto;
 }
