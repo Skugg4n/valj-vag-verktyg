@@ -1,4 +1,5 @@
 @import './theme.css';
+@import '@reactflow/node-resizer/dist/style.css';
 
 html,
 body {
@@ -155,7 +156,6 @@ main {
 
 .node-card {
   width: 220px;
-  max-width: 220px;
   background: var(--card);
   color: var(--text);
   border: 1px solid var(--panel);
@@ -163,12 +163,20 @@ main {
   box-shadow: 0 2px 6px #0005;
   padding: 0.75rem;
   font-size: 0.8rem;
+  min-width: 180px;
+  min-height: 100px;
+  max-width: 400px;
+  max-height: 300px;
+  position: relative;
 }
 .node-card:hover {
   border-color: var(--accent);
 }
 .node-card.selected {
   background: #3b4553;
+}
+.node-card.resizing {
+  border-style: dashed;
 }
 .node-card .node-id {
   font-family: monospace;
@@ -196,6 +204,18 @@ main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.5;
 }
 
 #version {

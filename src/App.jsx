@@ -77,6 +77,8 @@ export default function App() {
           type: 'card',
           position: n.position || { x: 0, y: 0 },
           data: { text: n.text || '', title: n.title || '' },
+          width: n.width,
+          height: n.height,
         }))
         setNodes(loaded)
         setEdges(scanEdges(loaded))
@@ -427,6 +429,8 @@ export default function App() {
         title: n.data.title || '',
         position: n.position,
         type: n.type || 'card',
+        width: n.width,
+        height: n.height,
       })),
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -454,6 +458,8 @@ export default function App() {
         type: 'card',
         position: n.position || { x: 0, y: 0 },
         data: { text: n.text || '', title: n.title || '' },
+        width: n.width,
+        height: n.height,
       }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
@@ -495,6 +501,8 @@ export default function App() {
         title: n.data.title || '',
         position: n.position,
         type: n.type || 'card',
+        width: n.width,
+        height: n.height,
       })),
     }
     localStorage.setItem('cyoa-data', JSON.stringify(data))
