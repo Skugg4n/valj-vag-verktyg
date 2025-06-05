@@ -121,6 +121,11 @@ export default function App() {
     setText(node.data.text || '')
   }
 
+  const onPaneClick = () => {
+    setCurrentId(null)
+    setText('')
+  }
+
   const onTextChange = e => {
     const value = e.target.value
     setText(value)
@@ -202,6 +207,7 @@ export default function App() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
+            onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             fitView
           >
