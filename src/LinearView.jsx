@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Plus } from 'lucide-react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -14,7 +15,7 @@ function postprocess(md = '') {
   return md.replace(/\[#(\d{3})\]\(#\1\)/g, '[#$1]')
 }
 
-export default function LinearView({ text, setText, setNodes, onClose }) {
+export default function LinearView({ text, setText, setNodes, nextId, onClose }) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -35,6 +36,12 @@ export default function LinearView({ text, setText, setNodes, onClose }) {
   }, [text, editor])
 
   useLinearParser(text, setNodes)
+
+  const insertNextNodeNumber = () => {
+    if (!editor) return
+    const nodeId = `#${String(nextId).padStart(3, '0')}`
+    editor.chain().focus().insertContent(nodeId).run()
+  }
 
   useEffect(() => {
     if (!editor) return
@@ -101,6 +108,14 @@ export default function LinearView({ text, setText, setNodes, onClose }) {
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         >
           H2
+        </button>
+        <button
+          className="btn ghost"
+          type="button"
+          onClick={insertNextNodeNumber}
+          aria-label="Next node number"
+        >
+          <Plus aria-hidden="true" />
         </button>
       </div>
       <button
