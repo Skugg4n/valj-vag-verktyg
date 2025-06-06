@@ -8,17 +8,33 @@ const NodeCard = memo(({ id, data, selected }) => {
   const { setNodes } = useReactFlow()
   const { updateNodeText } = useContext(NodeEditorContext)
   const [resizing, setResizing] = useState(false)
+  const [overflow, setOverflow] = useState(false)
   const textRef = useRef(null)
+  const previewRef = useRef(null)
 
   useEffect(() => {
     if (selected) textRef.current?.focus()
   }, [selected])
+
+  useEffect(() => {
+    const el = previewRef.current
+    if (el) {
+      setOverflow(el.scrollHeight > el.clientHeight + 1)
+    }
+  }, [data.text, selected])
 
   const handleResizeEnd = (_e, { width, height }) => {
     setResizing(false)
     setNodes(ns =>
       ns.map(n => (n.id === id ? { ...n, width, height } : n))
     )
+  }
+
+  const autoResize = () => {
+    const el = textRef.current || previewRef.current
+    if (!el) return
+    const height = Math.min(300, Math.max(100, el.scrollHeight + 16))
+    setNodes(ns => ns.map(n => (n.id === id ? { ...n, height } : n)))
   }
 
   return (
@@ -41,7 +57,12 @@ const NodeCard = memo(({ id, data, selected }) => {
           }}
         />
       ) : (
-        data.text && <div className="node-preview">{data.text}</div>
+        data.text && (
+          <div ref={previewRef} className="node-preview">
+            {data.text}
+            {overflow && <div className="preview-more">...</div>}
+          </div>
+        )
       )}
       <NodeResizeControl
         variant={ResizeControlVariant.Handle}
@@ -53,6 +74,7 @@ const NodeCard = memo(({ id, data, selected }) => {
         className="resize-handle"
         onResizeStart={() => setResizing(true)}
         onResizeEnd={handleResizeEnd}
+        onDoubleClick={autoResize}
       />
       <Handle type="source" position={Position.Right} />
       <Handle type="target" position={Position.Left} />

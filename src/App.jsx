@@ -10,6 +10,7 @@ import {
   List,
   Play,
   Cloud,
+  SpellCheck,
   Settings,
   ChevronLeft,
   ChevronRight
@@ -31,7 +32,8 @@ import Playthrough from './Playthrough.jsx'
 import LinearView from './LinearView.jsx'
 import AiSettingsModal from './AiSettingsModal.jsx'
 import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
-import { useAiSettings, getSuggestions } from './useAi.js'
+import { useAiSettings, getSuggestions, proofreadText } from './useAi.js'
+import AiProofreadPanel from './AiProofreadPanel.jsx'
 import Button from './Button.jsx'
 
 function estimateNodeHeight(text) {
@@ -100,6 +102,8 @@ export default function App() {
   const [suggestions, setSuggestions] = useState([])
   const [showAiSettings, setShowAiSettings] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [proofreadResult, setProofreadResult] = useState(null)
+  const [showProofread, setShowProofread] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(false)
   const [loadingAi, setLoadingAi] = useState(false)
   const textRef = useRef(null)
@@ -272,6 +276,21 @@ export default function App() {
     setLoadingAi(false)
     setSuggestions(result)
     setShowSuggestions(true)
+  }
+
+  const fetchProofread = async () => {
+    setLoadingAi(true)
+    const result = await proofreadText(nodes, currentId, aiSettings)
+    setLoadingAi(false)
+    if (result) {
+      setProofreadResult({ original: text, improved: result })
+      setShowProofread(true)
+    }
+  }
+
+  const applyProofread = improved => {
+    updateNodeText(currentId, improved)
+    setShowProofread(false)
   }
 
   const applySuggestion = suggestion => {
@@ -915,13 +934,33 @@ export default function App() {
           >
             <Cloud aria-hidden="true" />
           </button>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={fetchProofread}
+            aria-label="AI proofread"
+          >
+            <SpellCheck aria-hidden="true" />
+          </button>
           <span className={`ai-loading${loadingAi ? ' show' : ''}`} aria-live="polite">
             Genererar förslag…
           </span>
           {/* Settings button moved to header */}
         </div>
-          <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
-          <textarea id="text" ref={textRef} value={text} onChange={onTextChange} />
+          <input
+            id="title"
+            value={title}
+            onChange={onTitleChange}
+            placeholder="Title"
+            disabled={!currentId}
+          />
+          <textarea
+            id="text"
+            ref={textRef}
+            value={text}
+            onChange={onTextChange}
+            disabled={!currentId}
+          />
         </section>
         )}
       </main>
@@ -952,6 +991,14 @@ export default function App() {
           suggestions={suggestions}
           onPick={applySuggestion}
           onClose={() => setShowSuggestions(false)}
+        />
+      )}
+      {showProofread && proofreadResult && (
+        <AiProofreadPanel
+          original={proofreadResult.original}
+          improved={proofreadResult.improved}
+          onApply={applyProofread}
+          onClose={() => setShowProofread(false)}
         />
       )}
     </>

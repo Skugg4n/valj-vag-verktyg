@@ -5,6 +5,9 @@ const STORAGE_KEY = 'ai-settings'
 export const defaultPrompt =
   'Du skriver en interaktiv berättelse. Här är tidigare noder...\n\n'
 
+export const defaultProofPrompt =
+  'Korrigera och förbättra texten nedan språkligt utan att ändra innehållet:'
+
 const defaultSettings = {
   enabled: false,
   apiKey: '',
@@ -13,6 +16,7 @@ const defaultSettings = {
   maxTokens: 60,
   temperature: 0.7,
   customPrompt: defaultPrompt,
+  proofPrompt: defaultProofPrompt,
 }
 
 export function useAiSettings() {
@@ -76,4 +80,30 @@ export async function getSuggestions(nodes, currentId, settings) {
     .split(/\n(?=\u2022)/)
     .map(t => t.trim())
     .filter(Boolean)
+}
+
+export async function proofreadText(nodes, currentId, settings) {
+  if (!settings.enabled || !settings.apiKey) return null
+  const node = nodes.find(n => n.id === currentId)
+  if (!node) return null
+  const prompt = `${settings.proofPrompt || defaultProofPrompt}\n\n${node.data.text}`
+
+  const body = {
+    model: settings.model,
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: settings.maxTokens,
+    temperature: settings.temperature,
+  }
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${settings.apiKey}`,
+    },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) return null
+  const data = await res.json()
+  return (data.choices?.[0]?.message?.content || '').trim()
 }
