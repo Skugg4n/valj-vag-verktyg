@@ -35,6 +35,7 @@ import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 import { useAiSettings, getSuggestions, proofreadText } from './useAi.js'
 import AiProofreadPanel from './AiProofreadPanel.jsx'
 import Button from './Button.jsx'
+import FloatingMenu from './FloatingMenu.jsx'
 
 function estimateNodeHeight(text) {
   const charsPerLine = 32
@@ -725,6 +726,14 @@ export default function App() {
     }
   }
 
+  const openSettings = () => {
+    alert('Settings dialog is not implemented yet')
+  }
+
+  const openHelp = () => {
+    alert('Help is not implemented yet')
+  }
+
   const handleAutoLayout = useCallback(() => {
     pushUndoState()
     const { nodes: layouted, edges: layoutedEdges } = getLayoutedElements(
@@ -1020,6 +1029,13 @@ export default function App() {
           onClose={() => setShowProofread(false)}
         />
       )}
+      <FloatingMenu
+        onExport={exportProject}
+        onImport={() => importRef.current?.click()}
+        onShowSettings={openSettings}
+        onShowAiSettings={() => setShowAiSettings(true)}
+        onHelp={openHelp}
+      />
     </>
   )
 }
