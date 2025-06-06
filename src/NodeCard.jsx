@@ -11,9 +11,13 @@ const NodeCard = memo(({ id, data, selected }) => {
   const [overflow, setOverflow] = useState(false)
   const textRef = useRef(null)
   const previewRef = useRef(null)
+  const prevSelectedRef = useRef(selected)
 
   useEffect(() => {
-    if (selected) textRef.current?.focus()
+    if (selected && !prevSelectedRef.current) {
+      textRef.current?.focus()
+    }
+    prevSelectedRef.current = selected
   }, [selected])
 
   useEffect(() => {
