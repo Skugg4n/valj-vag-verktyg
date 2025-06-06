@@ -106,11 +106,20 @@ export default function App() {
   const [showProofread, setShowProofread] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(false)
   const [loadingAi, setLoadingAi] = useState(false)
+  const [fontSize, setFontSize] = useState(() => {
+    const stored = localStorage.getItem('cyoa-font-size')
+    return stored ? Number(stored) : 14
+  })
   const textRef = useRef(null)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
   const redoStack = useRef([])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--font-size', `${fontSize}px`)
+    localStorage.setItem('cyoa-font-size', String(fontSize))
+  }, [fontSize])
 
   // Restore previous session from localStorage on initial load
   useEffect(() => {
@@ -867,6 +876,12 @@ export default function App() {
         <Button variant="ghost" icon={Play} onClick={() => setShowPlay(true)}>
           Playthrough
         </Button>
+        <Button variant="ghost" onClick={() => setFontSize(f => Math.max(10, f - 1))}>
+          A-
+        </Button>
+        <Button variant="ghost" onClick={() => setFontSize(f => f + 1)}>
+          A+
+        </Button>
         <Button
           id="settingsButton"
           variant="ghost"
@@ -969,6 +984,7 @@ export default function App() {
           text={linearText}
           setText={setLinearText}
           setNodes={setNodes}
+          nextId={nextId}
           onClose={() => setShowModal(false)}
         />
       )}
