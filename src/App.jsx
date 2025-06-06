@@ -10,7 +10,9 @@ import {
   List,
   Play,
   Cloud,
-  Settings
+  Settings,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import ReactFlow, {
   applyNodeChanges,
@@ -82,6 +84,7 @@ export default function App() {
   const [suggestions, setSuggestions] = useState([])
   const [showAiSettings, setShowAiSettings] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [editorCollapsed, setEditorCollapsed] = useState(false)
   const [loadingAi, setLoadingAi] = useState(false)
   const textRef = useRef(null)
   const importRef = useRef(null)
@@ -745,7 +748,7 @@ export default function App() {
           onClick={() => setShowAiSettings(true)}
         />
       </header>
-      <main>
+      <main style={{ position: 'relative' }}>
         <div id="graph">
           <ReactFlow
             style={{ width: '100%', height: '100%' }}
@@ -771,6 +774,17 @@ export default function App() {
           <Controls />
         </ReactFlow>
       </div>
+        <button
+          id="toggleEditor"
+          className="btn ghost"
+          type="button"
+          style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: editorCollapsed ? 0 : '300px', zIndex: 1 }}
+          aria-label={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
+          onClick={() => setEditorCollapsed(c => !c)}
+        >
+          {editorCollapsed ? <ChevronLeft /> : <ChevronRight />}
+        </button>
+        {!editorCollapsed && (
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'} {title}</h2>
         <div id="formatting-toolbar">
@@ -798,6 +812,7 @@ export default function App() {
           <input id="title" value={title} onChange={onTitleChange} placeholder="Title" />
           <textarea id="text" ref={textRef} value={text} onChange={onTextChange} />
         </section>
+        )}
       </main>
       {showModal && (
         <LinearView
