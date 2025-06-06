@@ -5,10 +5,11 @@ import '@reactflow/node-resizer/dist/style.css'
 import NodeEditorContext from './NodeEditorContext.js'
 
 const NodeCard = memo(({ id, data, selected }) => {
-  const { setNodes } = useReactFlow()
+  const { setNodes, getNodes } = useReactFlow()
   const { updateNodeText } = useContext(NodeEditorContext)
   const [resizing, setResizing] = useState(false)
   const [overflow, setOverflow] = useState(false)
+  const [invalidRef, setInvalidRef] = useState(false)
   const textRef = useRef(null)
   const previewRef = useRef(null)
   const prevSelectedRef = useRef(selected)
@@ -27,6 +28,17 @@ const NodeCard = memo(({ id, data, selected }) => {
     }
   }, [data.text, selected])
 
+  useEffect(() => {
+    const nodes = new Set(getNodes().map(n => n.id))
+    const pattern = /#(\d{3})/g
+    let m
+    let invalid = /#XXX/.test(data.text || '')
+    while (!invalid && (m = pattern.exec(data.text || ''))) {
+      if (!nodes.has(m[1])) invalid = true
+    }
+    setInvalidRef(invalid)
+  }, [data.text, getNodes])
+
   const handleResizeEnd = (_e, { width, height }) => {
     setResizing(false)
     setNodes(ns =>
@@ -43,6 +55,7 @@ const NodeCard = memo(({ id, data, selected }) => {
 
   return (
     <div className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}>
+      {invalidRef && <div className="invalid-dot" />}
       <div className="node-header">
         <span className="node-id">#{id}</span>
         {data.title && <span className="node-title">{data.title}</span>}
