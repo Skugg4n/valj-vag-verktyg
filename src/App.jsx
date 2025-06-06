@@ -104,7 +104,9 @@ export default function App() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [proofreadResult, setProofreadResult] = useState(null)
   const [showProofread, setShowProofread] = useState(false)
-  const [editorCollapsed, setEditorCollapsed] = useState(false)
+  const [editorCollapsed, setEditorCollapsed] = useState(() =>
+    window.innerWidth < 768
+  )
   const [loadingAi, setLoadingAi] = useState(false)
   const [fontSize, setFontSize] = useState(() => {
     const stored = localStorage.getItem('cyoa-font-size')
