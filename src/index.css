@@ -143,6 +143,21 @@ main {
   font-size: 1rem;
 }
 
+#projectList {
+  background: var(--bg);
+  color: var(--text);
+  border: none;
+  border-bottom: 1px solid var(--panel);
+  padding: var(--gap);
+  font-size: 1rem;
+}
+
+#autoSaveLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 #formatting-toolbar {
   display: flex;
   gap: 0.25rem;
