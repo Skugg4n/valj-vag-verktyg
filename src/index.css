@@ -366,6 +366,7 @@ main {
   background: transparent;
   color: var(--text);
   font-family: 'Inter', sans-serif;
+  font-size: inherit;
   resize: none;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
