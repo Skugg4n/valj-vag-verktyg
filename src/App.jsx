@@ -222,7 +222,8 @@ export default function App() {
   const onNodesChange = useCallback(
     changes => {
       pushUndoState()
-      setNodes(ns => applyNodeChanges(changes, ns))
+      const filtered = changes.filter(c => c.type !== 'dimensions')
+      setNodes(ns => applyNodeChanges(filtered, ns))
     },
     [pushUndoState]
   )

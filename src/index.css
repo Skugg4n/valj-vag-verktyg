@@ -336,7 +336,7 @@ main {
   white-space: nowrap;
 }
 .node-card .node-preview {
-  color: var(--text-dim);
+  color: var(--text);
   flex: 1;
   overflow: hidden;
   white-space: pre-wrap;
