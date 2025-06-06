@@ -200,6 +200,7 @@ main {
   font-family: 'Inter', sans-serif;
   overflow-y: auto;
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 #text::-webkit-scrollbar {
   display: none;
@@ -364,6 +365,7 @@ main {
   overflow-wrap: anywhere;
   overflow-y: auto;
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .node-card .node-textarea::-webkit-scrollbar {
   display: none;
@@ -471,6 +473,11 @@ main {
   outline: none;
   white-space: pre-wrap;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#linearEditor::-webkit-scrollbar {
+  display: none;
 }
 
 .linear-id {
