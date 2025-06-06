@@ -12,3 +12,10 @@
   --font-size: 14px;
   --modal-bg: #222;
 }
+
+@media (max-width: 768px) {
+  :root {
+    --font-size: 12px;
+    --gap: 0.25rem;
+  }
+}

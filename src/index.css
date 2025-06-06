@@ -75,7 +75,8 @@ header {
 
 main {
   flex: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   overflow: hidden;
 }
 
@@ -164,6 +165,8 @@ main {
   padding: 0.25rem 0;
   border-bottom: 1px solid var(--panel);
   background: var(--panel);
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .ai-loading {
@@ -189,6 +192,8 @@ main {
   border-bottom: 1px solid var(--panel);
   background: var(--panel);
   margin: 0 var(--gap);
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 #text {
@@ -220,6 +225,7 @@ main {
   color: #f0f0f0;
   display: none;
   flex-direction: column;
+  z-index: 1000;
 }
 
 #modal.show {
@@ -435,6 +441,7 @@ main {
   display: none;
   flex-direction: column;
   padding: 0.5rem;
+  z-index: 1000;
 }
 
 #playthrough.show {
@@ -508,4 +515,25 @@ input:focus,
 textarea:focus {
   outline: none;
   box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+  #editor {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 100vw;
+    max-width: none;
+    z-index: 1000;
+  }
+  #toggleEditor {
+    right: 0 !important;
+  }
+  .react-flow__minimap {
+    display: none;
+  }
 }
