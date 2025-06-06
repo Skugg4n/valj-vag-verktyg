@@ -79,6 +79,28 @@ main {
   overflow: hidden;
 }
 
+#toggleEditor {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--panel);
+  border-right: none;
+  background: var(--btn);
+  color: #fff;
+  border-radius: var(--radius) 0 0 var(--radius);
+  cursor: pointer;
+  padding: 0;
+}
+
+#toggleEditor:hover {
+  background: var(--btn-hover);
+}
+
 #graph {
   flex: 1;
   height: 100%;
