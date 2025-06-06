@@ -81,6 +81,21 @@ export default function App() {
   const [showModal, setShowModal] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
+  const [projects, setProjects] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cyoa-projects')) || {}
+    } catch {
+      return {}
+    }
+  })
+  const [projectId, setProjectId] = useState(() =>
+    localStorage.getItem('cyoa-current') || String(Date.now())
+  )
+  const [projectStart, setProjectStart] = useState(Date.now())
+  const [autoSave, setAutoSave] = useState(() => {
+    const saved = localStorage.getItem('cyoa-auto-save')
+    return saved ? JSON.parse(saved) : false
+  })
   const [aiSettings, setAiSettings] = useAiSettings()
   const [suggestions, setSuggestions] = useState([])
   const [showAiSettings, setShowAiSettings] = useState(false)
@@ -95,10 +110,33 @@ export default function App() {
 
   // Restore previous session from localStorage on initial load
   useEffect(() => {
-    const saved = localStorage.getItem('cyoa-data')
-    if (saved) {
+    let projs = {}
+    try {
+      projs = JSON.parse(localStorage.getItem('cyoa-projects')) || {}
+    } catch {
+      /* ignore */
+    }
+    setProjects(projs)
+    const current = localStorage.getItem('cyoa-current')
+    const id = current || Object.keys(projs)[0] || String(Date.now())
+    setProjectId(id)
+    let data
+    if (projs[id]) {
+      data = projs[id].data
+      setProjectStart(projs[id].start || Date.now())
+    } else {
+      const saved = localStorage.getItem('cyoa-data')
+      if (saved) {
+        try {
+          data = JSON.parse(saved)
+        } catch {
+          /* ignore */
+        }
+      }
+      setProjectStart(Date.now())
+    }
+    if (data) {
       try {
-        const data = JSON.parse(saved)
         const loaded = (data.nodes || []).map(n => ({
           id: n.id,
           type: 'card',
@@ -110,6 +148,7 @@ export default function App() {
         setNodes(loaded)
         setEdges(scanEdges(loaded))
         setNextId(data.nextNodeId || 1)
+        setProjectName(data.projectName || '')
       } catch {
         // ignore corrupt data
       }
@@ -544,8 +583,31 @@ export default function App() {
     )
   }
 
+  const handleProjectSwitch = id => {
+    const p = projects[id]
+    if (!p) return
+    const loaded = (p.data.nodes || []).map(n => ({
+      id: n.id,
+      type: 'card',
+      position: n.position || { x: 0, y: 0 },
+      data: { text: n.text || '', title: n.title || '' },
+      width: n.width ?? 254,
+      height: n.height ?? estimateNodeHeight(n.text || ''),
+    }))
+    setNodes(loaded)
+    setEdges(scanEdges(loaded))
+    setNextId(p.data.nextNodeId || 1)
+    setProjectName(p.data.projectName || '')
+    setCurrentId(null)
+    setText('')
+    setTitle('')
+    setProjectId(id)
+    setProjectStart(p.start || Date.now())
+  }
+
   const exportProject = () => {
     const data = {
+      projectName,
       nextNodeId: nextId,
       nodes: nodes.map(n => ({
         id: n.id,
@@ -621,6 +683,7 @@ export default function App() {
       setNodes(loaded)
       setEdges(scanEdges(loaded))
       setNextId(data.nextNodeId || 1)
+      setProjectName(data.projectName || '')
       setCurrentId(null)
       setText('')
       setTitle('')
@@ -666,6 +729,7 @@ export default function App() {
   // Persist data after every change
   useEffect(() => {
     const data = {
+      projectName,
       nextNodeId: nextId,
       nodes: nodes.map(n => ({
         id: n.id,
@@ -678,7 +742,29 @@ export default function App() {
       })),
     }
     localStorage.setItem('cyoa-data', JSON.stringify(data))
-  }, [nodes, nextId])
+    if (autoSave) {
+      setProjects(p => {
+        const now = Date.now()
+        const prev = p[projectId] || { id: projectId, start: projectStart }
+        return {
+          ...p,
+          [projectId]: { ...prev, updated: now, data },
+        }
+      })
+    }
+  }, [nodes, nextId, projectName, autoSave])
+
+  useEffect(() => {
+    localStorage.setItem('cyoa-projects', JSON.stringify(projects))
+  }, [projects])
+
+  useEffect(() => {
+    localStorage.setItem('cyoa-current', projectId)
+  }, [projectId])
+
+  useEffect(() => {
+    localStorage.setItem('cyoa-auto-save', JSON.stringify(autoSave))
+  }, [autoSave])
 
 
   return (
@@ -707,6 +793,28 @@ export default function App() {
           onChange={e => setProjectName(e.target.value)}
           placeholder="Projektnamn"
         />
+        <label id="autoSaveLabel" style={{ display: 'flex', alignItems: 'center' }}>
+          <input
+            id="autoSave"
+            type="checkbox"
+            checked={autoSave}
+            onChange={e => setAutoSave(e.target.checked)}
+          />
+          Save
+        </label>
+        <select
+          id="projectList"
+          value={projectId}
+          onChange={e => handleProjectSwitch(e.target.value)}
+        >
+          {Object.values(projects)
+            .sort((a, b) => (b.updated || 0) - (a.updated || 0))
+            .map(p => (
+              <option key={p.id} value={p.id}>
+                {p.data.projectName?.trim() || new Date(p.start).toLocaleString()}
+              </option>
+            ))}
+        </select>
         <Button variant="ghost" icon={Download} onClick={exportProject}>
           Export
         </Button>
