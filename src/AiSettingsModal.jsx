@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Button from './Button.jsx'
-import { defaultPrompt } from './useAi.js'
+import { defaultPrompt, defaultProofPrompt } from './useAi.js'
 
 export default function AiSettingsModal({ settings, onChange, onClose }) {
   const [local, setLocal] = useState(settings)
@@ -96,6 +96,21 @@ export default function AiSettingsModal({ settings, onChange, onClose }) {
             className="reset-btn"
             type="button"
             onClick={() => update({ customPrompt: defaultPrompt })}
+          >
+            Reset to default
+          </Button>
+        </div>
+        <div>
+          <label>Proofread prompt</label>
+          <textarea
+            value={local.proofPrompt}
+            onChange={e => update({ proofPrompt: e.target.value })}
+            rows="3"
+          />
+          <Button
+            className="reset-btn"
+            type="button"
+            onClick={() => update({ proofPrompt: defaultProofPrompt })}
           >
             Reset to default
           </Button>
