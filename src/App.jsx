@@ -26,6 +26,7 @@ import getLayoutedElements from './dagreLayout'
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
+import NodeEditorContext from './NodeEditorContext.js'
 import Playthrough from './Playthrough.jsx'
 import LinearView from './LinearView.jsx'
 import AiSettingsModal from './AiSettingsModal.jsx'
@@ -750,6 +751,7 @@ export default function App() {
       </header>
       <main style={{ position: 'relative' }}>
         <div id="graph">
+          <NodeEditorContext.Provider value={{ updateNodeText }}>
           <ReactFlow
             style={{ width: '100%', height: '100%' }}
             nodes={nodes}
@@ -773,6 +775,7 @@ export default function App() {
           <MiniMap zoomable pannable />
           <Controls />
         </ReactFlow>
+        </NodeEditorContext.Provider>
       </div>
         <button
           id="toggleEditor"

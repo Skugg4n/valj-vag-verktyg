@@ -313,6 +313,17 @@ main {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.node-card .node-textarea {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular;
+  resize: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 
 .resize-handle {
   position: absolute;
