@@ -5,10 +5,7 @@ import {
   RotateCcw,
   RotateCw,
   Download,
-  FileText,
   Upload,
-  List,
-  Play,
   Cloud,
   SpellCheck,
   Settings,
@@ -745,6 +742,20 @@ export default function App() {
     setEdges(layoutedEdges)
   }, [nodes, edges, pushUndoState])
 
+  const openLinearView = () => {
+    const md = nodes
+      .slice()
+      .sort((a, b) => Number(a.id) - Number(b.id))
+      .map(n => `## #${n.id} ${n.data.title}\n${n.data.text}`)
+      .join('\n')
+    setLinearText(md)
+    setShowModal(true)
+  }
+
+  const startPlaythrough = () => {
+    setShowPlay(true)
+  }
+
   useEffect(() => {
     const handler = e => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
@@ -822,11 +833,6 @@ export default function App() {
         <Button variant="ghost" icon={RotateCw} onClick={redo}>
           Redo
         </Button>
-        {!showModal && !showPlay && (
-          <Button variant="ghost" onClick={handleAutoLayout}>
-            Auto-layout
-          </Button>
-        )}
         <input
           id="projectName"
           value={projectName}
@@ -855,33 +861,12 @@ export default function App() {
               </option>
             ))}
         </select>
-        <Button variant="ghost" icon={FileText} onClick={exportMarkdown}>
-          Export MD
-        </Button>
         <input
           ref={importRef}
           type="file"
           onChange={importProject}
           style={{ display: 'none' }}
         />
-        <Button
-          variant="ghost"
-          icon={List}
-          onClick={() => {
-            const md = nodes
-              .slice()
-              .sort((a, b) => Number(a.id) - Number(b.id))
-              .map(n => `## #${n.id} ${n.data.title}\n${n.data.text}`)
-              .join('\n')
-            setLinearText(md)
-            setShowModal(true)
-          }}
-        >
-          Linear View
-        </Button>
-        <Button variant="ghost" icon={Play} onClick={() => setShowPlay(true)}>
-          Playthrough
-        </Button>
         <Button variant="ghost" onClick={() => setFontSize(f => Math.max(10, f - 1))}>
           A-
         </Button>
@@ -1021,6 +1006,10 @@ export default function App() {
         onImport={() => importRef.current?.click()}
         onShowSettings={openSettings}
         onShowAiSettings={() => setShowAiSettings(true)}
+        onExportMd={exportMarkdown}
+        onLinearView={openLinearView}
+        onPlaythrough={startPlaythrough}
+        onAutoLayout={!showModal && !showPlay ? handleAutoLayout : undefined}
         onHelp={openHelp}
       />
     </>
