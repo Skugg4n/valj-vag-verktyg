@@ -22,13 +22,3 @@ Project data can be saved locally. Tick the **Save** checkbox next to the projec
 All rendered Markdown is sanitized with [DOMPurify](https://github.com/cure53/DOMPurify) to prevent unwanted HTML injection.
 
 The graph view now provides zoom controls and a minimap for easier navigation of large node collections.
-
-## Node Size
-
-Nodes are created with `DEFAULT_NODE_WIDTH` and `DEFAULT_NODE_HEIGHT` from
-`src/constants.js`. When a story is loaded, saved `width` and `height` values are
-restored. If no size is stored, the defaults are used (the height is estimated
-from the node text when possible). Selecting a node does **not** change its size
-automatically. Dimensions only update when a user drags the resize handle or
-edits the text so that the editor recalculates the height. Updated sizes are
-saved to local storage and included in any exported JSON file.
