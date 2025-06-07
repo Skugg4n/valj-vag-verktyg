@@ -22,3 +22,13 @@ Project data can be saved locally. Tick the **Save** checkbox next to the projec
 All rendered Markdown is sanitized with [DOMPurify](https://github.com/cure53/DOMPurify) to prevent unwanted HTML injection.
 
 The graph view now provides zoom controls and a minimap for easier navigation of large node collections.
+
+## Node Size
+
+Each node starts with default dimensions defined in `src/constants.js`. When data
+is loaded, any saved `width` and `height` values are restored, otherwise the
+defaults (or an estimated height based on the node text) are used. Selecting a
+node does **not** change its dimensions. Sizes only change when the user drags
+the resize handle or when the editor recalculates the height after text edits or
+double-clicking the handle. Updated dimensions are persisted to local storage and
+included in exported JSON files.
