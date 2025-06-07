@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react'
 const STORAGE_KEY = 'ai-settings'
 
 export const defaultPrompt =
-  'Du skriver en interaktiv berättelse. Här är tidigare noder...\n\n'
+  'You are writing an interactive story. Here are the previous nodes...\n\n'
 
 export const defaultProofPrompt =
-  'Korrigera och förbättra texten nedan språkligt utan att ändra innehållet:'
+  'Correct and improve the text below without changing the meaning:'
 
 const defaultSettings = {
   enabled: false,
@@ -56,7 +56,7 @@ export async function getSuggestions(nodes, currentId, settings) {
   const context = history
     .map(n => `#${n.id} ${n.data.title || ''}\n${n.data.text || ''}`)
     .join('\n\n')
-  const prompt = `${settings.customPrompt || defaultPrompt}${context}\n\nAktuell nod:\n#${current.id} ${current.data.title || ''}\nDu har skrivit: "${current.data.text || ''}"\n\nSkriv tre förslag på hur det kan fortsätta härifrån. Varje förslag bör vara 1–2 meningar.\nReturnera tre olika fortsättningar, börja varje med • och använd samma berättarstil som tidigare. Om du ger val, använd markdownlänkar som [#004].`
+  const prompt = `${settings.customPrompt || defaultPrompt}${context}\n\nCurrent node:\n#${current.id} ${current.data.title || ''}\nYou wrote: "${current.data.text || ''}"\n\nWrite three suggestions for how the story could continue from here. Each suggestion should be 1–2 sentences.\nReturn three different continuations, start each with • and keep the same narrative style as before. If you offer choices, use markdown links like [#004].`
 
   const body = {
     model: settings.model,

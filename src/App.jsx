@@ -678,7 +678,7 @@ export default function App() {
         const heading = `## #${n.id}${n.data.title ? ` ${n.data.title}` : ''}`
         const body = (n.data.text || '').replace(/\[#(\d{3})]|#(\d{3})/g, (_m, p1, p2) => {
           const id = p1 || p2
-          return `[Gå vidare → #${id}](#${id})`
+          return `[Continue → #${id}](#${id})`
         })
         return `${heading}\n${body}`
       })
@@ -728,7 +728,7 @@ export default function App() {
   }
 
   const openHelp = () => {
-    alert('Help is not implemented yet')
+    window.open('help.html', '_blank')
   }
 
   const handleAutoLayout = useCallback(() => {
@@ -942,7 +942,7 @@ export default function App() {
             <SpellCheck aria-hidden="true" />
           </button>
           <span className={`ai-loading${loadingAi ? ' show' : ''}`} aria-live="polite">
-            Genererar förslag…
+            Generating suggestions…
           </span>
           {/* Settings button moved to header */}
         </div>
