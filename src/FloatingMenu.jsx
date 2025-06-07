@@ -11,19 +11,20 @@ export default function FloatingMenu({
 }) {
   return (
     <Popover className="fixed bottom-4 right-4 z-50">
-      {() => (
+      {({ open }) => (
         <>
           <Popover.Button className="rounded-full bg-[var(--btn)] p-3 text-[var(--text)] shadow-lg hover:bg-[var(--btn-hover)] focus:outline-none">
             <Menu className="h-5 w-5" aria-hidden="true" />
           </Popover.Button>
           <Transition
             as={Fragment}
-            enter="transition duration-150 ease-out"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="transition duration-100 ease-in"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
+            show={open}
+            enter="transition transform duration-200 ease-out"
+            enterFrom="opacity-0 translate-y-2"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition transform duration-150 ease-in"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 translate-y-2"
           >
             <Popover.Panel className="mt-2 flex flex-col gap-1 rounded-lg bg-[var(--panel)] p-2 text-sm text-[var(--text)] shadow-lg">
               <button

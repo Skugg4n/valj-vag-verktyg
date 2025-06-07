@@ -855,14 +855,8 @@ export default function App() {
               </option>
             ))}
         </select>
-        <Button variant="ghost" icon={Download} onClick={exportProject}>
-          Export
-        </Button>
         <Button variant="ghost" icon={FileText} onClick={exportMarkdown}>
           Export MD
-        </Button>
-        <Button variant="ghost" icon={Upload} onClick={() => importRef.current?.click()}>
-          Import
         </Button>
         <input
           ref={importRef}
@@ -894,14 +888,7 @@ export default function App() {
         <Button variant="ghost" onClick={() => setFontSize(f => f + 1)}>
           A+
         </Button>
-        <Button
-          id="settingsButton"
-          variant="ghost"
-          icon={Settings}
-          aria-label="Settings"
-          style={{ marginLeft: 'auto' }}
-          onClick={() => setShowAiSettings(true)}
-        />
+        
       </header>
       <main style={{ position: 'relative' }}>
         <div id="graph">
