@@ -192,7 +192,7 @@ export default function App() {
     setTitle(state.title)
   }
 
-  const undo = () => {
+  const undo = useCallback(() => {
     const state = undoStack.current.pop()
     if (state) {
       redoStack.current.push({
@@ -205,9 +205,9 @@ export default function App() {
       })
       applyState(state)
     }
-  }
+  }, [nodes, edges, nextId, currentId, text, title])
 
-  const redo = () => {
+  const redo = useCallback(() => {
     const state = redoStack.current.pop()
     if (state) {
       undoStack.current.push({
@@ -220,7 +220,7 @@ export default function App() {
       })
       applyState(state)
     }
-  }
+  }, [nodes, edges, nextId, currentId, text, title])
 
   const onNodesChange = useCallback(
     changes => {
@@ -354,7 +354,7 @@ export default function App() {
         return `${t}${sep}[#${target}]`
       })
     }
-  }, [currentId])
+  }, [currentId, pushUndoState])
 
   const onReconnectStart = useCallback((_e, _edge, handleType) => {
     reconnectInfo.current = { handleType, didReconnect: false }
@@ -434,7 +434,7 @@ export default function App() {
         })
       }
     },
-    [currentId]
+    [currentId, pushUndoState]
   )
 
   const onReconnectEnd = useCallback(
@@ -467,7 +467,7 @@ export default function App() {
       }
       reconnectInfo.current = { handleType: null, didReconnect: false }
     },
-    [currentId]
+    [currentId, pushUndoState]
   )
 
   const addNode = () => {
@@ -792,7 +792,7 @@ export default function App() {
         }
       })
     }
-  }, [nodes, nextId, projectName, autoSave])
+  }, [nodes, nextId, projectName, autoSave, projectId, projectStart])
 
   useEffect(() => {
     localStorage.setItem('cyoa-projects', JSON.stringify(projects))
