@@ -161,12 +161,11 @@ main {
 
 #formatting-toolbar {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.25rem;
   padding: 0.25rem 0;
   border-bottom: 1px solid var(--panel);
   background: var(--panel);
-  overflow-x: auto;
-  white-space: nowrap;
 }
 
 .ai-loading {
