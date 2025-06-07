@@ -22,10 +22,3 @@ Project data can be saved locally. Tick the **Save** checkbox next to the projec
 All rendered Markdown is sanitized with [DOMPurify](https://github.com/cure53/DOMPurify) to prevent unwanted HTML injection.
 
 The graph view now provides zoom controls and a minimap for easier navigation of large node collections.
-
-## Documentation
-
-More detailed guides can be found in the [`docs`](docs) directory.
-- [Getting Started](docs/getting-started.md)
-- [Contributing](docs/contributing.md)
-- [Usage](docs/usage.md)
