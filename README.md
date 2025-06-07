@@ -1,4 +1,4 @@
-# Välj-väg-verktyg
+# Choose Your Path Tool
 
 This project is now built with [Vite](https://vitejs.dev/) and [React](https://react.dev). The interactive graph is rendered using [React Flow](https://reactflow.dev/).
 

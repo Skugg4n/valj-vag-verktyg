@@ -89,20 +89,20 @@ export default function FloatingMenu({
                 className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
                 onClick={onShowSettings}
               >
-                <span className="flex items-center gap-2"><Settings className="h-4 w-4" />Inställningar</span>
+                <span className="flex items-center gap-2"><Settings className="h-4 w-4" />Settings</span>
               </button>
               <button
                 className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
                 onClick={onShowAiSettings}
               >
-                <span className="flex items-center gap-2"><Settings className="h-4 w-4" />AI-inställningar</span>
+                <span className="flex items-center gap-2"><Settings className="h-4 w-4" />AI Settings</span>
               </button>
               {onHelp && (
                 <button
                   className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
                   onClick={onHelp}
                 >
-                  <span className="flex items-center gap-2"><HelpCircle className="h-4 w-4" />Hjälp</span>
+                  <span className="flex items-center gap-2"><HelpCircle className="h-4 w-4" />Help</span>
                 </button>
               )}
             </Popover.Panel>
