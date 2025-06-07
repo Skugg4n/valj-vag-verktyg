@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 
 export default function useLinearParser(raw = '', setNodes) {
   useEffect(() => {
@@ -23,10 +24,10 @@ export default function useLinearParser(raw = '', setNodes) {
         return {
           id: p.id,
           type: 'card',
-          position: { x: 0, y: i * 100 },
+          position: { x: 0, y: i * DEFAULT_NODE_HEIGHT },
           data: { text: p.text, title: p.title },
-          width: 220,
-          height: 100,
+          width: DEFAULT_NODE_WIDTH,
+          height: DEFAULT_NODE_HEIGHT,
         }
       })
       return updated
