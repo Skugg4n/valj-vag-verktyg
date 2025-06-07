@@ -25,10 +25,10 @@ The graph view now provides zoom controls and a minimap for easier navigation of
 
 ## Node Size
 
-Each node starts with default dimensions defined in `src/constants.js`. When data
-is loaded, any saved `width` and `height` values are restored, otherwise the
-defaults (or an estimated height based on the node text) are used. Selecting a
-node does **not** change its dimensions. Sizes only change when the user drags
-the resize handle or when the editor recalculates the height after text edits or
-double-clicking the handle. Updated dimensions are persisted to local storage and
-included in exported JSON files.
+Nodes are created with `DEFAULT_NODE_WIDTH` and `DEFAULT_NODE_HEIGHT` from
+`src/constants.js`. When a story is loaded, saved `width` and `height` values are
+restored. If no size is stored, the defaults are used (the height is estimated
+from the node text when possible). Selecting a node does **not** change its size
+automatically. Dimensions only update when a user drags the resize handle or
+edits the text so that the editor recalculates the height. Updated sizes are
+saved to local storage and included in any exported JSON file.
