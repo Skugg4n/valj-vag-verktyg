@@ -1,12 +1,26 @@
 import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
-import { Menu, Upload, Download, Settings, HelpCircle } from 'lucide-react'
+import {
+  Menu,
+  Upload,
+  Download,
+  Settings,
+  HelpCircle,
+  FileText,
+  List,
+  Play,
+  LayoutGrid,
+} from 'lucide-react'
 
 export default function FloatingMenu({
   onExport,
   onImport,
   onShowSettings,
   onShowAiSettings,
+  onExportMd,
+  onLinearView,
+  onPlaythrough,
+  onAutoLayout,
   onHelp,
 }) {
   return (
@@ -33,6 +47,38 @@ export default function FloatingMenu({
               >
                 <span className="flex items-center gap-2"><Download className="h-4 w-4" />Export</span>
               </button>
+              {onExportMd && (
+                <button
+                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                  onClick={onExportMd}
+                >
+                  <span className="flex items-center gap-2"><FileText className="h-4 w-4" />Export MD</span>
+                </button>
+              )}
+              {onLinearView && (
+                <button
+                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                  onClick={onLinearView}
+                >
+                  <span className="flex items-center gap-2"><List className="h-4 w-4" />Linear View</span>
+                </button>
+              )}
+              {onPlaythrough && (
+                <button
+                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                  onClick={onPlaythrough}
+                >
+                  <span className="flex items-center gap-2"><Play className="h-4 w-4" />Playthrough</span>
+                </button>
+              )}
+              {onAutoLayout && (
+                <button
+                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                  onClick={onAutoLayout}
+                >
+                  <span className="flex items-center gap-2"><LayoutGrid className="h-4 w-4" />Auto-layout</span>
+                </button>
+              )}
               <button
                 className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
                 onClick={onImport}
