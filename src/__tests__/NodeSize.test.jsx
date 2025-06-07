@@ -20,9 +20,8 @@ it('keeps node dimensions after click', () => {
   );
   const node = container.querySelector('.react-flow__node');
   expect(node).toBeInTheDocument();
-  const width = node.style.width;
-  const height = node.style.height;
+  const { width, height } = getComputedStyle(node);
   fireEvent.click(node);
-  expect(node.style.width).toBe(width);
-  expect(node.style.height).toBe(height);
+  expect(getComputedStyle(node).width).toBe(width);
+  expect(getComputedStyle(node).height).toBe(height);
 });
