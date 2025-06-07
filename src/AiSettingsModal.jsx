@@ -90,7 +90,7 @@ export default function AiSettingsModal({ settings, onChange, onClose }) {
           <textarea
             value={local.customPrompt}
             onChange={e => update({ customPrompt: e.target.value })}
-            rows="4"
+            rows="8"
           />
           <Button
             className="reset-btn"
@@ -105,7 +105,7 @@ export default function AiSettingsModal({ settings, onChange, onClose }) {
           <textarea
             value={local.proofPrompt}
             onChange={e => update({ proofPrompt: e.target.value })}
-            rows="3"
+            rows="6"
           />
           <Button
             className="reset-btn"
