@@ -33,6 +33,7 @@ import { useAiSettings, getSuggestions, proofreadText } from './useAi.js'
 import AiProofreadPanel from './AiProofreadPanel.jsx'
 import Button from './Button.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
+import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 
 function estimateNodeHeight(text) {
   const charsPerLine = 32
@@ -155,7 +156,7 @@ export default function App() {
           type: 'card',
           position: n.position || { x: 0, y: 0 },
           data: { text: n.text || '', title: n.title || '' },
-          width: n.width ?? 254,
+          width: n.width ?? DEFAULT_NODE_WIDTH,
           height: n.height ?? estimateNodeHeight(n.text || ''),
         }))
         setNodes(loaded)
@@ -494,8 +495,8 @@ export default function App() {
           position,
           type: 'card',
           data: { text: '', title: '' },
-          width: 254,
-          height: 100,
+          width: DEFAULT_NODE_WIDTH,
+          height: DEFAULT_NODE_HEIGHT,
         },
       ]
       setEdges(scanEdges(updated))
@@ -573,8 +574,8 @@ export default function App() {
                 type: 'card',
                 position: { x: baseX + 300, y: baseY + idx * 100 },
                 data: { text: '', title: '' },
-                width: 254,
-                height: 100,
+                width: DEFAULT_NODE_WIDTH,
+                height: DEFAULT_NODE_HEIGHT,
               },
             ]
             idx += 1
@@ -619,7 +620,7 @@ export default function App() {
       type: 'card',
       position: n.position || { x: 0, y: 0 },
       data: { text: n.text || '', title: n.title || '' },
-      width: n.width ?? 254,
+      width: n.width ?? DEFAULT_NODE_WIDTH,
       height: n.height ?? estimateNodeHeight(n.text || ''),
     }))
     setNodes(loaded)
@@ -705,7 +706,7 @@ export default function App() {
         type: 'card',
         position: n.position || { x: 0, y: 0 },
         data: { text: n.text || '', title: n.title || '' },
-        width: n.width ?? 254,
+        width: n.width ?? DEFAULT_NODE_WIDTH,
         height: n.height ?? estimateNodeHeight(n.text || ''),
       }))
       setNodes(loaded)

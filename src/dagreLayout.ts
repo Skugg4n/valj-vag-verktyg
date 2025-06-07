@@ -1,5 +1,6 @@
 import dagre from 'dagre'
 import type { Edge, Node } from 'reactflow'
+import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 
 export default function getLayoutedElements(nodes: Node[], edges: Edge[], direction = 'LR') {
   const dagreGraph = new dagre.graphlib.Graph()
@@ -7,8 +8,8 @@ export default function getLayoutedElements(nodes: Node[], edges: Edge[], direct
   dagreGraph.setGraph({ rankdir: direction })
 
   nodes.forEach(node => {
-    const width = node.width ?? 250
-    const height = node.height ?? 100
+    const width = node.width ?? DEFAULT_NODE_WIDTH
+    const height = node.height ?? DEFAULT_NODE_HEIGHT
     dagreGraph.setNode(node.id, { width, height })
   })
 
@@ -20,7 +21,10 @@ export default function getLayoutedElements(nodes: Node[], edges: Edge[], direct
     const { x, y } = dagreGraph.node(node.id)
     return {
       ...node,
-      position: { x: x - (node.width ?? 250) / 2, y: y - (node.height ?? 100) / 2 },
+      position: {
+        x: x - (node.width ?? DEFAULT_NODE_WIDTH) / 2,
+        y: y - (node.height ?? DEFAULT_NODE_HEIGHT) / 2,
+      },
     }
   })
 
