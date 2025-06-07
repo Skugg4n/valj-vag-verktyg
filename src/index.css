@@ -280,6 +280,16 @@ main {
   margin: 0.5rem 0;
 }
 
+#modalList input:not([type="checkbox"]),
+#modalList textarea {
+  width: 100%;
+  color: #000;
+}
+
+#modalList textarea {
+  min-height: 8rem;
+}
+
 .suggestion {
   background: var(--card);
   border: 1px solid var(--panel);
