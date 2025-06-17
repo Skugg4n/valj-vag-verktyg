@@ -36,6 +36,17 @@ import FloatingMenu from './FloatingMenu.jsx'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 
+const COLOR_OPTIONS = [
+  '#1f2937',
+  '#ef4444',
+  '#f97316',
+  '#facc15',
+  '#22c55e',
+  '#3b82f6',
+  '#e879f9',
+  '#d1d5db',
+]
+
 function estimateNodeHeight(text) {
   const charsPerLine = 32
   const lines = text
@@ -104,6 +115,7 @@ export default function App() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [proofreadResult, setProofreadResult] = useState(null)
   const [showProofread, setShowProofread] = useState(false)
+  const [showColorPicker, setShowColorPicker] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(() =>
     window.innerWidth < 768
@@ -157,7 +169,7 @@ export default function App() {
           id: n.id,
           type: 'card',
           position: n.position || { x: 0, y: 0 },
-          data: { text: n.text || '', title: n.title || '' },
+          data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
           width: n.width ?? DEFAULT_NODE_WIDTH,
           height: n.height ?? estimateNodeHeight(n.text || ''),
         }))
@@ -318,6 +330,17 @@ export default function App() {
       area.selectionStart = area.selectionEnd = start + suggestion.length
     })
     setShowSuggestions(false)
+  }
+
+  const changeNodeColor = color => {
+    if (!currentId) return
+    pushUndoState()
+    setNodes(ns =>
+      ns.map(n =>
+        n.id === currentId ? { ...n, data: { ...n.data, color } } : n
+      )
+    )
+    setShowColorPicker(false)
   }
 
   const insertNextNodeNumber = () => {
@@ -496,7 +519,7 @@ export default function App() {
           id,
           position,
           type: 'card',
-          data: { text: '', title: '' },
+          data: { text: '', title: '', color: '#1f2937' },
           width: DEFAULT_NODE_WIDTH,
           height: DEFAULT_NODE_HEIGHT,
         },
@@ -575,7 +598,7 @@ export default function App() {
                 id: refId,
                 type: 'card',
                 position: { x: baseX + 300, y: baseY + idx * 100 },
-                data: { text: '', title: '' },
+                data: { text: '', title: '', color: '#1f2937' },
                 width: DEFAULT_NODE_WIDTH,
                 height: DEFAULT_NODE_HEIGHT,
               },
@@ -621,7 +644,11 @@ export default function App() {
       id: n.id,
       type: 'card',
       position: n.position || { x: 0, y: 0 },
-      data: { text: n.text || '', title: n.title || '' },
+      data: {
+        text: n.text || '',
+        title: n.title || '',
+        color: n.color || '#1f2937',
+      },
       width: n.width ?? DEFAULT_NODE_WIDTH,
       height: n.height ?? estimateNodeHeight(n.text || ''),
     }))
@@ -644,6 +671,7 @@ export default function App() {
         id: n.id,
         text: n.data.text || '',
         title: n.data.title || '',
+        color: n.data.color || '#1f2937',
         position: n.position,
         type: n.type || 'card',
         width: n.width,
@@ -707,7 +735,7 @@ export default function App() {
         id: n.id,
         type: 'card',
         position: n.position || { x: 0, y: 0 },
-        data: { text: n.text || '', title: n.title || '' },
+        data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
         width: n.width ?? DEFAULT_NODE_WIDTH,
         height: n.height ?? estimateNodeHeight(n.text || ''),
       }))
@@ -806,6 +834,7 @@ export default function App() {
         id: n.id,
         text: n.data.text || '',
         title: n.data.title || '',
+        color: n.data.color || '#1f2937',
         position: n.position,
         type: n.type || 'card',
         width: n.width,
@@ -961,6 +990,30 @@ export default function App() {
           >
             <SpellCheck aria-hidden="true" />
           </button>
+          <div style={{ position: 'relative' }}>
+            <button
+              className="color-button"
+              type="button"
+              onClick={() => setShowColorPicker(c => !c)}
+              aria-label="Node color"
+              style={{
+                background:
+                  nodes.find(n => n.id === currentId)?.data.color || '#1f2937',
+              }}
+            />
+            {showColorPicker && (
+              <div className="color-picker">
+                {COLOR_OPTIONS.map(col => (
+                  <div
+                    key={col}
+                    className="color-swatch"
+                    style={{ background: col }}
+                    onClick={() => changeNodeColor(col)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
           <span className={`ai-loading${loadingAi ? ' show' : ''}`} aria-live="polite">
             Generating suggestions…
           </span>

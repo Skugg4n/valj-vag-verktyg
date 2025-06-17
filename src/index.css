@@ -166,6 +166,37 @@ main {
   padding: 0.25rem 0;
   border-bottom: 1px solid var(--panel);
   background: var(--panel);
+  position: relative;
+}
+
+.color-button {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.color-picker {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 20px);
+  gap: 4px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--panel);
+  border-radius: var(--radius);
+  z-index: 10;
+}
+
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid #0003;
 }
 
 .ai-loading {
@@ -325,7 +356,7 @@ main {
   border-color: var(--accent);
 }
 .node-card.selected {
-  background: #3b4553;
+  box-shadow: 0 0 0 2px var(--accent);
 }
 .node-card.resizing {
   border-style: dashed;
@@ -351,7 +382,7 @@ main {
   white-space: nowrap;
 }
 .node-card .node-preview {
-  color: var(--text);
+  color: inherit;
   flex: 1;
   overflow: hidden;
   white-space: pre-wrap;
@@ -365,7 +396,11 @@ main {
   width: 100%;
   text-align: center;
   pointer-events: none;
-  background: linear-gradient(to bottom, rgba(31, 41, 55, 0) 0%, var(--card) 70%);
+  background: linear-gradient(
+    to bottom,
+    rgba(31, 41, 55, 0) 0%,
+    var(--card-bg, var(--card)) 70%
+  );
   color: var(--text-dim);
 }
 .node-card .node-textarea {
@@ -373,7 +408,7 @@ main {
   width: 100%;
   border: none;
   background: transparent;
-  color: var(--text);
+  color: inherit;
   font-family: 'Inter', sans-serif;
   font-size: inherit;
   resize: none;

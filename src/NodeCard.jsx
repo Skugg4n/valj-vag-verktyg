@@ -4,6 +4,15 @@ import { NodeResizeControl, ResizeControlVariant } from '@reactflow/node-resizer
 import '@reactflow/node-resizer/dist/style.css'
 import NodeEditorContext from './NodeEditorContext.js'
 
+function isLightColor(hex) {
+  if (!hex || typeof hex !== 'string' || hex[0] !== '#') return false
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b
+  return luminance > 186
+}
+
 const NodeCard = memo(({ id, data, selected }) => {
   const { setNodes, getNodes } = useReactFlow()
   const { updateNodeText } = useContext(NodeEditorContext)
@@ -53,8 +62,14 @@ const NodeCard = memo(({ id, data, selected }) => {
     setNodes(ns => ns.map(n => (n.id === id ? { ...n, height } : n)))
   }
 
+  const bg = data.color || '#1f2937'
+  const textColor = isLightColor(bg) ? '#000' : 'var(--text)'
+
   return (
-    <div className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}>
+    <div
+      className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}
+      style={{ background: bg, color: textColor, '--card-bg': bg }}
+    >
       {invalidRef && <div className="invalid-dot" />}
       <div className="node-header">
         <span className="node-id">#{id}</span>
