@@ -33,6 +33,7 @@ import { useAiSettings, getSuggestions, proofreadText } from './useAi.js'
 import AiProofreadPanel from './AiProofreadPanel.jsx'
 import Button from './Button.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
+import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 
 function estimateNodeHeight(text) {
@@ -103,6 +104,7 @@ export default function App() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [proofreadResult, setProofreadResult] = useState(null)
   const [showProofread, setShowProofread] = useState(false)
+  const [showNewProject, setShowNewProject] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(() =>
     window.innerWidth < 768
   )
@@ -756,6 +758,24 @@ export default function App() {
     setShowPlay(true)
   }
 
+  const startNewProject = () => {
+    const id = String(Date.now())
+    setNodes([])
+    setEdges([])
+    setNextId(1)
+    setCurrentId(null)
+    setText('')
+    setTitle('')
+    setProjectId(id)
+    setProjectName('')
+    setProjectStart(Date.now())
+    setShowNewProject(false)
+  }
+
+  const confirmNewProject = () => {
+    setShowNewProject(true)
+  }
+
   useEffect(() => {
     const handler = e => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
@@ -1001,6 +1021,12 @@ export default function App() {
           onClose={() => setShowProofread(false)}
         />
       )}
+      {showNewProject && (
+        <NewProjectModal
+          onConfirm={startNewProject}
+          onClose={() => setShowNewProject(false)}
+        />
+      )}
       <FloatingMenu
         onExport={exportProject}
         onImport={() => importRef.current?.click()}
@@ -1011,6 +1037,7 @@ export default function App() {
         onPlaythrough={startPlaythrough}
         onAutoLayout={!showModal && !showPlay ? handleAutoLayout : undefined}
         onHelp={openHelp}
+        onNewProject={confirmNewProject}
       />
     </>
   )
