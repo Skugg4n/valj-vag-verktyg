@@ -23,3 +23,4 @@ Start a playthrough from the current node via **Play** in the floating menu.
 - Configure API settings under **AI Settings**.
 - The cloud icon suggests how the story might continue.
 - The spell check icon proofreads the current text.
+- Use the color square to assign a background color to the current node.
