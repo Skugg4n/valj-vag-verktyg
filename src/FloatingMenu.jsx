@@ -7,6 +7,7 @@ import {
   Settings,
   HelpCircle,
   FileText,
+  FilePlus,
   List,
   Play,
   LayoutGrid,
@@ -22,6 +23,7 @@ export default function FloatingMenu({
   onPlaythrough,
   onAutoLayout,
   onHelp,
+  onNewProject,
 }) {
   return (
     <Popover className="fixed bottom-4 right-4 z-50">
@@ -77,6 +79,14 @@ export default function FloatingMenu({
                   onClick={onAutoLayout}
                 >
                   <span className="flex items-center gap-2"><LayoutGrid className="h-4 w-4" />Auto-layout</span>
+                </button>
+              )}
+              {onNewProject && (
+                <button
+                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                  onClick={onNewProject}
+                >
+                  <span className="flex items-center gap-2"><FilePlus className="h-4 w-4" />New project</span>
                 </button>
               )}
               <button
