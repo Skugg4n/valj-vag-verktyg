@@ -47,6 +47,8 @@ const COLOR_OPTIONS = [
   '#d1d5db',
 ]
 
+const ROOT_KEY = '__root__'
+
 function estimateNodeHeight(text) {
   const charsPerLine = 32
   const lines = text
@@ -503,7 +505,8 @@ export default function App() {
         if (cur) {
           const count = spawnCounts[currentId] || 0
           const baseY = cur.position.y
-          const offset = count === 0 ? 0 : Math.ceil(count / 2) * 150 * (count % 2 === 0 ? 1 : -1)
+          const offset =
+            count === 0 ? 0 : Math.ceil(count / 2) * 150 * (count % 2 === 0 ? 1 : -1)
           position = { x: cur.position.x + 300, y: baseY + offset }
           const text = cur.data.text || ''
           const sep = text.trim() ? ' ' : ''
@@ -512,6 +515,9 @@ export default function App() {
             n.id === currentId ? { ...n, data: { ...n.data, text: `${text}${sep}${link}` } } : n
           )
         }
+      } else {
+        const count = spawnCounts[ROOT_KEY] || 0
+        position = { x: count * 300, y: 0 }
       }
       const updated = [
         ...updatedNodes,
@@ -534,6 +540,8 @@ export default function App() {
         const sep = t.trim() ? ' ' : ''
         return `${t}${sep}[#${id}]`
       })
+    } else {
+      setSpawnCounts(c => ({ ...c, [ROOT_KEY]: (c[ROOT_KEY] || 0) + 1 }))
     }
   }
 
