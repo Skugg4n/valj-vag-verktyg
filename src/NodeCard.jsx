@@ -2,7 +2,7 @@ import { memo, useState, useContext, useEffect, useRef } from 'react'
 import { Handle, Position, useReactFlow } from 'reactflow'
 import { NodeResizeControl, ResizeControlVariant } from '@reactflow/node-resizer'
 import '@reactflow/node-resizer/dist/style.css'
-import NodeEditorContext from './NodeEditorContext.js'
+import NodeEditorContext from './NodeEditorContext.ts'
 import { DEFAULT_NODE_HEIGHT } from './constants.js'
 
 function isLightColor(hex) {

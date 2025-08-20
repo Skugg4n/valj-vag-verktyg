@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
 import { Markdown } from 'tiptap-markdown'
-import useLinearParser from './useLinearParser.js'
+import useLinearParser from './useLinearParser.ts'
 
 function preprocess(md = '') {
   return md.replace(/\[#(\d{3})]/g, '[#$1](#$1)')
