@@ -23,7 +23,7 @@ import getLayoutedElements from './dagreLayout'
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
-import NodeEditorContext from './NodeEditorContext.js'
+import NodeEditorContext from './NodeEditorContext.ts'
 import Playthrough from './Playthrough.jsx'
 import LinearView from './LinearView.jsx'
 import AiSettingsModal from './AiSettingsModal.jsx'
@@ -35,6 +35,7 @@ import Button from './Button.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
+import useProjectStorage from './useProjectStorage.js'
 
 const COLOR_OPTIONS = [
   '#1f2937',
@@ -96,17 +97,6 @@ export default function App() {
   const [showModal, setShowModal] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
-  const [projects, setProjects] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('cyoa-projects')) || {}
-    } catch {
-      return {}
-    }
-  })
-  const [projectId, setProjectId] = useState(() =>
-    localStorage.getItem('cyoa-current') || String(Date.now())
-  )
-  const [projectStart, setProjectStart] = useState(Date.now())
   const [autoSave, setAutoSave] = useState(() => {
     const saved = localStorage.getItem('cyoa-auto-save')
     return saved ? JSON.parse(saved) : false
@@ -144,52 +134,26 @@ export default function App() {
     localStorage.setItem('vv-theme', theme)
   }, [theme])
 
-  // Restore previous session from localStorage on initial load
+  const {
+    projects,
+    setProjects,
+    projectId,
+    setProjectId,
+    setProjectStart,
+    error: storageError,
+  } = useProjectStorage({
+    nodes,
+    nextId,
+    projectName,
+    autoSave,
+    setNodes,
+    setNextId,
+    setProjectName,
+  })
+
   useEffect(() => {
-    let projs = {}
-    try {
-      projs = JSON.parse(localStorage.getItem('cyoa-projects')) || {}
-    } catch {
-      /* ignore */
-    }
-    setProjects(projs)
-    const current = localStorage.getItem('cyoa-current')
-    const id = current || Object.keys(projs)[0] || String(Date.now())
-    setProjectId(id)
-    let data
-    if (projs[id]) {
-      data = projs[id].data
-      setProjectStart(projs[id].start || Date.now())
-    } else {
-      const saved = localStorage.getItem('cyoa-data')
-      if (saved) {
-        try {
-          data = JSON.parse(saved)
-        } catch {
-          /* ignore */
-        }
-      }
-      setProjectStart(Date.now())
-    }
-    if (data) {
-      try {
-        const loaded = (data.nodes || []).map(n => ({
-          id: n.id,
-          type: 'card',
-          position: n.position || { x: 0, y: 0 },
-          data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
-          width: n.width ?? DEFAULT_NODE_WIDTH,
-          height: n.height ?? estimateNodeHeight(n.text || ''),
-        }))
-        setNodes(loaded)
-        setEdges(scanEdges(loaded))
-        setNextId(data.nextNodeId || 1)
-        setProjectName(data.projectName || '')
-      } catch {
-        // ignore corrupt data
-      }
-    }
-  }, [])
+    if (storageError) alert(storageError)
+  }, [storageError])
 
   const pushUndoState = useCallback(() => {
     undoStack.current.push({
@@ -821,67 +785,30 @@ export default function App() {
   }
 
   useEffect(() => {
-    const handler = e => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault()
-        undo()
-      } else if (
-        (e.metaKey || e.ctrlKey) &&
-        (e.key === 'Z' || (e.key === 'z' && e.shiftKey))
-      ) {
-        e.preventDefault()
-        redo()
+      const handler = e => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+          e.preventDefault()
+          undo()
+        } else if (
+          (e.metaKey || e.ctrlKey) &&
+          (e.key === 'Z' || (e.key === 'z' && e.shiftKey))
+        ) {
+          e.preventDefault()
+          redo()
+        } else if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+          e.preventDefault()
+          addNode()
+        }
       }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [undo, redo])
+      window.addEventListener('keydown', handler)
+      return () => window.removeEventListener('keydown', handler)
+    }, [undo, redo, addNode])
 
   useEffect(() => {
     setEdges(scanEdges(nodes))
   }, [nodes])
 
   // Persist data after every change
-  useEffect(() => {
-    const data = {
-      projectName,
-      nextNodeId: nextId,
-      nodes: nodes.map(n => ({
-        id: n.id,
-        text: n.data.text || '',
-        title: n.data.title || '',
-        color: n.data.color || '#1f2937',
-        position: n.position,
-        type: n.type || 'card',
-        width: n.width,
-        height: n.height,
-      })),
-    }
-    localStorage.setItem('cyoa-data', JSON.stringify(data))
-    if (autoSave) {
-      setProjects(p => {
-        const now = Date.now()
-        const prev = p[projectId] || { id: projectId, start: projectStart }
-        return {
-          ...p,
-          [projectId]: { ...prev, updated: now, data },
-        }
-      })
-    }
-  }, [nodes, nextId, projectName, autoSave, projectId, projectStart])
-
-  useEffect(() => {
-    localStorage.setItem('cyoa-projects', JSON.stringify(projects))
-  }, [projects])
-
-  useEffect(() => {
-    localStorage.setItem('cyoa-current', projectId)
-  }, [projectId])
-
-  useEffect(() => {
-    localStorage.setItem('cyoa-auto-save', JSON.stringify(autoSave))
-  }, [autoSave])
-
 
   return (
     <>
