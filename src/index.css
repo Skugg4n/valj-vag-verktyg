@@ -199,18 +199,6 @@ main {
   border: 1px solid #0003;
 }
 
-.ai-loading {
-  margin-left: 0.5rem;
-  font-size: 0.8rem;
-  opacity: 0;
-  transition: opacity 0.3s;
-  align-self: center;
-}
-
-.ai-loading.show {
-  opacity: 1;
-}
-
 .reset-btn {
   margin-left: 0.5rem;
 }

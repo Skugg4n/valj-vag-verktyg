@@ -17,7 +17,7 @@ export default function FloatingMenu({
   onExport,
   onImport,
   onShowSettings,
-  onShowAiSettings,
+  // onShowAiSettings,
   onExportMd,
   onLinearView,
   onPlaythrough,
@@ -101,12 +101,15 @@ export default function FloatingMenu({
               >
                 <span className="flex items-center gap-2"><Settings className="h-4 w-4" />Settings</span>
               </button>
+              {/* AI Settings button temporarily disabled */}
+              {/*
               <button
                 className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
                 onClick={onShowAiSettings}
               >
                 <span className="flex items-center gap-2"><Settings className="h-4 w-4" />AI Settings</span>
               </button>
+              */}
               {onHelp && (
                 <button
                   className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
