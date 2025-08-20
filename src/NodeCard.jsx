@@ -93,12 +93,14 @@ const NodeCard = memo(({ id, data, selected }) => {
   }
 
   const bg = data.color || '#1f2937'
-  const textColor = isLightColor(bg) ? '#000' : 'var(--text)'
+  const lightBg = isLightColor(bg)
+  const textColor = lightBg ? '#111827' : '#f3f4f6'
+  const dimColor = lightBg ? '#6b7280' : '#9ca3af'
 
   return (
     <div
       className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}
-      style={{ background: bg, color: textColor, '--card-bg': bg }}
+      style={{ background: bg, color: textColor, '--card-bg': bg, '--text-dim': dimColor }}
     >
       {invalidRef && <div className="invalid-dot" />}
       <div className="node-header">
