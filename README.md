@@ -1,24 +1,56 @@
-# Choose Your Path Tool
+# Välj Väg Verktyg
 
-This project is now built with [Vite](https://vitejs.dev/) and [React](https://react.dev). The interactive graph is rendered using [React Flow](https://reactflow.dev/).
+A web-based editor for building choose-your-path stories as directed graphs. Nodes represent story sections and link to each other using Markdown references.
 
-## Development
+## Features
 
-Install dependencies and start the dev server:
+- Visual graph editor powered by React Flow
+- Markdown-based node content with automatic cross-node linking
+- Local project storage with import/export support
+- Playthrough mode to test the story from any node
+- Node background color customization
+- Dark and light themes with a header toggle
 
-```bash
-npm install
-npm run dev
-```
+## Getting Started
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+2. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:5173/`.
 
 ## Building
 
-```
+Create a production build:
+
+```bash
 npm run build
 ```
 
-Project data can be saved locally. Tick the **Save** checkbox next to the project name to autosave the current story. Saved stories appear in the dropdown list in the header so you can quickly switch between them. Export and import options are available from the floating menu in the bottom right. The exported file contains the project name. Use **Export MD** in the header to download a Markdown file with all nodes. Nodes link to each other using references like `[#001]` inside the node text. The editor also understands bare references such as `#001` and will automatically convert them into the bracketed form.
+Preview the build locally:
 
-All rendered Markdown is sanitized with [DOMPurify](https://github.com/cure53/DOMPurify) to prevent unwanted HTML injection.
+```bash
+npm run preview
+```
 
-The graph view now provides zoom controls and a minimap for easier navigation of large node collections.
+## Usage
+
+- Click an empty area of the graph to create a new node.
+- Edit the node's title and body in the editor panel.
+- Use references like `#001` or Markdown links `[Continue → #002](#002)` to connect nodes.
+- Use the color square in the editor toolbar to change a node's background color.
+- Enable **Save** next to the project name to store the story locally.
+- Access export/import, playthrough, and other tools from the floating menu in the bottom-right corner.
+- Toggle between dark and light themes using the **Light/Dark Mode** button in the header.
+
+## Testing
+
+Run unit tests with:
+
+```bash
+npm test
+```

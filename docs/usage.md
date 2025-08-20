@@ -7,6 +7,7 @@ This guide summarizes the built-in help information available at `help.html`.
 - Click an empty area of the graph to create a new node.
 - Edit the title and body directly inside the node.
 - Use references like `#001` or Markdown links such as `[Continue → #002](#002)` to connect nodes.
+- Use the color square in the editor toolbar to change a node's background color.
 
 ## Managing Projects
 
@@ -18,9 +19,14 @@ This guide summarizes the built-in help information available at `help.html`.
 
 Start a playthrough from the current node via **Play** in the floating menu.
 
+## Themes
+
+Switch between dark and light mode using the **Light/Dark Mode** button in the header.
+
+<!--
 ## AI Features
 
 - Configure API settings under **AI Settings**.
 - The cloud icon suggests how the story might continue.
 - The spell check icon proofreads the current text.
-- Use the color square to assign a background color to the current node.
+-->

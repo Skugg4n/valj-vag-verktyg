@@ -1,16 +1,30 @@
 :root {
+  --radius: 6px;
+  --gap: 0.5rem;
+  --font-size: 14px;
+  --accent: #3b82f6;
+}
+
+[data-theme="light"] {
+  --bg: #f9fafb;
+  --panel: #f3f4f6;
+  --card: #e5e7eb;
+  --text: #111827;
+  --text-dim: #6b7280;
+  --btn: #e5e7eb;
+  --btn-hover: #d1d5db;
+  --modal-bg: #ffffff;
+}
+
+[data-theme="dark"] {
   --bg: #0d1117;
   --panel: #161b22;
   --card: #1f2937;
-  --accent: #3b82f6;
   --text: #f3f4f6;
   --text-dim: #9ca3af;
-  --radius: 6px;
-  --gap: 0.5rem;
   --btn: #4a5568;
   --btn-hover: #5b667a;
-  --font-size: 14px;
-  --modal-bg: #222;
+  --modal-bg: #222222;
 }
 
 @media (max-width: 768px) {

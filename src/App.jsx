@@ -6,11 +6,10 @@ import {
   RotateCw,
   Download,
   Upload,
-  Cloud,
-  SpellCheck,
-  Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Sun,
+  Moon
 } from 'lucide-react'
 import ReactFlow, {
   applyNodeChanges,
@@ -28,9 +27,10 @@ import NodeEditorContext from './NodeEditorContext.js'
 import Playthrough from './Playthrough.jsx'
 import LinearView from './LinearView.jsx'
 import AiSettingsModal from './AiSettingsModal.jsx'
-import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
-import { useAiSettings, getSuggestions, proofreadText } from './useAi.js'
-import AiProofreadPanel from './AiProofreadPanel.jsx'
+// import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
+// import { getSuggestions, proofreadText } from './useAi.js'
+import { useAiSettings } from './useAi.js'
+// import AiProofreadPanel from './AiProofreadPanel.jsx'
 import Button from './Button.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
 import NewProjectModal from './NewProjectModal.jsx'
@@ -112,21 +112,22 @@ export default function App() {
     return saved ? JSON.parse(saved) : false
   })
   const [aiSettings, setAiSettings] = useAiSettings()
-  const [suggestions, setSuggestions] = useState([])
+  // const [suggestions, setSuggestions] = useState([])
   const [showAiSettings, setShowAiSettings] = useState(false)
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [proofreadResult, setProofreadResult] = useState(null)
-  const [showProofread, setShowProofread] = useState(false)
+  // const [showSuggestions, setShowSuggestions] = useState(false)
+  // const [proofreadResult, setProofreadResult] = useState(null)
+  // const [showProofread, setShowProofread] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(() =>
     window.innerWidth < 768
   )
-  const [loadingAi, setLoadingAi] = useState(false)
+  // const [loadingAi, setLoadingAi] = useState(false)
   const [fontSize, setFontSize] = useState(() => {
     const stored = localStorage.getItem('cyoa-font-size')
     return stored ? Number(stored) : 14
   })
+  const [theme, setTheme] = useState(() => localStorage.getItem('vv-theme') || 'dark')
   const textRef = useRef(null)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -137,6 +138,11 @@ export default function App() {
     document.documentElement.style.setProperty('--font-size', `${fontSize}px`)
     localStorage.setItem('cyoa-font-size', String(fontSize))
   }, [fontSize])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('vv-theme', theme)
+  }, [theme])
 
   // Restore previous session from localStorage on initial load
   useEffect(() => {
@@ -296,6 +302,7 @@ export default function App() {
     })
   }
 
+  /*
   const fetchAiSuggestions = async () => {
     setLoadingAi(true)
     const result = await getSuggestions(nodes, currentId, aiSettings)
@@ -333,6 +340,7 @@ export default function App() {
     })
     setShowSuggestions(false)
   }
+  */
 
   const changeNodeColor = color => {
     if (!currentId) return
@@ -930,7 +938,14 @@ export default function App() {
         <Button variant="ghost" onClick={() => setFontSize(f => f + 1)}>
           A+
         </Button>
-        
+        <Button
+          variant="ghost"
+          icon={theme === 'dark' ? Sun : Moon}
+          onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
+        >
+          {theme === 'dark' ? 'Light' : 'Dark'} Mode
+        </Button>
+
       </header>
       <main style={{ position: 'relative' }}>
         <div id="graph">
@@ -982,6 +997,7 @@ export default function App() {
           <button className="btn ghost" type="button" onClick={insertNextNodeNumber} aria-label="Next node number">
             <Plus aria-hidden="true" />
           </button>
+          {/*
           <button
             className="btn ghost"
             type="button"
@@ -998,6 +1014,7 @@ export default function App() {
           >
             <SpellCheck aria-hidden="true" />
           </button>
+          */}
           <div style={{ position: 'relative' }}>
             <button
               className="color-button"
@@ -1022,9 +1039,7 @@ export default function App() {
               </div>
             )}
           </div>
-          <span className={`ai-loading${loadingAi ? ' show' : ''}`} aria-live="polite">
-            Generating suggestions…
-          </span>
+          {/* AI loading indicator removed */}
           {/* Settings button moved to header */}
         </div>
           <input
@@ -1067,6 +1082,7 @@ export default function App() {
           onClose={() => setShowAiSettings(false)}
         />
       )}
+      {/*
       {showSuggestions && (
         <AiSuggestionsPanel
           suggestions={suggestions}
@@ -1082,6 +1098,7 @@ export default function App() {
           onClose={() => setShowProofread(false)}
         />
       )}
+      */}
       {showNewProject && (
         <NewProjectModal
           onConfirm={startNewProject}
@@ -1092,7 +1109,7 @@ export default function App() {
         onExport={exportProject}
         onImport={() => importRef.current?.click()}
         onShowSettings={openSettings}
-        onShowAiSettings={() => setShowAiSettings(true)}
+        // onShowAiSettings={() => setShowAiSettings(true)}
         onExportMd={exportMarkdown}
         onLinearView={openLinearView}
         onPlaythrough={startPlaythrough}
