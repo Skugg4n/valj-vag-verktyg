@@ -6,9 +6,7 @@ import '@testing-library/jest-dom';
 import ReactFlow, { ReactFlowProvider } from 'reactflow';
 import { jest } from '@jest/globals';
 
-jest.mock('@reactflow/node-resizer', () => ({
-  NodeResizer: () => null,
-}));
+jest.mock('@reactflow/node-resizer', () => ({ NodeResizer: () => null }));
 
 import NodeCard from '../NodeCard.jsx';
 import NodeEditorContext from '../NodeEditorContext.ts';
