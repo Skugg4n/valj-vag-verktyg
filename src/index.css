@@ -338,6 +338,7 @@ main {
   position: relative;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 .node-card:hover {
   border-color: var(--accent);
@@ -368,14 +369,29 @@ main {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.node-card .node-content {
+  flex: 1;
+  position: relative;
+}
+
+.node-card .node-preview,
+.node-card .node-editor {
+  position: absolute;
+  inset: 0;
+}
+
+.node-card .node-preview[aria-hidden="true"],
+.node-card .node-editor[aria-hidden="true"] {
+  display: none;
+}
+
 .node-card .node-preview {
   color: inherit;
-  flex: 1;
   overflow: hidden;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  position: relative;
 }
+
 .node-card .preview-more {
   position: absolute;
   bottom: 0;
@@ -390,9 +406,9 @@ main {
   );
   color: var(--text-dim);
 }
-.node-card .node-textarea {
-  flex: 1;
+.node-card .node-editor .node-textarea {
   width: 100%;
+  height: 100%;
   border: none;
   background: transparent;
   color: inherit;
@@ -405,10 +421,11 @@ main {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.node-card .node-textarea::-webkit-scrollbar {
+
+.node-card .node-editor .node-textarea::-webkit-scrollbar {
   display: none;
 }
-.node-card .node-textarea:focus {
+.node-card .node-editor .node-textarea:focus {
   outline: none;
   box-shadow: none;
 }

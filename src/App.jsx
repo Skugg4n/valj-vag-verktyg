@@ -541,8 +541,12 @@ export default function App() {
     setTitle(node.data.title || '')
   }
 
-  const onPaneClick = () => {
+  const onPaneClick = e => {
+    const t = e.target
     if (resizingRef.current) return
+    if (t.closest('.react-flow__node')) return
+    if (t.closest('.react-flow__handle')) return
+    if (t.closest('.react-flow__resize-control')) return
     setCurrentId(null)
     setText('')
     setTitle('')
