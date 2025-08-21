@@ -95,8 +95,6 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
         height,
         boxSizing: 'border-box',
       }}
-      onPointerDown={e => e.stopPropagation()}
-      onClick={e => e.stopPropagation()}
     >
       {invalidRef && <div className="invalid-dot" />}
       <div className="node-header">
@@ -112,6 +110,8 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
           <textarea
             ref={textRef}
             className="node-textarea"
+            onPointerDown={e => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
             value={data.text}
             onChange={e => {
               let value = e.target.value
