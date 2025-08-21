@@ -25,6 +25,74 @@ export default function FloatingMenu({
   onHelp,
   onNewProject,
 }) {
+  const sections = [
+    {
+      title: 'Project',
+      items: [
+        onNewProject && {
+          label: 'New project',
+          icon: FilePlus,
+          onClick: onNewProject,
+        },
+        {
+          label: 'Import',
+          icon: Upload,
+          onClick: onImport,
+        },
+        {
+          label: 'Export',
+          icon: Download,
+          onClick: onExport,
+        },
+        onExportMd && {
+          label: 'Export MD',
+          icon: FileText,
+          onClick: onExportMd,
+        },
+      ].filter(Boolean),
+    },
+    {
+      title: 'View',
+      items: [
+        onLinearView && {
+          label: 'Linear View',
+          icon: List,
+          onClick: onLinearView,
+        },
+        onPlaythrough && {
+          label: 'Playthrough',
+          icon: Play,
+          onClick: onPlaythrough,
+        },
+      ].filter(Boolean),
+    },
+    {
+      title: 'Tools',
+      items: [
+        onAutoLayout && {
+          label: 'Auto-layout',
+          icon: LayoutGrid,
+          onClick: onAutoLayout,
+        },
+        {
+          label: 'Settings',
+          icon: Settings,
+          onClick: onShowSettings,
+        },
+      ].filter(Boolean),
+    },
+    {
+      title: 'Help',
+      items: [
+        onHelp && {
+          label: 'Help',
+          icon: HelpCircle,
+          onClick: onHelp,
+        },
+      ].filter(Boolean),
+    },
+  ].filter((section) => section.items.length > 0)
+
   return (
     <Popover className="fixed bottom-4 right-4 z-50">
       {({ open }) => (
@@ -42,82 +110,30 @@ export default function FloatingMenu({
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-2"
           >
-            <Popover.Panel className="mt-2 flex flex-col gap-1 rounded-lg bg-[var(--panel)] p-2 text-sm text-[var(--text)] shadow-lg">
-              <button
-                className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                onClick={onExport}
-              >
-                <span className="flex items-center gap-2"><Download className="h-4 w-4" />Export</span>
-              </button>
-              {onExportMd && (
-                <button
-                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                  onClick={onExportMd}
-                >
-                  <span className="flex items-center gap-2"><FileText className="h-4 w-4" />Export MD</span>
-                </button>
-              )}
-              {onLinearView && (
-                <button
-                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                  onClick={onLinearView}
-                >
-                  <span className="flex items-center gap-2"><List className="h-4 w-4" />Linear View</span>
-                </button>
-              )}
-              {onPlaythrough && (
-                <button
-                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                  onClick={onPlaythrough}
-                >
-                  <span className="flex items-center gap-2"><Play className="h-4 w-4" />Playthrough</span>
-                </button>
-              )}
-              {onAutoLayout && (
-                <button
-                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                  onClick={onAutoLayout}
-                >
-                  <span className="flex items-center gap-2"><LayoutGrid className="h-4 w-4" />Auto-layout</span>
-                </button>
-              )}
-              {onNewProject && (
-                <button
-                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                  onClick={onNewProject}
-                >
-                  <span className="flex items-center gap-2"><FilePlus className="h-4 w-4" />New project</span>
-                </button>
-              )}
-              <button
-                className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                onClick={onImport}
-              >
-                <span className="flex items-center gap-2"><Upload className="h-4 w-4" />Import</span>
-              </button>
-              <button
-                className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                onClick={onShowSettings}
-              >
-                <span className="flex items-center gap-2"><Settings className="h-4 w-4" />Settings</span>
-              </button>
-              {/* AI Settings button temporarily disabled */}
-              {/*
-              <button
-                className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                onClick={onShowAiSettings}
-              >
-                <span className="flex items-center gap-2"><Settings className="h-4 w-4" />AI Settings</span>
-              </button>
-              */}
-              {onHelp && (
-                <button
-                  className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                  onClick={onHelp}
-                >
-                  <span className="flex items-center gap-2"><HelpCircle className="h-4 w-4" />Help</span>
-                </button>
-              )}
+            <Popover.Panel className="mt-2 rounded-lg bg-[var(--panel)] p-2 text-sm text-[var(--text)] shadow-lg">
+              {sections.map((section, idx) => (
+                <div key={section.title} className="flex flex-col gap-1">
+                  {idx > 0 && <div className="my-1 border-t border-[var(--line)]" />}
+                  <div className="px-3 py-1 text-xs font-semibold opacity-60">
+                    {section.title}
+                  </div>
+                  {section.items.map(({ label, icon, onClick }) => {
+                    const Icon = icon
+                    return (
+                      <button
+                        key={label}
+                        className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                        onClick={onClick}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          {label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
             </Popover.Panel>
           </Transition>
         </>
