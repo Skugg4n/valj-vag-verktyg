@@ -13,6 +13,36 @@ import {
   LayoutGrid,
 } from 'lucide-react'
 
+const sectionConfig = [
+  {
+    title: 'Project',
+    items: [
+      { label: 'New project', icon: FilePlus, action: 'onNewProject' },
+      { label: 'Import', icon: Upload, action: 'onImport' },
+      { label: 'Export', icon: Download, action: 'onExport' },
+      { label: 'Export MD', icon: FileText, action: 'onExportMd' },
+    ],
+  },
+  {
+    title: 'View',
+    items: [
+      { label: 'Linear View', icon: List, action: 'onLinearView' },
+      { label: 'Playthrough', icon: Play, action: 'onPlaythrough' },
+    ],
+  },
+  {
+    title: 'Tools',
+    items: [
+      { label: 'Auto-layout', icon: LayoutGrid, action: 'onAutoLayout' },
+      { label: 'Settings', icon: Settings, action: 'onShowSettings' },
+    ],
+  },
+  {
+    title: 'Help',
+    items: [{ label: 'Help', icon: HelpCircle, action: 'onHelp' }],
+  },
+]
+
 export default function FloatingMenu({
   onExport,
   onImport,
@@ -25,73 +55,29 @@ export default function FloatingMenu({
   onHelp,
   onNewProject,
 }) {
-  const sections = [
-    {
-      title: 'Project',
-      items: [
-        onNewProject && {
-          label: 'New project',
-          icon: FilePlus,
-          onClick: onNewProject,
-        },
-        {
-          label: 'Import',
-          icon: Upload,
-          onClick: onImport,
-        },
-        {
-          label: 'Export',
-          icon: Download,
-          onClick: onExport,
-        },
-        onExportMd && {
-          label: 'Export MD',
-          icon: FileText,
-          onClick: onExportMd,
-        },
-      ].filter(Boolean),
-    },
-    {
-      title: 'View',
-      items: [
-        onLinearView && {
-          label: 'Linear View',
-          icon: List,
-          onClick: onLinearView,
-        },
-        onPlaythrough && {
-          label: 'Playthrough',
-          icon: Play,
-          onClick: onPlaythrough,
-        },
-      ].filter(Boolean),
-    },
-    {
-      title: 'Tools',
-      items: [
-        onAutoLayout && {
-          label: 'Auto-layout',
-          icon: LayoutGrid,
-          onClick: onAutoLayout,
-        },
-        {
-          label: 'Settings',
-          icon: Settings,
-          onClick: onShowSettings,
-        },
-      ].filter(Boolean),
-    },
-    {
-      title: 'Help',
-      items: [
-        onHelp && {
-          label: 'Help',
-          icon: HelpCircle,
-          onClick: onHelp,
-        },
-      ].filter(Boolean),
-    },
-  ].filter((section) => section.items.length > 0)
+  const propMap = {
+    onExport,
+    onImport,
+    onShowSettings,
+    onExportMd,
+    onLinearView,
+    onPlaythrough,
+    onAutoLayout,
+    onHelp,
+    onNewProject,
+  }
+
+  const sections = sectionConfig
+    .map((section) => ({
+      title: section.title,
+      items: section.items
+        .map((item) => {
+          const onClick = propMap[item.action]
+          return onClick && { ...item, onClick }
+        })
+        .filter(Boolean),
+    }))
+    .filter((section) => section.items.length > 0)
 
   return (
     <Popover className="fixed bottom-4 right-4 z-50">
