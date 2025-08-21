@@ -4,6 +4,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ReactFlow, { ReactFlowProvider } from 'reactflow';
+import { jest } from '@jest/globals';
 
 jest.mock('@reactflow/node-resizer', () => ({
   NodeResizeControl: () => null,

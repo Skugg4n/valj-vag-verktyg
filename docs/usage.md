@@ -23,6 +23,12 @@ Start a playthrough from the current node via **Play** in the floating menu.
 
 Switch between dark and light mode using the **Light/Dark Mode** button in the header.
 
+## Keyboard Shortcuts
+
+- **Ctrl+N** / **Cmd+N** – Add a new node.
+- **Ctrl+Z** / **Cmd+Z** – Undo the last action.
+- **Ctrl+Shift+Z** / **Cmd+Shift+Z** – Redo the last undone action.
+
 <!--
 ## AI Features
 
