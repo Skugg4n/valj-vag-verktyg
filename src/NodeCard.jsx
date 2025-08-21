@@ -14,8 +14,8 @@ function isLightColor(hex) {
   return luminance > 186
 }
 
-const NodeCard = memo(({ id, data, selected }) => {
-  const { setNodes, getNodes } = useReactFlow()
+const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
+  const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
   const { updateNodeText, resizingRef } = useContext(NodeEditorContext)
   const [resizing, setResizing] = useState(false)
   const [overflow, setOverflow] = useState(false)
@@ -23,8 +23,6 @@ const NodeCard = memo(({ id, data, selected }) => {
   const textRef = useRef(null)
   const previewRef = useRef(null)
   const prevSelectedRef = useRef(selected)
-  const previewHeight = useRef(DEFAULT_NODE_HEIGHT)
-  const previewWidth = useRef(DEFAULT_NODE_WIDTH)
 
   useEffect(() => {
     if (selected && !prevSelectedRef.current) {
@@ -38,50 +36,7 @@ const NodeCard = memo(({ id, data, selected }) => {
     if (el) {
       setOverflow(el.scrollHeight > el.clientHeight + 1)
     }
-  }, [data.text, selected])
-
-  useEffect(() => {
-    if (!selected && previewRef.current) {
-      const width = Math.min(
-        400,
-        Math.max(180, previewRef.current.parentElement.offsetWidth)
-      )
-      previewWidth.current = width
-      previewHeight.current = Math.min(
-        300,
-        Math.max(100, previewRef.current.scrollHeight + 16)
-      )
-      setNodes(ns =>
-        ns.map(n =>
-          n.id === id &&
-          (n.height !== previewHeight.current || n.width !== previewWidth.current)
-            ? {
-                ...n,
-                height: previewHeight.current,
-                width: previewWidth.current,
-              }
-            : n
-        )
-      )
-    }
-  }, [data.text, selected])
-
-  useEffect(() => {
-    if (selected) {
-      setNodes(ns =>
-        ns.map(n =>
-          n.id === id &&
-          (n.height !== previewHeight.current || n.width !== previewWidth.current)
-            ? {
-                ...n,
-                height: previewHeight.current,
-                width: previewWidth.current,
-              }
-            : n
-        )
-      )
-    }
-  }, [selected])
+  }, [data.text, width, height])
 
   useEffect(() => {
     const nodes = new Set(getNodes().map(n => n.id))
@@ -94,11 +49,16 @@ const NodeCard = memo(({ id, data, selected }) => {
     setInvalidRef(invalid)
   }, [data.text, getNodes])
 
-  const handleResizeEnd = (_e, { width, height }) => {
+  const handleResizeEnd = (_e, { width: w, height: h }) => {
     setResizing(false)
     setNodes(ns =>
-      ns.map(n => (n.id === id ? { ...n, width, height } : n))
+      ns.map(n =>
+        n.id === id
+          ? { ...n, width: w, height: h, data: { ...n.data, size: { width: w, height: h } } }
+          : n
+      )
     )
+    requestAnimationFrame(() => updateNodeInternals(id))
     setTimeout(() => {
       if (resizingRef) resizingRef.current = false
     }, 0)
@@ -107,8 +67,15 @@ const NodeCard = memo(({ id, data, selected }) => {
   const autoResize = () => {
     const el = textRef.current || previewRef.current
     if (!el) return
-    const height = Math.min(300, Math.max(100, el.scrollHeight + 16))
-    setNodes(ns => ns.map(n => (n.id === id ? { ...n, height } : n)))
+    const h = Math.min(300, Math.max(100, el.scrollHeight + 16))
+    setNodes(ns =>
+      ns.map(n =>
+        n.id === id
+          ? { ...n, height: h, data: { ...n.data, size: { width: n.width, height: h } } }
+          : n
+      )
+    )
+    requestAnimationFrame(() => updateNodeInternals(id))
   }
 
   const bg = data.color || '#1f2937'
@@ -119,7 +86,15 @@ const NodeCard = memo(({ id, data, selected }) => {
   return (
     <div
       className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}
-      style={{ background: bg, color: textColor, '--card-bg': bg, '--text-dim': dimColor }}
+      style={{
+        background: bg,
+        color: textColor,
+        '--card-bg': bg,
+        '--text-dim': dimColor,
+        width,
+        height,
+        boxSizing: 'border-box',
+      }}
       onPointerDown={e => e.stopPropagation()}
       onClick={e => e.stopPropagation()}
     >
@@ -128,27 +103,26 @@ const NodeCard = memo(({ id, data, selected }) => {
         <span className="node-id">#{id}</span>
         {data.title && <span className="node-title">{data.title}</span>}
       </div>
-      {selected ? (
-        <textarea
-          ref={textRef}
-          className="node-textarea"
-          value={data.text}
-          onChange={e => {
-            let value = e.target.value
-            value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
-            if (updateNodeText) {
-              updateNodeText(id, value)
-            }
-          }}
-        />
-      ) : (
-        data.text && (
-          <div ref={previewRef} className="node-preview">
-            {data.text}
-            {overflow && <div className="preview-more">...</div>}
-          </div>
-        )
-      )}
+      <div className="node-content">
+        <div ref={previewRef} className="node-preview" aria-hidden={selected}>
+          {data.text}
+          {overflow && <div className="preview-more">...</div>}
+        </div>
+        <div className="node-editor" aria-hidden={!selected}>
+          <textarea
+            ref={textRef}
+            className="node-textarea"
+            value={data.text}
+            onChange={e => {
+              let value = e.target.value
+              value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
+              if (updateNodeText) {
+                updateNodeText(id, value)
+              }
+            }}
+          />
+        </div>
+      </div>
       <NodeResizeControl
         variant={ResizeControlVariant.Handle}
         position="bottom-right"
