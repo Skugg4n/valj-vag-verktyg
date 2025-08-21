@@ -36,7 +36,7 @@ header {
   text-decoration: none;
   border: none;
   background: var(--btn);
-  color: #fff;
+  color: var(--text);
 }
 
 .btn:hover {
@@ -58,7 +58,7 @@ header {
 
 .btn.ghost {
   background: var(--btn);
-  color: #fff;
+  color: var(--text);
 }
 .btn.ghost:hover {
   background: var(--btn-hover);
@@ -91,7 +91,7 @@ main {
   border: 1px solid var(--panel);
   border-right: none;
   background: var(--btn);
-  color: #fff;
+  color: var(--text);
   border-radius: var(--radius) 0 0 var(--radius);
   cursor: pointer;
   padding: 0;
@@ -445,7 +445,7 @@ main {
 }
 .react-flow__controls button {
   background: var(--btn);
-  color: #fff;
+  color: var(--text);
   border: none;
   width: 32px;
   height: 32px;
