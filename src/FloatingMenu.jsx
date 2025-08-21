@@ -97,7 +97,10 @@ export default function FloatingMenu({
     <Popover className="fixed bottom-4 right-4 z-50">
       {({ open }) => (
         <>
-          <Popover.Button className="rounded-full bg-[var(--btn)] p-3 text-[var(--text)] shadow-lg hover:bg-[var(--btn-hover)] focus:outline-none">
+          <Popover.Button
+            className="rounded-full bg-[var(--btn)] p-3 text-[var(--text)] shadow-lg hover:bg-[var(--btn-hover)] focus:outline-none"
+            title="Menu"
+          >
             <Menu className="h-5 w-5" aria-hidden="true" />
           </Popover.Button>
           <Transition
@@ -124,6 +127,7 @@ export default function FloatingMenu({
                         key={label}
                         className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
                         onClick={onClick}
+                        title={label}
                       >
                         <span className="flex items-center gap-2">
                           <Icon className="h-4 w-4" />

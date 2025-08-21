@@ -136,7 +136,6 @@ export default function App() {
 
   const {
     projects,
-    setProjects,
     projectId,
     setProjectId,
     setProjectStart,
@@ -813,16 +812,36 @@ export default function App() {
   return (
     <>
       <header>
-        <Button variant="primary" icon={Plus} onClick={addNode}>
+        <Button
+          variant="primary"
+          icon={Plus}
+          onClick={addNode}
+          title="New Node (Ctrl+N)"
+        >
           New Node
         </Button>
-        <Button variant="danger" icon={Trash2} onClick={deleteNode}>
+        <Button
+          variant="danger"
+          icon={Trash2}
+          onClick={deleteNode}
+          title="Delete Node"
+        >
           Delete Node
         </Button>
-        <Button variant="ghost" icon={RotateCcw} onClick={undo}>
+        <Button
+          variant="ghost"
+          icon={RotateCcw}
+          onClick={undo}
+          title="Undo (Ctrl+Z)"
+        >
           Undo
         </Button>
-        <Button variant="ghost" icon={RotateCw} onClick={redo}>
+        <Button
+          variant="ghost"
+          icon={RotateCw}
+          onClick={redo}
+          title="Redo (Ctrl+Shift+Z)"
+        >
           Redo
         </Button>
         <input
@@ -859,16 +878,25 @@ export default function App() {
           onChange={importProject}
           style={{ display: 'none' }}
         />
-        <Button variant="ghost" onClick={() => setFontSize(f => Math.max(10, f - 1))}>
+        <Button
+          variant="ghost"
+          onClick={() => setFontSize(f => Math.max(10, f - 1))}
+          title="Decrease font size"
+        >
           A-
         </Button>
-        <Button variant="ghost" onClick={() => setFontSize(f => f + 1)}>
+        <Button
+          variant="ghost"
+          onClick={() => setFontSize(f => f + 1)}
+          title="Increase font size"
+        >
           A+
         </Button>
         <Button
           variant="ghost"
           icon={theme === 'dark' ? Sun : Moon}
           onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
+          title="Toggle light/dark mode"
         >
           {theme === 'dark' ? 'Light' : 'Dark'} Mode
         </Button>
@@ -908,6 +936,7 @@ export default function App() {
           type="button"
           style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: editorCollapsed ? 0 : '300px', zIndex: 1 }}
           aria-label={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
+          title={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
           onClick={() => setEditorCollapsed(c => !c)}
         >
           {editorCollapsed ? <ChevronLeft /> : <ChevronRight />}
@@ -916,12 +945,53 @@ export default function App() {
         <section id="editor">
           <h2 id="nodeId">#{currentId || '000'} {title}</h2>
         <div id="formatting-toolbar">
-          <button className="btn ghost" type="button" onClick={() => wrapSelected('**')}>B</button>
-          <button className="btn ghost" type="button" onClick={() => wrapSelected('*')}>I</button>
-          <button className="btn ghost" type="button" onClick={() => wrapSelected('__')}>U</button>
-          <button className="btn ghost" type="button" onClick={() => applyHeading(1)}>H1</button>
-          <button className="btn ghost" type="button" onClick={() => applyHeading(2)}>H2</button>
-          <button className="btn ghost" type="button" onClick={insertNextNodeNumber} aria-label="Next node number">
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={() => wrapSelected('**')}
+            title="Bold (Ctrl+B)"
+          >
+            B
+          </button>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={() => wrapSelected('*')}
+            title="Italic (Ctrl+I)"
+          >
+            I
+          </button>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={() => wrapSelected('__')}
+            title="Underline (Ctrl+U)"
+          >
+            U
+          </button>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={() => applyHeading(1)}
+            title="Heading 1"
+          >
+            H1
+          </button>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={() => applyHeading(2)}
+            title="Heading 2"
+          >
+            H2
+          </button>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={insertNextNodeNumber}
+            aria-label="Next node number"
+            title="Insert next node number"
+          >
             <Plus aria-hidden="true" />
           </button>
           {/*
@@ -948,6 +1018,7 @@ export default function App() {
               type="button"
               onClick={() => setShowColorPicker(c => !c)}
               aria-label="Node color"
+              title="Node color"
               style={{
                 background:
                   nodes.find(n => n.id === currentId)?.data.color || '#1f2937',
