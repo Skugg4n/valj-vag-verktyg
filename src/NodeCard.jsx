@@ -3,7 +3,7 @@ import { Handle, Position, useReactFlow } from 'reactflow'
 import { NodeResizeControl, ResizeControlVariant } from '@reactflow/node-resizer'
 import '@reactflow/node-resizer/dist/style.css'
 import NodeEditorContext from './NodeEditorContext.ts'
-import { DEFAULT_NODE_HEIGHT } from './constants.js'
+import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from './constants.js'
 
 function isLightColor(hex) {
   if (!hex || typeof hex !== 'string' || hex[0] !== '#') return false
@@ -24,6 +24,7 @@ const NodeCard = memo(({ id, data, selected }) => {
   const previewRef = useRef(null)
   const prevSelectedRef = useRef(selected)
   const previewHeight = useRef(DEFAULT_NODE_HEIGHT)
+  const previewWidth = useRef(DEFAULT_NODE_WIDTH)
 
   useEffect(() => {
     if (selected && !prevSelectedRef.current) {
@@ -41,14 +42,24 @@ const NodeCard = memo(({ id, data, selected }) => {
 
   useEffect(() => {
     if (!selected && previewRef.current) {
+      const width = Math.min(
+        400,
+        Math.max(180, previewRef.current.parentElement.offsetWidth)
+      )
+      previewWidth.current = width
       previewHeight.current = Math.min(
         300,
         Math.max(100, previewRef.current.scrollHeight + 16)
       )
       setNodes(ns =>
         ns.map(n =>
-          n.id === id && n.height !== previewHeight.current
-            ? { ...n, height: previewHeight.current }
+          n.id === id &&
+          (n.height !== previewHeight.current || n.width !== previewWidth.current)
+            ? {
+                ...n,
+                height: previewHeight.current,
+                width: previewWidth.current,
+              }
             : n
         )
       )
@@ -59,8 +70,13 @@ const NodeCard = memo(({ id, data, selected }) => {
     if (selected) {
       setNodes(ns =>
         ns.map(n =>
-          n.id === id && n.height !== previewHeight.current
-            ? { ...n, height: previewHeight.current }
+          n.id === id &&
+          (n.height !== previewHeight.current || n.width !== previewWidth.current)
+            ? {
+                ...n,
+                height: previewHeight.current,
+                width: previewWidth.current,
+              }
             : n
         )
       )
