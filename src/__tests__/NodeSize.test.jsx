@@ -7,8 +7,7 @@ import ReactFlow, { ReactFlowProvider } from 'reactflow';
 import { jest } from '@jest/globals';
 
 jest.mock('@reactflow/node-resizer', () => ({
-  NodeResizeControl: () => null,
-  ResizeControlVariant: { Handle: 'handle' },
+  NodeResizer: () => null,
 }));
 
 import NodeCard from '../NodeCard.jsx';

@@ -1,6 +1,6 @@
 import { memo, useState, useContext, useEffect, useRef } from 'react'
 import { Handle, Position, useReactFlow } from 'reactflow'
-import { NodeResizeControl, ResizeControlVariant } from '@reactflow/node-resizer'
+import { NodeResizer } from '@reactflow/node-resizer'
 import '@reactflow/node-resizer/dist/style.css'
 import NodeEditorContext from './NodeEditorContext.ts'
 import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from './constants.js'
@@ -123,20 +123,13 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
           />
         </div>
       </div>
-      <NodeResizeControl
-        variant={ResizeControlVariant.Handle}
-        position="bottom-right"
+      <NodeResizer
+        isVisible={selected}
         minWidth={180}
         minHeight={100}
         maxWidth={400}
         maxHeight={300}
-        className="resize-handle"
-        handleStyle={{
-          width: 14,
-          height: 14,
-          borderRadius: 6,
-          border: '1px solid rgba(0,0,0,.25)',
-        }}
+        color="var(--accent)"
         onResizeStart={() => {
           setResizing(true)
           if (resizingRef) resizingRef.current = true
