@@ -127,6 +127,7 @@ export default function App() {
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
   const redoStack = useRef([])
+  const resizingRef = useRef(false)
 
   useEffect(() => {
     document.documentElement.style.setProperty('--font-size', `${fontSize}px`)
@@ -541,6 +542,7 @@ export default function App() {
   }
 
   const onPaneClick = () => {
+    if (resizingRef.current) return
     setCurrentId(null)
     setText('')
     setTitle('')
@@ -972,7 +974,7 @@ export default function App() {
       </header>
       <main style={{ position: 'relative' }}>
         <div id="graph">
-          <NodeEditorContext.Provider value={{ updateNodeText }}>
+          <NodeEditorContext.Provider value={{ updateNodeText, resizingRef }}>
           <ReactFlow
             style={{ width: '100%', height: '100%' }}
             nodes={nodes}

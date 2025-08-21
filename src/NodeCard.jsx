@@ -16,7 +16,7 @@ function isLightColor(hex) {
 
 const NodeCard = memo(({ id, data, selected }) => {
   const { setNodes, getNodes } = useReactFlow()
-  const { updateNodeText } = useContext(NodeEditorContext)
+  const { updateNodeText, resizingRef } = useContext(NodeEditorContext)
   const [resizing, setResizing] = useState(false)
   const [overflow, setOverflow] = useState(false)
   const [invalidRef, setInvalidRef] = useState(false)
@@ -99,6 +99,9 @@ const NodeCard = memo(({ id, data, selected }) => {
     setNodes(ns =>
       ns.map(n => (n.id === id ? { ...n, width, height } : n))
     )
+    setTimeout(() => {
+      if (resizingRef) resizingRef.current = false
+    }, 0)
   }
 
   const autoResize = () => {
@@ -117,6 +120,8 @@ const NodeCard = memo(({ id, data, selected }) => {
     <div
       className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}
       style={{ background: bg, color: textColor, '--card-bg': bg, '--text-dim': dimColor }}
+      onPointerDown={e => e.stopPropagation()}
+      onClick={e => e.stopPropagation()}
     >
       {invalidRef && <div className="invalid-dot" />}
       <div className="node-header">
@@ -152,7 +157,16 @@ const NodeCard = memo(({ id, data, selected }) => {
         maxWidth={400}
         maxHeight={300}
         className="resize-handle"
-        onResizeStart={() => setResizing(true)}
+        handleStyle={{
+          width: 14,
+          height: 14,
+          borderRadius: 6,
+          border: '1px solid rgba(0,0,0,.25)',
+        }}
+        onResizeStart={() => {
+          setResizing(true)
+          if (resizingRef) resizingRef.current = true
+        }}
         onResizeEnd={handleResizeEnd}
         onDoubleClick={autoResize}
       />
