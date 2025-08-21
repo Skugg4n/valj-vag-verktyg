@@ -2,27 +2,14 @@ import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import {
   Menu,
-  Upload,
-  Download,
   Settings,
   HelpCircle,
-  FileText,
-  FilePlus,
   List,
   Play,
   LayoutGrid,
 } from 'lucide-react'
 
 const sectionConfig = [
-  {
-    title: 'Project',
-    items: [
-      { label: 'New project', icon: FilePlus, action: 'onNewProject' },
-      { label: 'Import', icon: Upload, action: 'onImport' },
-      { label: 'Export', icon: Download, action: 'onExport' },
-      { label: 'Export MD', icon: FileText, action: 'onExportMd' },
-    ],
-  },
   {
     title: 'View',
     items: [
@@ -44,27 +31,19 @@ const sectionConfig = [
 ]
 
 export default function FloatingMenu({
-  onExport,
-  onImport,
   onShowSettings,
   // onShowAiSettings,
-  onExportMd,
   onLinearView,
   onPlaythrough,
   onAutoLayout,
   onHelp,
-  onNewProject,
 }) {
   const propMap = {
-    onExport,
-    onImport,
     onShowSettings,
-    onExportMd,
     onLinearView,
     onPlaythrough,
     onAutoLayout,
     onHelp,
-    onNewProject,
   }
 
   const sections = sectionConfig
