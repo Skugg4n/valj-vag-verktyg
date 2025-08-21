@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect, Fragment } from 'react'
 import {
   Plus,
   Trash2,
@@ -6,11 +6,15 @@ import {
   RotateCw,
   Download,
   Upload,
+  FilePlus,
+  FileText,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Sun,
   Moon
 } from 'lucide-react'
+import { Popover, Transition } from '@headlessui/react'
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
@@ -859,6 +863,70 @@ export default function App() {
           />
           Save
         </label>
+        <Popover className="relative">
+          {({ open }) => (
+            <>
+              <Popover.Button className="btn ghost flex items-center gap-1" title="Project actions">
+                Project <ChevronDown className="h-4 w-4" />
+              </Popover.Button>
+              <Transition
+                as={Fragment}
+                show={open}
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 translate-y-1"
+                enterTo="opacity-100 translate-y-0"
+                leave="transition ease-in duration-150"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 translate-y-1"
+              >
+                <Popover.Panel className="absolute z-10 mt-2 w-40 rounded bg-[var(--panel)] p-2 text-sm text-[var(--text)] shadow-lg">
+                  <div className="flex flex-col gap-1">
+                    <button
+                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                      onClick={confirmNewProject}
+                      title="New project"
+                    >
+                      <span className="flex items-center gap-2">
+                        <FilePlus className="h-4 w-4" />
+                        New project
+                      </span>
+                    </button>
+                    <button
+                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                      onClick={() => importRef.current?.click()}
+                      title="Import"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Import
+                      </span>
+                    </button>
+                    <button
+                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                      onClick={exportProject}
+                      title="Export"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        Export
+                      </span>
+                    </button>
+                    <button
+                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
+                      onClick={exportMarkdown}
+                      title="Export MD"
+                    >
+                      <span className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Export MD
+                      </span>
+                    </button>
+                  </div>
+                </Popover.Panel>
+              </Transition>
+            </>
+          )}
+        </Popover>
         <select
           id="projectList"
           value={projectId}
@@ -1104,16 +1172,12 @@ export default function App() {
         />
       )}
       <FloatingMenu
-        onExport={exportProject}
-        onImport={() => importRef.current?.click()}
         onShowSettings={openSettings}
         // onShowAiSettings={() => setShowAiSettings(true)}
-        onExportMd={exportMarkdown}
         onLinearView={openLinearView}
         onPlaythrough={startPlaythrough}
         onAutoLayout={!showModal && !showPlay ? handleAutoLayout : undefined}
         onHelp={openHelp}
-        onNewProject={confirmNewProject}
       />
     </>
   )
