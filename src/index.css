@@ -18,11 +18,10 @@ body {
 
 header {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--gap);
   padding: var(--gap);
   border-bottom: 1px solid var(--panel);
-  overflow-x: auto;
-  white-space: nowrap;
 }
 
 .btn {
