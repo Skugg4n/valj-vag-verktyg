@@ -38,6 +38,7 @@ import { useAiSettings } from './useAi.js'
 // import AiProofreadPanel from './AiProofreadPanel.jsx'
 import Button from './Button.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
+import pkg from '../package.json'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
@@ -1206,6 +1207,17 @@ export default function App() {
         onAutoLayout={!showModal && !showPlay ? handleAutoLayout : undefined}
         onHelp={openHelp}
       />
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 4,
+          right: 8,
+          fontSize: '12px',
+          opacity: 0.6,
+        }}
+      >
+        v{pkg.version}
+      </div>
     </>
   )
 }
