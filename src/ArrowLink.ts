@@ -17,7 +17,7 @@ const ArrowLink = Node.create({
         renderHTML: attributes => ({
           'data-arrow-id': attributes.id,
           href: `#${attributes.id}`,
-          class: 'arrow-link',
+          class: 'node-link',
         }),
       },
     }
@@ -62,7 +62,7 @@ const ArrowLink = Node.create({
           updateDOM(element) {
             // Replace occurrences of → [#123] in the HTML with anchor elements
             element.innerHTML = element.innerHTML.replace(/\u2192\s\[#(\d{3})\]/g, (_, id) => {
-              return `<a data-arrow-id="${id}" href="#${id}">\u2192 #${id}</a>`
+              return `<a data-arrow-id="${id}" class="node-link" href="#${id}">\u2192 #${id}</a>`
             })
           },
         },
