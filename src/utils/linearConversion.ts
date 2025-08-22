@@ -34,7 +34,7 @@ export function convertNodesToLinearText(nodes: Node[]): string {
         .map(p => p.trim())
         .filter(p => p.length > 0)
         .join('\n')
-      return body ? `${header}\n${body}` : header
+      return body ? `${header}\n\n${body}` : header
     })
     .join('\n\n')
 }

@@ -1,5 +1,6 @@
 import { parseHtmlToNodes, convertNodesToLinearText } from '../utils/linearConversion.ts'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from '../constants.js'
+import { parseLinearText } from '../useLinearParser.ts'
 import type { Node } from 'reactflow'
 
 describe('parseHtmlToNodes', () => {
@@ -63,6 +64,14 @@ describe('parseHtmlToNodes', () => {
       { id: '002', data: { title: 'Next', text: '' } } as any,
     ]
     const md = convertNodesToLinearText(nodes)
-    expect(md).toBe('#001 Start\nFirst line\nSecond line\n\n#002 Next')
+    expect(md).toBe('#001 Start\n\nFirst line\nSecond line\n\n#002 Next')
+  })
+
+  test('parseLinearText handles blank line after header', () => {
+    const raw = '#001 Start\n\nFirst line\n\n#002 Next'
+    const parsed = parseLinearText(raw)
+    expect(parsed).toHaveLength(2)
+    expect(parsed[0]).toEqual({ id: '001', title: 'Start', text: 'First line' })
+    expect(parsed[1]).toEqual({ id: '002', title: 'Next', text: '' })
   })
 })
