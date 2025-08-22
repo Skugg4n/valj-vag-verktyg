@@ -522,6 +522,7 @@ main {
   padding: 1rem;
   outline: none;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -548,6 +549,8 @@ main {
 #linearEditor p {
   line-height: 1.7;
   margin-bottom: 1rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .node-link {

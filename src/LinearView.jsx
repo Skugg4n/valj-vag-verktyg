@@ -24,6 +24,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   })
 
   const [outline, setOutline] = useState([])
+  const [next, setNext] = useState(nextId)
 
   useEffect(() => {
     if (editor && text !== editor.storage.markdown.getMarkdown()) {
@@ -33,10 +34,27 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   useLinearParser(text, setNodes)
 
+  useEffect(() => {
+    setNext(nextId)
+  }, [nextId])
+
   const insertNextNodeNumber = () => {
     if (!editor) return
-    const nodeId = `#${String(nextId).padStart(3, '0')}`
+    const nodeId = `#${String(next).padStart(3, '0')}`
     editor.chain().focus().insertContent(nodeId).run()
+    setNext(n => n + 1)
+  }
+
+  const exportMarkdown = () => {
+    if (!editor) return
+    const md = editor.storage.markdown.getMarkdown()
+    const blob = new Blob([md], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'linear.md'
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const setLink = useCallback(() => {
@@ -103,6 +121,13 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               aria-label="Next node number"
             >
               <Plus aria-hidden="true" />
+            </button>
+            <button
+              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
+              type="button"
+              onClick={exportMarkdown}
+            >
+              Exportera
             </button>
             <button
               className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
