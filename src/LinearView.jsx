@@ -92,7 +92,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   return (
     <div id="modal" role="dialog" aria-modal="true" className="show">
-      <div className="max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl overflow-hidden h-[90vh] flex flex-col">
+      <div className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl overflow-hidden h-[90vh] flex flex-col">
         <header className="bg-gray-900 text-white p-3 flex items-center justify-between border-b border-gray-700">
           <h1 className="text-lg font-bold">Linear View</h1>
           <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
           </div>
         </header>
         <div className="flex flex-1">
-          <aside className="w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto hidden md:block">
+          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto">
             <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
               Outline
             </h2>
@@ -131,7 +131,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               ))}
             </ul>
           </aside>
-          <main className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12">
+          <main className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12 text-gray-900">
             <div className="max-w-3xl mx-auto relative">
               <BubbleMenu editor={editor} className="bubble-menu">
                 <button
