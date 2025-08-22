@@ -213,31 +213,9 @@ export default function App() {
   const onNodesChange = useCallback(
     changes => {
       pushUndoState()
-      setNodes(ns => {
-        const updated = applyNodeChanges(changes, ns)
-        const data = {
-          projectName,
-          nextNodeId: nextId,
-          nodes: updated.map(n => ({
-            id: n.id,
-            text: n.data.text || '',
-            title: n.data.title || '',
-            color: n.data.color || '#1f2937',
-            position: n.position,
-            type: n.type || 'card',
-            width: n.width,
-            height: n.height,
-          })),
-        }
-        try {
-          localStorage.setItem('cyoa-data', JSON.stringify(data))
-        } catch (e) {
-          console.error('Failed to save nodes', e)
-        }
-        return updated
-      })
+      setNodes(ns => applyNodeChanges(changes, ns))
     },
-    [pushUndoState, projectName, nextId]
+    [pushUndoState]
   )
   const onEdgesChange = useCallback(
     changes => {
@@ -246,6 +224,29 @@ export default function App() {
     },
     [pushUndoState]
   )
+
+  useEffect(() => {
+    const data = {
+      projectName,
+      nextNodeId: nextId,
+      nodes: nodes.map(n => ({
+        id: n.id,
+        text: n.data.text || '',
+        title: n.data.title || '',
+        color: n.data.color || '#1f2937',
+        position: n.position,
+        type: n.type || 'card',
+        width: n.width,
+        height: n.height,
+      })),
+      edges,
+    }
+    try {
+      localStorage.setItem('cyoa-data', JSON.stringify(data))
+    } catch (e) {
+      console.error('Failed to save nodes', e)
+    }
+  }, [nodes, edges, projectName, nextId])
 
   const wrapSelected = (before, after = before) => {
     pushUndoState()
