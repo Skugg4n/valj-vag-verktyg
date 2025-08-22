@@ -213,9 +213,31 @@ export default function App() {
   const onNodesChange = useCallback(
     changes => {
       pushUndoState()
-      setNodes(ns => applyNodeChanges(changes, ns))
+      setNodes(ns => {
+        const updated = applyNodeChanges(changes, ns)
+        const data = {
+          projectName,
+          nextNodeId: nextId,
+          nodes: updated.map(n => ({
+            id: n.id,
+            text: n.data.text || '',
+            title: n.data.title || '',
+            color: n.data.color || '#1f2937',
+            position: n.position,
+            type: n.type || 'card',
+            width: n.width,
+            height: n.height,
+          })),
+        }
+        try {
+          localStorage.setItem('cyoa-data', JSON.stringify(data))
+        } catch (e) {
+          console.error('Failed to save nodes', e)
+        }
+        return updated
+      })
     },
-    [pushUndoState]
+    [pushUndoState, projectName, nextId]
   )
   const onEdgesChange = useCallback(
     changes => {
