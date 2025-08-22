@@ -59,14 +59,19 @@ export default function useProjectStorage({
     }
     if (data) {
       try {
-        const loaded = (data.nodes || []).map(n => ({
-          id: n.id,
-          type: 'card',
-          position: n.position || { x: 0, y: 0 },
-          data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
-          width: n.width ?? DEFAULT_NODE_WIDTH,
-          height: n.height ?? estimateNodeHeight(n.text || ''),
-        }))
+        const loaded = (data.nodes || []).map(n => {
+          const w = n.style?.width ?? n.width ?? DEFAULT_NODE_WIDTH
+          const h = n.style?.height ?? n.height ?? estimateNodeHeight(n.text || '')
+          return {
+            id: n.id,
+            type: 'card',
+            position: n.position || { x: 0, y: 0 },
+            data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+            width: w,
+            height: h,
+            style: { width: w, height: h },
+          }
+        })
         setNodes(loaded)
         setNextId(data.nextNodeId || 1)
         setProjectName(data.projectName || '')
@@ -89,6 +94,10 @@ export default function useProjectStorage({
         type: n.type || 'card',
         width: n.width,
         height: n.height,
+        style: {
+          width: n.style?.width ?? n.width,
+          height: n.style?.height ?? n.height,
+        },
       })),
     }
     try {
