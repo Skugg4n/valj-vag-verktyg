@@ -8,7 +8,8 @@ export interface ParsedNode {
 }
 
 export function parseLinearText(raw: string): ParsedNode[] {
-  const blocks = raw.split(/\n(?=(?:##\s+)?#\d{3}\s)/)
+  const normalized = raw.replace(/\r\n?/g, '\n')
+  const blocks = normalized.split(/\n(?=(?:##\s+)?#\d{3}\s)/)
   const ids = new Set<string>()
   const parsed: ParsedNode[] = []
   for (const block of blocks) {
