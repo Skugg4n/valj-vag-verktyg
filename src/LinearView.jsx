@@ -61,7 +61,8 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
         const m = h.textContent.match(/^#(\d{3})(.*)$/)
         if (m) {
           h.dataset.id = m[1]
-          items.push({ id: m[1], title: h.textContent.trim() })
+          // store the title without the numeric id so we can format it separately
+          items.push({ id: m[1], title: m[2].trim() })
         }
       })
       setOutline(items)
@@ -124,7 +125,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
                     className="block w-full text-left text-sm p-2 rounded-md text-gray-300 hover:bg-gray-700/50"
                     onClick={() => jumpTo(item.id)}
                   >
-                    {item.title}
+                    #{item.id} {item.title}
                   </button>
                 </li>
               ))}
