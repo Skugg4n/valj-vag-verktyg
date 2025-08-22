@@ -29,7 +29,8 @@ import './App.css'
 import NodeCard from './NodeCard.jsx'
 import NodeEditorContext from './NodeEditorContext.ts'
 import Playthrough from './Playthrough.jsx'
-import LinearView from './LinearView.jsx'
+import LinearTextEditor from './LinearTextEditor.tsx'
+import { convertNodesToHtml } from './utils/linearConversion.ts'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -785,12 +786,10 @@ export default function App() {
   }, [nodes, edges, pushUndoState])
 
   const openLinearView = () => {
-    const md = nodes
-      .slice()
-      .sort((a, b) => Number(a.id) - Number(b.id))
-      .map(n => `## #${n.id} ${n.data.title}\n${n.data.text}`)
-      .join('\n')
-    setLinearText(md)
+    const html = convertNodesToHtml(
+      nodes.slice().sort((a, b) => Number(a.id) - Number(b.id))
+    )
+    setLinearText(html)
     setShowModal(true)
   }
 
@@ -1155,11 +1154,10 @@ export default function App() {
         )}
       </main>
       {showModal && (
-        <LinearView
-          text={linearText}
-          setText={setLinearText}
+        <LinearTextEditor
+          content={linearText}
+          nodes={nodes}
           setNodes={setNodes}
-          nextId={nextId}
           onClose={() => setShowModal(false)}
         />
       )}

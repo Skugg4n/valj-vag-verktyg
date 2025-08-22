@@ -1,37 +1,29 @@
 import { useCallback } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { parseLinearText } from './useLinearParser.ts'
-
-interface NodeData {
-  id: string
-  data: {
-    title?: string
-    text?: string
-  }
-}
+import type { Node } from 'reactflow'
+import { parseHtmlToNodes } from './utils/linearConversion.ts'
 
 interface Props {
-  nodes: NodeData[]
-  onSave: (nodes: ReturnType<typeof parseLinearText>) => void
+  content: string
+  nodes: Node[]
+  setNodes: (nodes: Node[]) => void
   onClose: () => void
 }
 
-export default function LinearTextEditor({ nodes = [], onSave, onClose }: Props) {
-  const initialContent = nodes
-    .map(n => `#${n.id} ${n.data?.title ?? ''}\n${n.data?.text ?? ''}`)
-    .join('\n\n')
-
+export default function LinearTextEditor({ content, nodes = [], setNodes, onClose }: Props) {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: initialContent,
+    content,
   })
 
   const handleSave = useCallback(() => {
     if (!editor) return
-    const parsed = parseLinearText(editor.getText())
-    onSave(parsed)
-  }, [editor, onSave])
+    const html = editor.getHTML()
+    const parsed = parseHtmlToNodes(html, nodes)
+    setNodes(parsed)
+    onClose()
+  }, [editor, nodes, setNodes, onClose])
 
   if (!editor) return null
 
