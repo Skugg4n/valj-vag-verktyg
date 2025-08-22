@@ -54,7 +54,12 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
     setNodes(ns =>
       ns.map(n =>
         n.id === id
-          ? { ...n, width: w, height: h, data: { ...n.data, size: { width: w, height: h } } }
+          ? {
+              ...n,
+              width: w,
+              height: h,
+              style: { ...(n.style || {}), width: w, height: h },
+            }
           : n
       )
     )
@@ -71,7 +76,11 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
     setNodes(ns =>
       ns.map(n =>
         n.id === id
-          ? { ...n, height: h, data: { ...n.data, size: { width: n.width, height: h } } }
+          ? {
+              ...n,
+              height: h,
+              style: { ...(n.style || {}), width: n.width, height: h },
+            }
           : n
       )
     )
