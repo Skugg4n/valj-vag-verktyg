@@ -417,6 +417,7 @@ main {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   overflow-y: auto;
+  resize: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
