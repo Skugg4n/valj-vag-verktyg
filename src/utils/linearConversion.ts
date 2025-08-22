@@ -25,6 +25,20 @@ export function convertNodesToHtml(nodes: Node[]): string {
     .join('')
 }
 
+export function convertNodesToLinearText(nodes: Node[]): string {
+  return nodes
+    .map(n => {
+      const header = `#${String(n.id).padStart(3, '0')} ${n.data?.title || ''}`
+      const body = (n.data?.text || '')
+        .split(/\n+/)
+        .map(p => p.trim())
+        .filter(p => p.length > 0)
+        .join('\n')
+      return body ? `${header}\n${body}` : header
+    })
+    .join('\n\n')
+}
+
 export function parseHtmlToNodes(html: string, prevNodes: Node[] = []): Node[] {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
