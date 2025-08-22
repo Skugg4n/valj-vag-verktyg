@@ -28,15 +28,17 @@ export function convertNodesToHtml(nodes: Node[]): string {
 export function parseHtmlToNodes(html: string, prevNodes: Node[] = []): Node[] {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
-  const headers = Array.from(doc.querySelectorAll('h2[data-node-id]'))
+  const headers = Array.from(doc.querySelectorAll('h2'))
   const prevMap = new Map(prevNodes.map(n => [n.id, n]))
 
   return headers.map((h2, index) => {
-    const id = h2.getAttribute('data-node-id') || ''
-    const title = (h2.textContent || '').replace(/^#\d+\s*/, '').trim()
+    const textContent = h2.textContent || ''
+    const idMatch = textContent.match(/^#(\d{3})/)
+    const id = h2.getAttribute('data-node-id') || (idMatch ? idMatch[1] : String(index + 1).padStart(3, '0'))
+    const title = textContent.replace(/^#\d+\s*/, '').trim()
     const paragraphs: string[] = []
     let el: Element | null = h2.nextElementSibling
-    while (el && !(el.tagName.toLowerCase() === 'h2' && el.hasAttribute('data-node-id'))) {
+    while (el && el.tagName.toLowerCase() !== 'h2') {
       if (el.tagName.toLowerCase() === 'p') {
         paragraphs.push(el.textContent || '')
       }
