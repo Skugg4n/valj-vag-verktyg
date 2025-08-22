@@ -17,11 +17,15 @@ body {
 }
 
 header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap);
   padding: var(--gap);
   border-bottom: 1px solid var(--panel);
+  background: var(--bg);
 }
 
 .btn {
