@@ -29,4 +29,16 @@ describe('parseHtmlToNodes', () => {
     expect(nodes[1].width).toBe(DEFAULT_NODE_WIDTH)
     expect(nodes[1].position).toEqual({ x: 0, y: DEFAULT_NODE_HEIGHT })
   })
+
+  test('parses headings without data-node-id attribute', () => {
+    const html = `<h2>#001 Alpha</h2><p>A</p><h2>#002 Beta</h2><p>B</p>`
+    const nodes = parseHtmlToNodes(html)
+    expect(nodes).toHaveLength(2)
+    expect(nodes[0].id).toBe('001')
+    expect(nodes[0].data.title).toBe('Alpha')
+    expect(nodes[0].data.text).toBe('A')
+    expect(nodes[1].id).toBe('002')
+    expect(nodes[1].data.title).toBe('Beta')
+    expect(nodes[1].data.text).toBe('B')
+  })
 })
