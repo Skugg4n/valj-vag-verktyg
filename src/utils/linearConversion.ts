@@ -16,8 +16,7 @@ export function convertNodesToHtml(nodes: Node[]): string {
       const title = escapeHtml(n.data?.title || '')
       const header = `<h2 data-node-id="${n.id}">#${n.id} ${title}</h2>`
       const paragraphs = (n.data?.text || '')
-        .split(/\n+/)
-        .filter(p => p.length > 0)
+        .split('\n')
         .map(p => `<p>${escapeHtml(p)}</p>`)
         .join('')
       return `${header}${paragraphs}`
@@ -29,11 +28,11 @@ export function convertNodesToLinearText(nodes: Node[]): string {
   return nodes
     .map(n => {
       const header = `#${String(n.id).padStart(3, '0')} ${n.data?.title || ''}`
-      const body = (n.data?.text || '')
-        .split(/\n+/)
-        .map(p => p.trim())
-        .filter(p => p.length > 0)
+      let body = (n.data?.text || '')
+        .split('\n')
+        .map(p => p.trimEnd())
         .join('\n')
+      body = body.replace(/\n+$/, '')
       return body ? `${header}\n\n${body}` : header
     })
     .join('\n\n')
@@ -63,11 +62,11 @@ export function parseHtmlToNodes(html: string, prevNodes: Node[] = []): Node[] {
       const txt = el.textContent || ''
       if (el.tagName.toLowerCase() === 'h2' || /^#\d{3}\s/.test(txt)) break
       if (el.tagName.toLowerCase() === 'p') {
-        if (txt.trim().length > 0) paragraphs.push(txt)
+        paragraphs.push(txt)
       }
       el = el.nextElementSibling
     }
-    const text = paragraphs.join('\n')
+    const text = paragraphs.join('\n').replace(/\n+$/, '')
     const prev = prevMap.get(id)
     if (prev) {
       return { ...prev, data: { ...prev.data, title, text } }
