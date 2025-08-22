@@ -3,35 +3,29 @@ import { Plus } from 'lucide-react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
 import { Markdown } from 'tiptap-markdown'
+import CustomLink from './CustomLink.ts'
+import ArrowLink from './ArrowLink.ts'
 import useLinearParser from './useLinearParser.ts'
-
-function preprocess(md = '') {
-  return md.replace(/\[#(\d{3})]/g, '[#$1](#$1)')
-}
-
-function postprocess(md = '') {
-  return md.replace(/\[#(\d{3})\]\(#\1\)/g, '[#$1]')
-}
 
 export default function LinearView({ text, setText, setNodes, nextId, onClose }) {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
-      Link.configure({ openOnClick: false }),
+      CustomLink.configure({ openOnClick: false }),
+      ArrowLink,
       Markdown.configure({ html: false }),
     ],
-    content: preprocess(text || ''),
+    content: text || '',
     onUpdate({ editor }) {
-      setText(postprocess(editor.storage.markdown.getMarkdown()))
+      setText(editor.storage.markdown.getMarkdown())
     },
   })
 
   useEffect(() => {
-    if (editor && text !== postprocess(editor.storage.markdown.getMarkdown())) {
-      editor.commands.setContent(preprocess(text || ''))
+    if (editor && text !== editor.storage.markdown.getMarkdown()) {
+      editor.commands.setContent(text || '')
     }
   }, [text, editor])
 
