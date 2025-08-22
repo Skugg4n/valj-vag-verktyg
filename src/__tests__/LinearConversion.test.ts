@@ -41,4 +41,16 @@ describe('parseHtmlToNodes', () => {
     expect(nodes[1].data.title).toBe('Beta')
     expect(nodes[1].data.text).toBe('B')
   })
+
+  test('parses plain paragraphs that start with ids', () => {
+    const html = `<p>#001 Start</p><p>First line</p><p>#002 Next</p><p>Second line</p>`
+    const nodes = parseHtmlToNodes(html)
+    expect(nodes).toHaveLength(2)
+    expect(nodes[0].id).toBe('001')
+    expect(nodes[0].data.title).toBe('Start')
+    expect(nodes[0].data.text).toBe('First line')
+    expect(nodes[1].id).toBe('002')
+    expect(nodes[1].data.title).toBe('Next')
+    expect(nodes[1].data.text).toBe('Second line')
+  })
 })

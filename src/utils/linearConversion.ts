@@ -28,19 +28,28 @@ export function convertNodesToHtml(nodes: Node[]): string {
 export function parseHtmlToNodes(html: string, prevNodes: Node[] = []): Node[] {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
-  const headers = Array.from(doc.querySelectorAll('h2'))
+  const elements = Array.from(doc.body.children)
+  const headers = elements.filter(el => {
+    if (el.tagName.toLowerCase() === 'h2') return true
+    const text = el.textContent || ''
+    return /^#\d{3}\s/.test(text)
+  })
   const prevMap = new Map(prevNodes.map(n => [n.id, n]))
 
-  return headers.map((h2, index) => {
-    const textContent = h2.textContent || ''
+  return headers.map((header, index) => {
+    const textContent = header.textContent || ''
     const idMatch = textContent.match(/^#(\d{3})/)
-    const id = h2.getAttribute('data-node-id') || (idMatch ? idMatch[1] : String(index + 1).padStart(3, '0'))
+    const id =
+      header.getAttribute('data-node-id') ||
+      (idMatch ? idMatch[1] : String(index + 1).padStart(3, '0'))
     const title = textContent.replace(/^#\d+\s*/, '').trim()
     const paragraphs: string[] = []
-    let el: Element | null = h2.nextElementSibling
-    while (el && el.tagName.toLowerCase() !== 'h2') {
+    let el: Element | null = header.nextElementSibling
+    while (el) {
+      const txt = el.textContent || ''
+      if (el.tagName.toLowerCase() === 'h2' || /^#\d{3}\s/.test(txt)) break
       if (el.tagName.toLowerCase() === 'p') {
-        paragraphs.push(el.textContent || '')
+        if (txt.trim().length > 0) paragraphs.push(txt)
       }
       el = el.nextElementSibling
     }
