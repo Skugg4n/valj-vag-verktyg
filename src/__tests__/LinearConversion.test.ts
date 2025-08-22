@@ -1,4 +1,4 @@
-import { parseHtmlToNodes } from '../utils/linearConversion.ts'
+import { parseHtmlToNodes, convertNodesToLinearText } from '../utils/linearConversion.ts'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from '../constants.js'
 import type { Node } from 'reactflow'
 
@@ -52,5 +52,17 @@ describe('parseHtmlToNodes', () => {
     expect(nodes[1].id).toBe('002')
     expect(nodes[1].data.title).toBe('Next')
     expect(nodes[1].data.text).toBe('Second line')
+  })
+
+  test('converts nodes to linear text', () => {
+    const nodes = [
+      {
+        id: '001',
+        data: { title: 'Start', text: 'First line\nSecond line' },
+      } as any,
+      { id: '002', data: { title: 'Next', text: '' } } as any,
+    ]
+    const md = convertNodesToLinearText(nodes)
+    expect(md).toBe('#001 Start\nFirst line\nSecond line\n\n#002 Next')
   })
 })
