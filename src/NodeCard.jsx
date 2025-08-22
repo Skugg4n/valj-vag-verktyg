@@ -91,9 +91,9 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
         color: textColor,
         '--card-bg': bg,
         '--text-dim': dimColor,
-        width,
-        height,
         boxSizing: 'border-box',
+        width: '100%',
+        height: '100%',
       }}
     >
       {invalidRef && <div className="invalid-dot" />}
