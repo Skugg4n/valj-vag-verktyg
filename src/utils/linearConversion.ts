@@ -26,9 +26,9 @@ export function convertNodesToHtml(nodes: Node[]): string {
 }
 
 export function parseHtmlToNodes(html: string, prevNodes: Node[] = []): Node[] {
-  const template = document.createElement('template')
-  template.innerHTML = html
-  const headers = Array.from(template.content.querySelectorAll('h2[data-node-id]'))
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  const headers = Array.from(doc.querySelectorAll('h2[data-node-id]'))
   const prevMap = new Map(prevNodes.map(n => [n.id, n]))
 
   return headers.map((h2, index) => {
