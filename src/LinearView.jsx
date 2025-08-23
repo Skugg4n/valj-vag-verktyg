@@ -123,11 +123,14 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
     const root = document.getElementById('linearEditor')
     if (!root) return
     const handle = e => {
-      const link = e.target.closest('a.node-link')
-      if (link) {
+      const anchor = e.target.closest('a')
+      if (!anchor) return
+      const href = anchor.getAttribute('href') || ''
+      if (!href.startsWith('#')) return
+      const id = href.slice(1)
+      if (/^\d{3}$/.test(id)) {
         e.preventDefault()
-        const id = link.getAttribute('data-arrow-id')
-        if (id) jumpTo(id)
+        jumpTo(id)
       }
     }
     root.addEventListener('click', handle)
@@ -227,10 +230,14 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12 text-gray-900 min-h-0 no-scrollbar"
             >
               <div className="max-w-3xl mx-auto relative">
-                <BubbleMenu
-                  editor={editor}
-                  className="bubble-menu"
+              <BubbleMenu
+                editor={editor}
+                className="bubble-menu"
                 tippyOptions={{ appendTo: () => document.body, zIndex: 10000 }}
+                shouldShow={({ state }) => {
+                  const { from, to } = state.selection
+                  return from !== to
+                }}
               >
                 <button
                   onClick={() => editor.chain().focus().toggleBold().run()}
