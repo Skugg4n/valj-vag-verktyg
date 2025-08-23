@@ -159,7 +159,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   return (
     <div id="modal" role="dialog" aria-modal="true" className="show">
-      <div className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl overflow-hidden h-[90vh] flex flex-col">
+      <div className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl h-[90vh] flex flex-col">
         <header className="bg-gray-900 text-white p-3 flex items-center justify-between border-b border-gray-700">
           <h1 className="text-lg font-bold">Linear View</h1>
           <div className="flex items-center gap-3">
@@ -196,6 +196,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               {outline.map(item => (
                 <li key={item.id}>
                   <button
+                    type="button"
                     className={`block w-full text-left text-sm p-2 rounded-md ${
                       activeId === item.id
                         ? 'bg-gray-700 text-white'
@@ -214,7 +215,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               <BubbleMenu
                 editor={editor}
                 className="bubble-menu"
-                tippyOptions={{ zIndex: 1000 }}
+                tippyOptions={{ appendTo: () => document.body, zIndex: 10000 }}
               >
                 <button
                   onClick={() => editor.chain().focus().toggleBold().run()}
