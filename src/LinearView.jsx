@@ -145,8 +145,16 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   if (!editor) return null
 
   const jumpTo = id => {
+    const container = mainRef.current
     const el = document.querySelector(`h2[data-id="${id}"]`)
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (container && el) {
+      const top =
+        el.getBoundingClientRect().top -
+        container.getBoundingClientRect().top +
+        container.scrollTop
+      container.scrollTo({ top, behavior: 'smooth' })
+      setActiveId(id)
+    }
   }
 
   return (
@@ -203,7 +211,11 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
           </aside>
           <main ref={mainRef} className="flex-1 bg-gray-100 overflow-y-auto h-full p-4 sm:p-8 md:p-12 text-gray-900">
             <div className="max-w-3xl mx-auto relative">
-              <BubbleMenu editor={editor} className="bubble-menu">
+              <BubbleMenu
+                editor={editor}
+                className="bubble-menu"
+                tippyOptions={{ zIndex: 1000 }}
+              >
                 <button
                   onClick={() => editor.chain().focus().toggleBold().run()}
                   className={editor.isActive('bold') ? 'is-active' : ''}
