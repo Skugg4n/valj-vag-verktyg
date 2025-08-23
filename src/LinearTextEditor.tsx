@@ -15,7 +15,10 @@ interface Props {
 
 export default function LinearTextEditor({ content, nodes = [], setNodes, onClose }: Props) {
   const editor = useEditor({
-    extensions: [StarterKit, Underline],
+    extensions: [
+      StarterKit.configure({ bulletList: false, orderedList: false, listItem: false }),
+      Underline,
+    ],
     content,
   })
 

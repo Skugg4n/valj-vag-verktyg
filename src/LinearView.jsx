@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { BubbleMenu, EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -11,7 +11,7 @@ import useLinearParser from './useLinearParser.ts'
 export default function LinearView({ text, setText, setNodes, nextId, onClose }) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({ bulletList: false, orderedList: false, listItem: false }),
       Underline,
       CustomLink.configure({ openOnClick: false }),
       ArrowLink,
@@ -25,6 +25,8 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   const [outline, setOutline] = useState([])
   const [next, setNext] = useState(nextId)
+  const [activeId, setActiveId] = useState(null)
+  const mainRef = useRef(null)
 
   useEffect(() => {
     if (editor && text !== editor.storage.markdown.getMarkdown()) {
@@ -78,16 +80,12 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
     URL.revokeObjectURL(url)
   }
 
-  const setLink = useCallback(() => {
+  const insertArrowLink = useCallback(() => {
     if (!editor) return
-    const prev = editor.getAttributes('link').href
-    const url = window.prompt('URL', prev)
-    if (url === null) return
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      return
-    }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+    const input = window.prompt('Node ID')
+    if (!input) return
+    const id = String(input).padStart(3, '0')
+    editor.chain().focus().insertContent({ type: 'arrowLink', attrs: { id } }).run()
   }, [editor])
 
   useEffect(() => {
@@ -110,6 +108,28 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
     editor.on('update', updateOutline)
     return () => editor.off('update', updateOutline)
   }, [editor])
+
+  useEffect(() => {
+    const container = mainRef.current
+    if (!container) return
+    const handleScroll = () => {
+      const headings = Array.from(
+        document.querySelectorAll('#linearEditor h2')
+      )
+      const top = container.getBoundingClientRect().top
+      let current = null
+      headings.forEach(h => {
+        const rect = h.getBoundingClientRect()
+        if (rect.top - top <= 10) {
+          current = h.dataset.id || current
+        }
+      })
+      setActiveId(current)
+    }
+    container.addEventListener('scroll', handleScroll)
+    handleScroll()
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [outline])
 
   useEffect(() => {
     const handler = e => {
@@ -160,7 +180,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
           </div>
         </header>
         <div className="flex flex-1">
-          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto">
+          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto h-full">
             <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
               Outline
             </h2>
@@ -168,7 +188,11 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               {outline.map(item => (
                 <li key={item.id}>
                   <button
-                    className="block w-full text-left text-sm p-2 rounded-md text-gray-300 hover:bg-gray-700/50"
+                    className={`block w-full text-left text-sm p-2 rounded-md ${
+                      activeId === item.id
+                        ? 'bg-gray-700 text-white'
+                        : 'text-gray-300 hover:bg-gray-700/50'
+                    }`}
                     onClick={() => jumpTo(item.id)}
                   >
                     #{item.id} {item.title}
@@ -177,7 +201,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               ))}
             </ul>
           </aside>
-          <main className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12 text-gray-900">
+          <main ref={mainRef} className="flex-1 bg-gray-100 overflow-y-auto h-full p-4 sm:p-8 md:p-12 text-gray-900">
             <div className="max-w-3xl mx-auto relative">
               <BubbleMenu editor={editor} className="bubble-menu">
                 <button
@@ -193,8 +217,8 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
                   <i>I</i>
                 </button>
                 <button
-                  onClick={setLink}
-                  className={editor.isActive('link') ? 'is-active' : ''}
+                  onClick={insertArrowLink}
+                  className={editor.isActive('arrowLink') ? 'is-active' : ''}
                 >
                   Link
                 </button>
