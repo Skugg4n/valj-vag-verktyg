@@ -7,6 +7,7 @@ import { Markdown } from 'tiptap-markdown'
 import CustomLink from './CustomLink.ts'
 import ArrowLink from './ArrowLink.ts'
 import useLinearParser from './useLinearParser.ts'
+import 'tippy.js/dist/tippy.css'
 
 export default function LinearView({ text, setText, setNodes, nextId, onClose }) {
   const editor = useEditor({
@@ -145,14 +146,9 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   if (!editor) return null
 
   const jumpTo = id => {
-    const container = mainRef.current
     const el = document.querySelector(`h2[data-id="${id}"]`)
-    if (container && el) {
-      const top =
-        el.getBoundingClientRect().top -
-        container.getBoundingClientRect().top +
-        container.scrollTop
-      container.scrollTo({ top, behavior: 'smooth' })
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       setActiveId(id)
     }
   }
@@ -187,8 +183,8 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
             </button>
           </div>
         </header>
-        <div className="flex flex-1">
-          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto h-full">
+        <div className="flex flex-1 min-h-0">
+          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto h-full min-h-0">
             <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
               Outline
             </h2>
@@ -210,7 +206,10 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               ))}
             </ul>
           </aside>
-          <main ref={mainRef} className="flex-1 bg-gray-100 overflow-y-auto h-full p-4 sm:p-8 md:p-12 text-gray-900">
+          <main
+            ref={mainRef}
+            className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12 text-gray-900 min-h-0"
+          >
             <div className="max-w-3xl mx-auto relative">
               <BubbleMenu
                 editor={editor}
