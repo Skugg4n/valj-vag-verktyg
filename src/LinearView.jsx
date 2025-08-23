@@ -38,6 +38,27 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
     setNext(nextId)
   }, [nextId])
 
+  useEffect(() => {
+    if (!editor) return
+    const convertHeadings = () => {
+      const { doc, schema } = editor.state
+      let tr = editor.state.tr
+      let modified = false
+      doc.descendants((node, pos) => {
+        if (node.type.name === 'paragraph' && /^#\d{3}\s/.test(node.textContent)) {
+          tr = tr.setNodeMarkup(pos, schema.nodes.heading, { level: 2 })
+          modified = true
+        }
+      })
+      if (modified) {
+        editor.view.dispatch(tr)
+      }
+    }
+    convertHeadings()
+    editor.on('update', convertHeadings)
+    return () => editor.off('update', convertHeadings)
+  }, [editor])
+
   const insertNextNodeNumber = () => {
     if (!editor) return
     const nodeId = `#${String(next).padStart(3, '0')}`
