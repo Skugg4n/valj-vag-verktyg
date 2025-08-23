@@ -95,20 +95,44 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
       const el = document.getElementById('linearEditor')
       if (!el) return
       const items = []
-      el.querySelectorAll('h2').forEach(h => {
-        const m = h.textContent.match(/^#(\d{3})(.*)$/)
-        if (m) {
-          h.dataset.id = m[1]
-          // store the title without the numeric id so we can format it separately
-          items.push({ id: m[1], title: m[2].trim() })
-        }
-      })
+        el.querySelectorAll('h2').forEach(h => {
+          const m = h.textContent.match(/^#(\d{3})(.*)$/)
+          if (m) {
+            h.dataset.id = m[1]
+            h.id = m[1]
+            // store the title without the numeric id so we can format it separately
+            items.push({ id: m[1], title: m[2].trim() })
+          }
+        })
       setOutline(items)
     }
     updateOutline()
     editor.on('update', updateOutline)
     return () => editor.off('update', updateOutline)
   }, [editor])
+
+  const jumpTo = useCallback(id => {
+    const el = document.querySelector(`h2[data-id="${id}"]`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setActiveId(id)
+    }
+  }, [])
+
+  useEffect(() => {
+    const root = document.getElementById('linearEditor')
+    if (!root) return
+    const handle = e => {
+      const link = e.target.closest('a.node-link')
+      if (link) {
+        e.preventDefault()
+        const id = link.getAttribute('data-arrow-id')
+        if (id) jumpTo(id)
+      }
+    }
+    root.addEventListener('click', handle)
+    return () => root.removeEventListener('click', handle)
+  }, [jumpTo])
 
   useEffect(() => {
     const container = mainRef.current
@@ -145,14 +169,6 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   if (!editor) return null
 
-  const jumpTo = id => {
-    const el = document.querySelector(`h2[data-id="${id}"]`)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      setActiveId(id)
-    }
-  }
-
   return (
     <div id="modal" role="dialog" aria-modal="true" className="show">
       <div className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl h-[90vh] flex flex-col">
@@ -184,7 +200,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
           </div>
         </header>
         <div className="flex flex-1 min-h-0">
-          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto h-full min-h-0">
+          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto h-full min-h-0 no-scrollbar">
             <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
               Outline
             </h2>
@@ -206,14 +222,14 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               ))}
             </ul>
           </aside>
-          <main
-            ref={mainRef}
-            className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12 text-gray-900 min-h-0"
-          >
-            <div className="max-w-3xl mx-auto relative">
-              <BubbleMenu
-                editor={editor}
-                className="bubble-menu"
+            <main
+              ref={mainRef}
+              className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12 text-gray-900 min-h-0 no-scrollbar"
+            >
+              <div className="max-w-3xl mx-auto relative">
+                <BubbleMenu
+                  editor={editor}
+                  className="bubble-menu"
                 tippyOptions={{ appendTo: () => document.body, zIndex: 10000 }}
               >
                 <button

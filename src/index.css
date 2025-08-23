@@ -531,6 +531,15 @@ header {
   display: none;
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .linear-id {
   font: 11px/1 monospace;
   color: #777;
