@@ -236,8 +236,8 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
                 className="bubble-menu"
                 tippyOptions={{ appendTo: () => document.body, zIndex: 10000 }}
                 shouldShow={({ state }) => {
-                  const { from, to } = state.selection
-                  return from !== to
+                  console.log(state.selection)
+                  return !state.selection.empty
                 }}
               >
                 <button
