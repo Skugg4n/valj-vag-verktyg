@@ -112,6 +112,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   }, [editor])
 
   const jumpTo = useCallback(id => {
+    console.log('jumpTo', id)
     const el = document.querySelector(`h2[data-id="${id}"]`)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
