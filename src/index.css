@@ -540,6 +540,10 @@ header {
   display: none;
 }
 
+.main-editor-container {
+  position: relative;
+}
+
 .linear-id {
   font: 11px/1 monospace;
   color: #777;
