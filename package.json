@@ -1,7 +1,7 @@
 {
   "name": "valj-vag-verktyg",
   "private": true,
-  "version": "0.0.15",
+  "version": "0.0.16",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,6 +13,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
+    "@tiptap/extension-bubble-menu": "^2.13.0",
     "@tiptap/extension-link": "^2.13.0",
     "@tiptap/extension-underline": "^2.13.0",
     "@tiptap/react": "^2.13.0",
