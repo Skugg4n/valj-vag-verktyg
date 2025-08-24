@@ -112,13 +112,14 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   }, [editor])
 
   const jumpTo = useCallback(id => {
-    console.log('jumpTo', id)
-    const el = document.querySelector(`h2[data-id="${id}"]`)
+    const container = mainRef.current
+    if (!container) return
+    const el = container.querySelector(`h2[data-id="${id}"]`)
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      container.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' })
       setActiveId(id)
     }
-  }, [])
+  }, [mainRef])
 
   useEffect(() => {
     const root = document.getElementById('linearEditor')
