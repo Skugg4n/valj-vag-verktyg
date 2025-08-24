@@ -212,21 +212,6 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
           <h1 className="text-lg font-bold">Linear View</h1>
           <div className="flex items-center gap-3">
             <button
-              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
-              type="button"
-              onClick={insertNextNodeNumber}
-              aria-label="Next node number"
-            >
-              <Plus aria-hidden="true" />
-            </button>
-            <button
-              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
-              type="button"
-              onClick={exportMarkdown}
-            >
-              Exportera
-            </button>
-            <button
               className="p-2 text-gray-300 hover:text-white"
               type="button"
               onClick={() => setShowShortcuts(true)}
@@ -234,13 +219,30 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
             >
               <HelpCircle aria-hidden="true" />
             </button>
-            <button
-              className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
-              type="button"
-              onClick={onClose}
-            >
-              Stäng
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
+                type="button"
+                onClick={insertNextNodeNumber}
+                aria-label="Next node number"
+              >
+                <Plus aria-hidden="true" />
+              </button>
+              <button
+                className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
+                type="button"
+                onClick={exportMarkdown}
+              >
+                Exportera
+              </button>
+              <button
+                className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
+                type="button"
+                onClick={onClose}
+              >
+                Stäng
+              </button>
+            </div>
           </div>
         </header>
         <div className="flex flex-1 min-h-0">
