@@ -112,18 +112,31 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   }, [editor])
 
   const jumpTo = useCallback(id => {
-    const container = mainRef.current
-    const el = container?.querySelector(`h2[data-id="${id}"]`)
+    if (!editor) return
 
-    console.log('Försöker scrolla container:', container)
-    console.log('Målelement:', el)
-    console.log('Scroll-position (offsetTop):', el?.offsetTop)
+    let targetPos = null
+    const targetIdString = `#${id}`
 
-    if (container && el) {
-      container.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' })
+    editor.state.doc.descendants((node, pos) => {
+      if (
+        node.type.name === 'heading' &&
+        node.textContent.startsWith(targetIdString)
+      ) {
+        targetPos = pos
+        return false
+      }
+    })
+
+    if (targetPos !== null) {
+      editor
+        .chain()
+        .focus()
+        .setTextSelection(targetPos)
+        .scrollIntoView()
+        .run()
       setActiveId(id)
     }
-  }, [mainRef])
+  }, [editor])
 
   useEffect(() => {
     const root = document.getElementById('linearEditor')
