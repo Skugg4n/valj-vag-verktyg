@@ -1212,7 +1212,7 @@ export default function App() {
         style={{
           position: 'fixed',
           bottom: 4,
-          right: 8,
+          right: 16,
           fontSize: '12px',
           opacity: 0.6,
         }}

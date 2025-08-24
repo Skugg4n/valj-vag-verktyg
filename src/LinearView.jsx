@@ -178,9 +178,12 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   if (!editor) return null
 
-  return (
-    <div id="modal" role="dialog" aria-modal="true" className="show">
-      <div className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl h-[90vh] flex flex-col">
+    return (
+      <div id="modal" role="dialog" aria-modal="true" className="show">
+        <div
+          ref={mainRef}
+          className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl h-[90vh] flex flex-col overflow-y-auto no-scrollbar"
+        >
         <header className="bg-gray-900 text-white p-3 flex items-center justify-between border-b border-gray-700">
           <h1 className="text-lg font-bold">Linear View</h1>
           <div className="flex items-center gap-3">
@@ -231,11 +234,8 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               ))}
             </ul>
           </aside>
-            <main
-              ref={mainRef}
-              className="flex-1 bg-gray-100 overflow-y-auto p-4 sm:p-8 md:p-12 text-gray-900 min-h-0 no-scrollbar"
-            >
-              <div className="max-w-3xl mx-auto relative">
+          <main className="flex-1 bg-gray-100 p-4 sm:p-8 md:p-12 text-gray-900 min-h-0">
+            <div className="max-w-3xl mx-auto relative">
               <BubbleMenu
                 editor={editor}
                 className="bubble-menu"
