@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, HelpCircle } from 'lucide-react'
+import { Dialog } from '@headlessui/react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -10,6 +11,19 @@ import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import EditorBubbleMenu from './EditorBubbleMenu.jsx'
 import useLinearParser from './useLinearParser.ts'
 import 'tippy.js/dist/tippy.css'
+import { Extension } from '@tiptap/core'
+
+const KeyboardShortcuts = Extension.create({
+  name: 'keyboardShortcuts',
+  addKeyboardShortcuts() {
+    return {
+      'Mod-k': () => {
+        console.log('Skapa länk-genväg aktiverad!')
+        return true
+      },
+    }
+  },
+})
 
 export default function LinearView({ text, setText, setNodes, nextId, onClose }) {
   const editor = useEditor({
@@ -20,6 +34,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
       ArrowLink,
       Markdown.configure({ html: false }),
       BubbleMenuExtension,
+      KeyboardShortcuts,
     ],
     content: text || '',
     onUpdate({ editor }) {
@@ -30,6 +45,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   const [outline, setOutline] = useState([])
   const [next, setNext] = useState(nextId)
   const [activeId, setActiveId] = useState(null)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const mainRef = useRef(null)
 
   useEffect(() => {
@@ -186,7 +202,8 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   if (!editor) return null
 
-    return (
+  return (
+    <>
       <div id="modal" role="dialog" aria-modal="true" className="show">
         <div
           className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl h-[90vh] flex flex-col"
@@ -208,6 +225,14 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               onClick={exportMarkdown}
             >
               Exportera
+            </button>
+            <button
+              className="p-2 text-gray-300 hover:text-white"
+              type="button"
+              onClick={() => setShowShortcuts(true)}
+              aria-label="Visa genvägar"
+            >
+              <HelpCircle aria-hidden="true" />
             </button>
             <button
               className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
@@ -256,6 +281,71 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
           </main>
         </div>
       </div>
-    </div>
+      </div>
+      {showShortcuts && (
+        <Dialog
+          open={showShortcuts}
+          onClose={() => setShowShortcuts(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+          <Dialog.Panel className="relative bg-gray-800 text-white rounded-md p-6 w-full max-w-md">
+            <Dialog.Title className="text-lg font-semibold">
+              Kortkommandon
+            </Dialog.Title>
+            <table className="mt-4 w-full text-sm">
+              <thead>
+                <tr>
+                  <th className="text-left">Kommando</th>
+                  <th className="text-left">Windows/Linux</th>
+                  <th className="text-left">macOS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Fetstil</td>
+                  <td>Ctrl + B</td>
+                  <td>Cmd + B</td>
+                </tr>
+                <tr>
+                  <td>Kursiv</td>
+                  <td>Ctrl + I</td>
+                  <td>Cmd + I</td>
+                </tr>
+                <tr>
+                  <td>Skapa rubrik (Ny nod)</td>
+                  <td>Ctrl + Alt + 2</td>
+                  <td>Cmd + Option + 2</td>
+                </tr>
+                <tr>
+                  <td>Skapa länk</td>
+                  <td>Ctrl + K</td>
+                  <td>Cmd + K</td>
+                </tr>
+                <tr>
+                  <td>Ångra</td>
+                  <td>Ctrl + Z</td>
+                  <td>Cmd + Z</td>
+                </tr>
+                <tr>
+                  <td>Gör om</td>
+                  <td>Ctrl + Y</td>
+                  <td>Cmd + Shift + Z</td>
+                </tr>
+              </tbody>
+            </table>
+            <div className="mt-4 text-right">
+              <button
+                className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md"
+                type="button"
+                onClick={() => setShowShortcuts(false)}
+              >
+                Stäng
+              </button>
+            </div>
+          </Dialog.Panel>
+        </Dialog>
+      )}
+    </>
   )
 }
