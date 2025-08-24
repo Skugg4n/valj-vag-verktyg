@@ -234,11 +234,11 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
             </ul>
           </aside>
           <main
-            className="flex-1 relative bg-gray-100 text-gray-900 min-h-0 overflow-hidden"
+            className="flex-1 flex flex-col bg-gray-100 text-gray-900 min-h-0 overflow-hidden"
           >
             <div
               ref={mainRef}
-              className="absolute inset-0 overflow-y-auto p-4 sm:p-8 md:p-12 no-scrollbar main-editor-container"
+              className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 no-scrollbar main-editor-container"
             >
             <div className="max-w-3xl mx-auto relative">
               <BubbleMenu
