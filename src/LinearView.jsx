@@ -113,9 +113,13 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
 
   const jumpTo = useCallback(id => {
     const container = mainRef.current
-    if (!container) return
-    const el = container.querySelector(`h2[data-id="${id}"]`)
-    if (el) {
+    const el = container?.querySelector(`h2[data-id="${id}"]`)
+
+    console.log('Försöker scrolla container:', container)
+    console.log('Målelement:', el)
+    console.log('Scroll-position (offsetTop):', el?.offsetTop)
+
+    if (container && el) {
       container.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' })
       setActiveId(id)
     }
