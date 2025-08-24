@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
-import { BubbleMenu, EditorContent, useEditor } from '@tiptap/react'
+import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import { Markdown } from 'tiptap-markdown'
 import CustomLink from './CustomLink.ts'
 import ArrowLink from './ArrowLink.ts'
+import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
+import EditorBubbleMenu from './EditorBubbleMenu.jsx'
 import useLinearParser from './useLinearParser.ts'
 import 'tippy.js/dist/tippy.css'
 
@@ -17,6 +19,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
       CustomLink.configure({ openOnClick: false }),
       ArrowLink,
       Markdown.configure({ html: false }),
+      BubbleMenuExtension,
     ],
     content: text || '',
     onUpdate({ editor }) {
@@ -80,14 +83,6 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
     a.click()
     URL.revokeObjectURL(url)
   }
-
-  const insertArrowLink = useCallback(() => {
-    if (!editor) return
-    const input = window.prompt('Node ID')
-    if (!input) return
-    const id = String(input).padStart(3, '0')
-    editor.chain().focus().insertContent({ type: 'arrowLink', attrs: { id } }).run()
-  }, [editor])
 
   useEffect(() => {
     if (!editor) return
@@ -254,34 +249,7 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
               className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 no-scrollbar main-editor-container"
             >
             <div className="max-w-3xl mx-auto relative">
-              <BubbleMenu
-                editor={editor}
-                className="bubble-menu"
-                tippyOptions={{ appendTo: () => document.body, zIndex: 10000 }}
-                shouldShow={({ state }) => {
-                  console.log(state.selection)
-                  return !state.selection.empty
-                }}
-              >
-                <button
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={editor.isActive('bold') ? 'is-active' : ''}
-                >
-                  <b>B</b>
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={editor.isActive('italic') ? 'is-active' : ''}
-                >
-                  <i>I</i>
-                </button>
-                <button
-                  onClick={insertArrowLink}
-                  className={editor.isActive('arrowLink') ? 'is-active' : ''}
-                >
-                  Link
-                </button>
-              </BubbleMenu>
+              {editor && <EditorBubbleMenu editor={editor} />}
               <EditorContent id="linearEditor" editor={editor} />
             </div>
             </div>
