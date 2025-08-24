@@ -20,6 +20,12 @@ const EditorBubbleMenu = ({ editor }) => {
       shouldShow={({ state }) => state.selection.from !== state.selection.to}
     >
       <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+      >
+        Heading
+      </button>
+      <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={editor.isActive('bold') ? 'is-active' : ''}
       >
