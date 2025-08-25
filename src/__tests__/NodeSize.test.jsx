@@ -26,7 +26,7 @@ const nodes = [
 
 it('keeps node dimensions after click', () => {
   const { container } = render(
-    <NodeEditorContext.Provider value={{ updateNodeText: () => {}, resizingRef: { current: false } }}>
+    <NodeEditorContext.Provider value={{ updateNodeText: () => {}, resizingRef: { current: false }, selectNode: () => {} }}>
       <ReactFlowProvider>
         <div style={{ width: 500, height: 500 }}>
           <ReactFlow
