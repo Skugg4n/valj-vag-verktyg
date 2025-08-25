@@ -168,7 +168,10 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
     return () => root.removeEventListener('click', handle)
   }, [jumpTo])
 
+  console.log('LinearView received activeNodeId prop:', activeNodeId)
+
   useEffect(() => {
+    console.log('useEffect triggered for activeNodeId:', activeNodeId)
     if (!editor) return
     if (activeNodeId) {
       jumpTo(activeNodeId)
