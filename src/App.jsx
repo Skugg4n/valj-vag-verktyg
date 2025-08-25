@@ -100,7 +100,7 @@ export default function App() {
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
-  const [isPanelExpanded, setPanelExpanded] = useState(false)
+  const [isLinearViewOpen, setLinearViewOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
   const [autoSave, setAutoSave] = useState(() => {
@@ -786,14 +786,12 @@ export default function App() {
     setEdges(layoutedEdges)
   }, [nodes, edges, pushUndoState])
 
-  const togglePanel = () => {
-    if (!isPanelExpanded) {
-      const linear = convertNodesToLinearText(
-        nodes.slice().sort((a, b) => Number(a.id) - Number(b.id))
-      )
-      setLinearText(linear)
-    }
-    setPanelExpanded(p => !p)
+  const openLinearView = () => {
+    const linear = convertNodesToLinearText(
+      nodes.slice().sort((a, b) => Number(a.id) - Number(b.id))
+    )
+    setLinearText(linear)
+    setLinearViewOpen(true)
   }
 
   const startPlaythrough = () => {
@@ -846,12 +844,6 @@ export default function App() {
 
   return (
     <>
-      <div
-        className={`grid h-screen ${
-          isPanelExpanded ? 'grid-cols-[1fr_2fr]' : 'grid-cols-[3fr_1fr]'
-        }`}
-      >
-        <div className="overflow-hidden">
       <header>
         <Button
           variant="primary"
@@ -1161,19 +1153,20 @@ export default function App() {
         />
       </section>
       )}
+      {/* Overlay for linear view */}
+      <div
+        className={`fixed inset-0 bg-black/50 transition-opacity duration-300 z-[60] ${isLinearViewOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setLinearViewOpen(false)}
+      />
+      <LinearView
+        isOpen={isLinearViewOpen}
+        text={linearText}
+        setText={setLinearText}
+        setNodes={setNodes}
+        nextId={nextId}
+        onClose={() => setLinearViewOpen(false)}
+      />
     </main>
-        </div>
-        <div className="border-l border-gray-700">
-          <LinearView
-            isExpanded={isPanelExpanded}
-            text={linearText}
-            setText={setLinearText}
-            setNodes={setNodes}
-            nextId={nextId}
-            onToggle={togglePanel}
-          />
-        </div>
-      </div>
       {showPlay && (
         <Playthrough
           nodes={nodes}
@@ -1214,9 +1207,9 @@ export default function App() {
       <FloatingMenu
         onShowSettings={openSettings}
         // onShowAiSettings={() => setShowAiSettings(true)}
-        onLinearView={togglePanel}
+        onLinearView={openLinearView}
         onPlaythrough={startPlaythrough}
-        onAutoLayout={!isPanelExpanded && !showPlay ? handleAutoLayout : undefined}
+        onAutoLayout={!isLinearViewOpen && !showPlay ? handleAutoLayout : undefined}
         onHelp={openHelp}
       />
       <div
