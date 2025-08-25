@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Plus, HelpCircle } from 'lucide-react'
-import { Dialog } from '@headlessui/react'
+import { Plus } from 'lucide-react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -45,7 +44,6 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   const [outline, setOutline] = useState([])
   const [next, setNext] = useState(nextId)
   const [activeId, setActiveId] = useState(null)
-  const [showShortcuts, setShowShortcuts] = useState(false)
   const mainRef = useRef(null)
 
   useEffect(() => {
@@ -212,61 +210,67 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
           <h1 className="text-lg font-bold">Linear View</h1>
           <div className="flex items-center gap-3">
             <button
-              className="p-2 text-gray-300 hover:text-white"
+              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
               type="button"
-              onClick={() => setShowShortcuts(true)}
-              aria-label="Visa genvägar"
+              onClick={insertNextNodeNumber}
+              aria-label="Next node number"
             >
-              <HelpCircle aria-hidden="true" />
+              <Plus aria-hidden="true" />
             </button>
-            <div className="flex items-center gap-3">
-              <button
-                className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
-                type="button"
-                onClick={insertNextNodeNumber}
-                aria-label="Next node number"
-              >
-                <Plus aria-hidden="true" />
-              </button>
-              <button
-                className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
-                type="button"
-                onClick={exportMarkdown}
-              >
-                Exportera
-              </button>
-              <button
-                className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
-                type="button"
-                onClick={onClose}
-              >
-                Stäng
-              </button>
-            </div>
+            <button
+              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
+              type="button"
+              onClick={exportMarkdown}
+            >
+              Exportera
+            </button>
+            <button
+              className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
+              type="button"
+              onClick={onClose}
+            >
+              Stäng
+            </button>
           </div>
         </header>
         <div className="flex flex-1 min-h-0">
-          <aside className="hidden md:block md:w-1/4 bg-gray-900/50 p-4 border-r border-gray-700 overflow-y-auto h-full min-h-0 no-scrollbar">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              Outline
-            </h2>
-            <ul className="space-y-1">
-              {outline.map(item => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    className={`block w-full text-left text-sm p-2 rounded-md ${
-                      activeId === item.id
-                        ? 'bg-gray-700 text-white'
-                        : 'text-gray-300 hover:bg-gray-700/50'
-                    }`}
-                    onClick={() => jumpTo(item.id)}
-                  >
-                    #{item.id} {item.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <aside className="hidden md:flex md:flex-col md:w-1/4 bg-gray-900/50 border-r border-gray-700 h-full min-h-0">
+            <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                Outline
+              </h2>
+              <ul className="space-y-1">
+                {outline.map(item => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      className={`block w-full text-left text-sm p-2 rounded-md ${
+                        activeId === item.id
+                          ? 'bg-gray-700 text-white'
+                          : 'text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                      onClick={() => jumpTo(item.id)}
+                    >
+                      #{item.id} {item.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <footer className="p-4 border-t border-gray-700">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Shortcuts</h3>
+              <div className="text-xs text-gray-500 space-y-1">
+                <p>
+                  <span className="font-mono bg-gray-700 px-1.5 py-0.5 rounded">Cmd/Ctrl + B</span>: Bold
+                </p>
+                <p>
+                  <span className="font-mono bg-gray-700 px-1.5 py-0.5 rounded">Cmd/Ctrl + I</span>: Italic
+                </p>
+                <p>
+                  <span className="font-mono bg-gray-700 px-1.5 py-0.5 rounded">Cmd/Ctrl + Opt + 2</span>: Heading
+                </p>
+              </div>
+            </footer>
           </aside>
           <main
             className="flex-1 flex flex-col bg-gray-100 text-gray-900 min-h-0 overflow-hidden"
@@ -284,70 +288,6 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
         </div>
       </div>
       </div>
-      {showShortcuts && (
-        <Dialog
-          open={showShortcuts}
-          onClose={() => setShowShortcuts(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center"
-        >
-          <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-          <Dialog.Panel className="relative bg-gray-800 text-white rounded-md p-6 w-full max-w-md">
-            <Dialog.Title className="text-lg font-semibold">
-              Kortkommandon
-            </Dialog.Title>
-            <table className="mt-4 w-full text-sm">
-              <thead>
-                <tr>
-                  <th className="text-left">Kommando</th>
-                  <th className="text-left">Windows/Linux</th>
-                  <th className="text-left">macOS</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Fetstil</td>
-                  <td>Ctrl + B</td>
-                  <td>Cmd + B</td>
-                </tr>
-                <tr>
-                  <td>Kursiv</td>
-                  <td>Ctrl + I</td>
-                  <td>Cmd + I</td>
-                </tr>
-                <tr>
-                  <td>Skapa rubrik (Ny nod)</td>
-                  <td>Ctrl + Alt + 2</td>
-                  <td>Cmd + Option + 2</td>
-                </tr>
-                <tr>
-                  <td>Skapa länk</td>
-                  <td>Ctrl + K</td>
-                  <td>Cmd + K</td>
-                </tr>
-                <tr>
-                  <td>Ångra</td>
-                  <td>Ctrl + Z</td>
-                  <td>Cmd + Z</td>
-                </tr>
-                <tr>
-                  <td>Gör om</td>
-                  <td>Ctrl + Y</td>
-                  <td>Cmd + Shift + Z</td>
-                </tr>
-              </tbody>
-            </table>
-            <div className="mt-4 text-right">
-              <button
-                className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md"
-                type="button"
-                onClick={() => setShowShortcuts(false)}
-              >
-                Stäng
-              </button>
-            </div>
-          </Dialog.Panel>
-        </Dialog>
-      )}
     </>
   )
 }
