@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -24,7 +24,7 @@ const KeyboardShortcuts = Extension.create({
   },
 })
 
-export default function LinearView({ text, setText, setNodes, nextId, onClose }) {
+export default function LinearView({ text, setText, setNodes, nextId, expanded, onToggleExpand }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ bulletList: false, orderedList: false, listItem: false }),
@@ -187,42 +187,38 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
     return () => container.removeEventListener('scroll', handleScroll)
   }, [outline])
 
-  useEffect(() => {
-    const handler = e => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault()
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
 
   if (!editor) return null
 
   return (
-    <>
-      <div id="modal" role="dialog" aria-modal="true" className="show">
-        <div className="w-full max-w-7xl mx-auto linear-container rounded-2xl shadow-2xl h-[90vh] flex flex-col">
-          <header className="linear-header p-3 flex items-center justify-between border-b">
-            <h1 className="text-lg font-bold">Linear View</h1>
-            <div className="flex items-center gap-3">
-              <button
-                className="btn"
-                type="button"
-                onClick={insertNextNodeNumber}
-                aria-label="Next node number"
-              >
-                <Plus aria-hidden="true" />
-              </button>
-              <button className="btn" type="button" onClick={exportMarkdown}>
-                Exportera
-              </button>
-              <button className="btn primary" type="button" onClick={onClose}>
-                Stäng
-              </button>
-            </div>
-          </header>
+    <div id="linear-panel" className="linear-container flex flex-col h-full">
+      <header className="linear-header p-3 flex items-center justify-between border-b">
+        <div className="flex items-center gap-2">
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={onToggleExpand}
+            title={expanded ? 'Collapse' : 'Expand'}
+            aria-label={expanded ? 'Collapse panel' : 'Expand panel'}
+          >
+            {expanded ? <ChevronRight /> : <ChevronLeft />}
+          </button>
+          <h1 className="text-lg font-bold">Linear View</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            className="btn"
+            type="button"
+            onClick={insertNextNodeNumber}
+            aria-label="Next node number"
+          >
+            <Plus aria-hidden="true" />
+          </button>
+          <button className="btn" type="button" onClick={exportMarkdown}>
+            Exportera
+          </button>
+        </div>
+      </header>
           <div className="flex flex-1 min-h-0">
             <aside className="hidden md:flex md:flex-col md:w-1/4 linear-sidebar h-full min-h-0">
               <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
@@ -273,7 +269,5 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
             </main>
           </div>
         </div>
-      </div>
-    </>
   )
 }

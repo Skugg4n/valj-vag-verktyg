@@ -78,9 +78,33 @@ header {
 
 #root > main {
   flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.workspace #graph-container {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto;
+  width: 70%;
+  transition: width 0.3s;
+}
+
+.workspace #linear-panel {
+  width: 30%;
+  transition: width 0.3s;
+  border-left: 1px solid var(--panel);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace.expanded #graph-container {
+  width: 20%;
+}
+
+.workspace.expanded #linear-panel {
+  width: 80%;
 }
 
 #toggleEditor {
