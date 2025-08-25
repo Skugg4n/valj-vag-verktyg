@@ -59,7 +59,8 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
       ActiveNodeHighlight,
     ],
     content: text || '',
-    onCreate() {
+    onCreate({ editor }) {
+      void editor
       updateOutline()
     },
     onUpdate({ editor }) {
