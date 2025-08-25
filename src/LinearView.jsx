@@ -26,6 +26,27 @@ const KeyboardShortcuts = Extension.create({
 })
 
 export default function LinearView({ text, setText, setNodes, nextId, expanded, onToggleExpand, activeNodeId }) {
+  const [outline, setOutline] = useState([])
+  const [next, setNext] = useState(nextId)
+  const [activeId, setActiveId] = useState(null)
+  const mainRef = useRef(null)
+
+  const updateOutline = useCallback(() => {
+    const el = document.getElementById('linearEditor')
+    if (!el) return
+    const items = []
+    el.querySelectorAll('h2').forEach(h => {
+      const m = h.textContent.match(/^#(\d{3})(.*)$/)
+      if (m) {
+        h.dataset.id = m[1]
+        h.id = m[1]
+        // store the title without the numeric id so we can format it separately
+        items.push({ id: m[1], title: m[2].trim() })
+      }
+    })
+    setOutline(items)
+  }, [])
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ bulletList: false, orderedList: false, listItem: false }),
@@ -38,15 +59,14 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
       ActiveNodeHighlight,
     ],
     content: text || '',
+    onCreate() {
+      updateOutline()
+    },
     onUpdate({ editor }) {
       setText(editor.storage.markdown.getMarkdown())
+      updateOutline()
     },
   })
-
-  const [outline, setOutline] = useState([])
-  const [next, setNext] = useState(nextId)
-  const [activeId, setActiveId] = useState(null)
-  const mainRef = useRef(null)
 
   useEffect(() => {
     if (editor && text !== editor.storage.markdown.getMarkdown()) {
@@ -99,28 +119,6 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
     a.click()
     URL.revokeObjectURL(url)
   }
-
-  useEffect(() => {
-    if (!editor) return
-    const updateOutline = () => {
-      const el = document.getElementById('linearEditor')
-      if (!el) return
-      const items = []
-        el.querySelectorAll('h2').forEach(h => {
-          const m = h.textContent.match(/^#(\d{3})(.*)$/)
-          if (m) {
-            h.dataset.id = m[1]
-            h.id = m[1]
-            // store the title without the numeric id so we can format it separately
-            items.push({ id: m[1], title: m[2].trim() })
-          }
-        })
-      setOutline(items)
-    }
-    updateOutline()
-    editor.on('update', updateOutline)
-    return () => editor.off('update', updateOutline)
-  }, [editor])
 
   const jumpTo = useCallback(id => {
     if (!editor) return
