@@ -4,7 +4,6 @@ import {
   Menu,
   Settings,
   HelpCircle,
-  List,
   Play,
   LayoutGrid,
 } from 'lucide-react'
@@ -13,7 +12,6 @@ const sectionConfig = [
   {
     title: 'View',
     items: [
-      { label: 'Linear View', icon: List, action: 'onLinearView' },
       { label: 'Playthrough', icon: Play, action: 'onPlaythrough' },
     ],
   },
@@ -33,14 +31,12 @@ const sectionConfig = [
 export default function FloatingMenu({
   onShowSettings,
   // onShowAiSettings,
-  onLinearView,
   onPlaythrough,
   onAutoLayout,
   onHelp,
 }) {
   const propMap = {
     onShowSettings,
-    onLinearView,
     onPlaythrough,
     onAutoLayout,
     onHelp,

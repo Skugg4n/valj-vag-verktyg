@@ -100,7 +100,7 @@ export default function App() {
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
-  const [showModal, setShowModal] = useState(false)
+  const [linearExpanded, setLinearExpanded] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
   const [autoSave, setAutoSave] = useState(() => {
@@ -140,6 +140,10 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('vv-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    setLinearText(convertNodesToLinearText(nodes))
+  }, [nodes])
 
   const {
     projects,
@@ -786,14 +790,6 @@ export default function App() {
     setEdges(layoutedEdges)
   }, [nodes, edges, pushUndoState])
 
-  const openLinearView = () => {
-    const linear = convertNodesToLinearText(
-      nodes.slice().sort((a, b) => Number(a.id) - Number(b.id))
-    )
-    setLinearText(linear)
-    setShowModal(true)
-  }
-
   const startPlaythrough = () => {
     setShowPlay(true)
   }
@@ -999,170 +995,171 @@ export default function App() {
         </Button>
 
       </header>
-      <main style={{ position: 'relative' }}>
-        <div id="graph">
-          <NodeEditorContext.Provider value={{ updateNodeText, resizingRef }}>
-          <ReactFlow
-            style={{ width: '100%', height: '100%' }}
-            nodes={nodes}
-            edges={edges}
-            defaultEdgeOptions={defaultEdgeOptions}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={onNodeClick}
-            onReconnect={onReconnect}
-            onReconnectStart={onReconnectStart}
-            onReconnectEnd={onReconnectEnd}
-            edgesUpdatable
-            onPaneClick={onPaneClick}
-            nodeTypes={nodeTypes}
-            snapToGrid
-            snapGrid={[16, 16]}
-            fitView
-          >
-          <Background color="#374151" variant="dots" gap={16} size={1} />
-          <MiniMap zoomable pannable />
-          <Controls />
-        </ReactFlow>
-        </NodeEditorContext.Provider>
-      </div>
-        <button
-          id="toggleEditor"
-          className="btn ghost"
-          type="button"
-          style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: editorCollapsed ? 0 : '300px', zIndex: 1 }}
-          aria-label={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
-          title={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
-          onClick={() => setEditorCollapsed(c => !c)}
-        >
-          {editorCollapsed ? <ChevronLeft /> : <ChevronRight />}
-        </button>
-        {!editorCollapsed && (
-        <section id="editor">
-          <h2 id="nodeId">#{currentId || '000'} {title}</h2>
-        <div id="formatting-toolbar">
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={() => wrapSelected('**')}
-            title="Bold (Ctrl+B)"
-          >
-            B
-          </button>
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={() => wrapSelected('*')}
-            title="Italic (Ctrl+I)"
-          >
-            I
-          </button>
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={() => wrapSelected('__')}
-            title="Underline (Ctrl+U)"
-          >
-            U
-          </button>
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={() => applyHeading(1)}
-            title="Heading 1"
-          >
-            H1
-          </button>
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={() => applyHeading(2)}
-            title="Heading 2"
-          >
-            H2
-          </button>
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={insertNextNodeNumber}
-            aria-label="Next node number"
-            title="Insert next node number"
-          >
-            <Plus aria-hidden="true" />
-          </button>
-          {/*
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={fetchAiSuggestions}
-            aria-label="AI suggestions"
-          >
-            <Cloud aria-hidden="true" />
-          </button>
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={fetchProofread}
-            aria-label="AI proofread"
-          >
-            <SpellCheck aria-hidden="true" />
-          </button>
-          */}
-          <div style={{ position: 'relative' }}>
-            <button
-              className="color-button"
-              type="button"
-              onClick={() => setShowColorPicker(c => !c)}
-              aria-label="Node color"
-              title="Node color"
-              style={{
-                background:
-                  nodes.find(n => n.id === currentId)?.data.color || '#1f2937',
-              }}
-            />
-            {showColorPicker && (
-              <div className="color-picker">
-                {COLOR_OPTIONS.map(col => (
-                  <div
-                    key={col}
-                    className="color-swatch"
-                    style={{ background: col }}
-                    onClick={() => changeNodeColor(col)}
-                  />
-                ))}
-              </div>
-            )}
+      <main className={`workspace ${linearExpanded ? 'expanded' : ''}`}>
+        <div id="graph-container">
+          <div id="graph">
+            <NodeEditorContext.Provider value={{ updateNodeText, resizingRef }}>
+              <ReactFlow
+                style={{ width: '100%', height: '100%' }}
+                nodes={nodes}
+                edges={edges}
+                defaultEdgeOptions={defaultEdgeOptions}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                onReconnect={onReconnect}
+                onReconnectStart={onReconnectStart}
+                onReconnectEnd={onReconnectEnd}
+                edgesUpdatable
+                onPaneClick={onPaneClick}
+                nodeTypes={nodeTypes}
+                snapToGrid
+                snapGrid={[16, 16]}
+                fitView
+              >
+                <Background color="#374151" variant="dots" gap={16} size={1} />
+                <MiniMap zoomable pannable />
+                <Controls />
+              </ReactFlow>
+            </NodeEditorContext.Provider>
           </div>
-          {/* AI loading indicator removed */}
-          {/* Settings button moved to header */}
+          <button
+            id="toggleEditor"
+            className="btn ghost"
+            type="button"
+            style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: editorCollapsed ? 0 : '300px', zIndex: 1 }}
+            aria-label={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
+            title={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
+            onClick={() => setEditorCollapsed(c => !c)}
+          >
+            {editorCollapsed ? <ChevronLeft /> : <ChevronRight />}
+          </button>
+          {!editorCollapsed && (
+            <section id="editor">
+              <h2 id="nodeId">#{currentId || '000'} {title}</h2>
+              <div id="formatting-toolbar">
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={() => wrapSelected('**')}
+                  title="Bold (Ctrl+B)"
+                >
+                  B
+                </button>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={() => wrapSelected('*')}
+                  title="Italic (Ctrl+I)"
+                >
+                  I
+                </button>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={() => wrapSelected('__')}
+                  title="Underline (Ctrl+U)"
+                >
+                  U
+                </button>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={() => applyHeading(1)}
+                  title="Heading 1"
+                >
+                  H1
+                </button>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={() => applyHeading(2)}
+                  title="Heading 2"
+                >
+                  H2
+                </button>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={insertNextNodeNumber}
+                  aria-label="Next node number"
+                  title="Insert next node number"
+                >
+                  <Plus aria-hidden="true" />
+                </button>
+                {/*
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={fetchAiSuggestions}
+                  aria-label="AI suggestions"
+                >
+                  <Cloud aria-hidden="true" />
+                </button>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={fetchProofread}
+                  aria-label="AI proofread"
+                >
+                  <SpellCheck aria-hidden="true" />
+                </button>
+                */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    className="color-button"
+                    type="button"
+                    onClick={() => setShowColorPicker(c => !c)}
+                    aria-label="Node color"
+                    title="Node color"
+                    style={{
+                      background:
+                        nodes.find(n => n.id === currentId)?.data.color || '#1f2937',
+                    }}
+                  />
+                  {showColorPicker && (
+                    <div className="color-picker">
+                      {COLOR_OPTIONS.map(col => (
+                        <div
+                          key={col}
+                          className="color-swatch"
+                          style={{ background: col }}
+                          onClick={() => changeNodeColor(col)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {/* AI loading indicator removed */}
+                {/* Settings button moved to header */}
+              </div>
+              <input
+                id="title"
+                value={title}
+                onChange={onTitleChange}
+                placeholder="Title"
+                disabled={!currentId}
+              />
+              <textarea
+                id="text"
+                ref={textRef}
+                value={text}
+                onChange={onTextChange}
+                disabled={!currentId}
+              />
+            </section>
+          )}
         </div>
-          <input
-            id="title"
-            value={title}
-            onChange={onTitleChange}
-            placeholder="Title"
-            disabled={!currentId}
-          />
-          <textarea
-            id="text"
-            ref={textRef}
-            value={text}
-            onChange={onTextChange}
-            disabled={!currentId}
-          />
-        </section>
-        )}
-      </main>
-      {showModal && (
         <LinearView
           text={linearText}
           setText={setLinearText}
           setNodes={setNodes}
           nextId={nextId}
-          onClose={() => setShowModal(false)}
+          expanded={linearExpanded}
+          onToggleExpand={() => setLinearExpanded(e => !e)}
         />
-      )}
+      </main>
       {showPlay && (
         <Playthrough
           nodes={nodes}
@@ -1203,9 +1200,8 @@ export default function App() {
       <FloatingMenu
         onShowSettings={openSettings}
         // onShowAiSettings={() => setShowAiSettings(true)}
-        onLinearView={openLinearView}
         onPlaythrough={startPlaythrough}
-        onAutoLayout={!showModal && !showPlay ? handleAutoLayout : undefined}
+        onAutoLayout={!showPlay ? handleAutoLayout : undefined}
         onHelp={openHelp}
       />
       <div
