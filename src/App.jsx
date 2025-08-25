@@ -9,8 +9,6 @@ import {
   FilePlus,
   FileText,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Sun,
   Moon
 } from 'lucide-react'
@@ -42,17 +40,6 @@ import pkg from '../package.json'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
-
-const COLOR_OPTIONS = [
-  '#1f2937',
-  '#ef4444',
-  '#f97316',
-  '#facc15',
-  '#22c55e',
-  '#3b82f6',
-  '#e879f9',
-  '#d1d5db',
-]
 
 const ROOT_KEY = '__root__'
 
@@ -100,7 +87,7 @@ export default function App() {
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
-  const [linearExpanded, setLinearExpanded] = useState(false)
+  const [isPanelExpanded, setIsPanelExpanded] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
   const [autoSave, setAutoSave] = useState(() => {
@@ -113,18 +100,13 @@ export default function App() {
   // const [showSuggestions, setShowSuggestions] = useState(false)
   // const [proofreadResult, setProofreadResult] = useState(null)
   // const [showProofread, setShowProofread] = useState(false)
-  const [showColorPicker, setShowColorPicker] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
-  const [editorCollapsed, setEditorCollapsed] = useState(() =>
-    window.innerWidth < 768
-  )
   // const [loadingAi, setLoadingAi] = useState(false)
   const [fontSize, setFontSize] = useState(() => {
     const stored = localStorage.getItem('cyoa-font-size')
     return stored ? Number(stored) : 14
   })
   const [theme, setTheme] = useState(() => localStorage.getItem('vv-theme') || 'dark')
-  const textRef = useRef(null)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
@@ -254,51 +236,6 @@ export default function App() {
     }
   }, [nodes, edges, projectName, nextId])
 
-  const wrapSelected = (before, after = before) => {
-    pushUndoState()
-    const area = textRef.current
-    if (!area) return
-    const start = area.selectionStart
-    const end = area.selectionEnd
-    const selected = text.slice(start, end)
-    const updatedText =
-      text.slice(0, start) + before + selected + after + text.slice(end)
-    setText(updatedText)
-    setNodes(ns =>
-      ns.map(n =>
-        n.id === currentId ? { ...n, data: { ...n.data, text: updatedText } } : n
-      )
-    )
-    requestAnimationFrame(() => {
-      area.focus()
-      area.selectionStart = start + before.length
-      area.selectionEnd = end + before.length
-    })
-  }
-
-  const applyHeading = level => {
-    pushUndoState()
-    const area = textRef.current
-    if (!area) return
-    const start = area.selectionStart
-    const end = area.selectionEnd
-    const selected = text.slice(start, end)
-    const prefix = '#'.repeat(level) + ' '
-    const lines = selected.split(/\n/).map(l => prefix + l).join('\n')
-    const updatedText = text.slice(0, start) + lines + text.slice(end)
-    setText(updatedText)
-    setNodes(ns =>
-      ns.map(n =>
-        n.id === currentId ? { ...n, data: { ...n.data, text: updatedText } } : n
-      )
-    )
-    requestAnimationFrame(() => {
-      area.focus()
-      area.selectionStart = start
-      area.selectionEnd = start + lines.length
-    })
-  }
-
   /*
   const fetchAiSuggestions = async () => {
     setLoadingAi(true)
@@ -338,31 +275,6 @@ export default function App() {
     setShowSuggestions(false)
   }
   */
-
-  const changeNodeColor = color => {
-    if (!currentId) return
-    pushUndoState()
-    setNodes(ns =>
-      ns.map(n =>
-        n.id === currentId ? { ...n, data: { ...n.data, color } } : n
-      )
-    )
-    setShowColorPicker(false)
-  }
-
-  const insertNextNodeNumber = () => {
-    const area = textRef.current
-    if (!area) return
-    const start = area.selectionStart
-    const end = area.selectionEnd
-    const nodeId = `#${String(nextId).padStart(3, '0')}`
-    const updatedText = text.slice(0, start) + nodeId + text.slice(end)
-    updateNodeText(currentId, updatedText)
-    requestAnimationFrame(() => {
-      area.focus()
-      area.selectionStart = area.selectionEnd = start + nodeId.length
-    })
-  }
 
   const onConnect = useCallback(({ source, target }) => {
     if (!source || !target) return
@@ -581,13 +493,6 @@ export default function App() {
     setTitle('')
   }
 
-  const onTextChange = e => {
-    if (!currentId) return
-    let value = e.target.value
-    value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
-    updateNodeText(currentId, value)
-  }
-
   const updateNodeText = useCallback(
     (id, value) => {
       pushUndoState()
@@ -643,17 +548,6 @@ export default function App() {
     },
     [currentId, pushUndoState]
   )
-
-  const onTitleChange = e => {
-    pushUndoState()
-    const value = e.target.value
-    setTitle(value)
-    setNodes(ns =>
-      ns.map(n =>
-        n.id === currentId ? { ...n, data: { ...n.data, title: value } } : n
-      )
-    )
-  }
 
   const handleProjectSwitch = id => {
     const p = projects[id]
@@ -995,7 +889,7 @@ export default function App() {
         </Button>
 
       </header>
-      <main className={`workspace ${linearExpanded ? 'expanded' : ''}`}>
+      <main className={`workspace ${isPanelExpanded ? 'expanded' : ''}`}>
         <div id="graph-container">
           <div id="graph">
             <NodeEditorContext.Provider value={{ updateNodeText, resizingRef }}>
@@ -1024,140 +918,14 @@ export default function App() {
               </ReactFlow>
             </NodeEditorContext.Provider>
           </div>
-          <button
-            id="toggleEditor"
-            className="btn ghost"
-            type="button"
-            style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: editorCollapsed ? 0 : '300px', zIndex: 1 }}
-            aria-label={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
-            title={editorCollapsed ? 'Expand editor' : 'Collapse editor'}
-            onClick={() => setEditorCollapsed(c => !c)}
-          >
-            {editorCollapsed ? <ChevronLeft /> : <ChevronRight />}
-          </button>
-          {!editorCollapsed && (
-            <section id="editor">
-              <h2 id="nodeId">#{currentId || '000'} {title}</h2>
-              <div id="formatting-toolbar">
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={() => wrapSelected('**')}
-                  title="Bold (Ctrl+B)"
-                >
-                  B
-                </button>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={() => wrapSelected('*')}
-                  title="Italic (Ctrl+I)"
-                >
-                  I
-                </button>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={() => wrapSelected('__')}
-                  title="Underline (Ctrl+U)"
-                >
-                  U
-                </button>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={() => applyHeading(1)}
-                  title="Heading 1"
-                >
-                  H1
-                </button>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={() => applyHeading(2)}
-                  title="Heading 2"
-                >
-                  H2
-                </button>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={insertNextNodeNumber}
-                  aria-label="Next node number"
-                  title="Insert next node number"
-                >
-                  <Plus aria-hidden="true" />
-                </button>
-                {/*
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={fetchAiSuggestions}
-                  aria-label="AI suggestions"
-                >
-                  <Cloud aria-hidden="true" />
-                </button>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={fetchProofread}
-                  aria-label="AI proofread"
-                >
-                  <SpellCheck aria-hidden="true" />
-                </button>
-                */}
-                <div style={{ position: 'relative' }}>
-                  <button
-                    className="color-button"
-                    type="button"
-                    onClick={() => setShowColorPicker(c => !c)}
-                    aria-label="Node color"
-                    title="Node color"
-                    style={{
-                      background:
-                        nodes.find(n => n.id === currentId)?.data.color || '#1f2937',
-                    }}
-                  />
-                  {showColorPicker && (
-                    <div className="color-picker">
-                      {COLOR_OPTIONS.map(col => (
-                        <div
-                          key={col}
-                          className="color-swatch"
-                          style={{ background: col }}
-                          onClick={() => changeNodeColor(col)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {/* AI loading indicator removed */}
-                {/* Settings button moved to header */}
-              </div>
-              <input
-                id="title"
-                value={title}
-                onChange={onTitleChange}
-                placeholder="Title"
-                disabled={!currentId}
-              />
-              <textarea
-                id="text"
-                ref={textRef}
-                value={text}
-                onChange={onTextChange}
-                disabled={!currentId}
-              />
-            </section>
-          )}
         </div>
         <LinearView
           text={linearText}
           setText={setLinearText}
           setNodes={setNodes}
           nextId={nextId}
-          expanded={linearExpanded}
-          onToggleExpand={() => setLinearExpanded(e => !e)}
+          expanded={isPanelExpanded}
+          onToggleExpand={() => setIsPanelExpanded(e => !e)}
         />
       </main>
       {showPlay && (
