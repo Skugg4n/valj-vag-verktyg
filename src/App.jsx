@@ -100,7 +100,7 @@ export default function App() {
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
-  const [showModal, setShowModal] = useState(false)
+  const [isLinearViewOpen, setLinearViewOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
   const [autoSave, setAutoSave] = useState(() => {
@@ -791,7 +791,7 @@ export default function App() {
       nodes.slice().sort((a, b) => Number(a.id) - Number(b.id))
     )
     setLinearText(linear)
-    setShowModal(true)
+    setLinearViewOpen(true)
   }
 
   const startPlaythrough = () => {
@@ -1144,25 +1144,29 @@ export default function App() {
             placeholder="Title"
             disabled={!currentId}
           />
-          <textarea
-            id="text"
-            ref={textRef}
-            value={text}
-            onChange={onTextChange}
-            disabled={!currentId}
-          />
-        </section>
-        )}
-      </main>
-      {showModal && (
-        <LinearView
-          text={linearText}
-          setText={setLinearText}
-          setNodes={setNodes}
-          nextId={nextId}
-          onClose={() => setShowModal(false)}
+        <textarea
+          id="text"
+          ref={textRef}
+          value={text}
+          onChange={onTextChange}
+          disabled={!currentId}
         />
+      </section>
       )}
+      {/* Overlay for linear view */}
+      <div
+        className={`fixed inset-0 bg-black/50 transition-opacity duration-300 z-[60] ${isLinearViewOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setLinearViewOpen(false)}
+      />
+      <LinearView
+        isOpen={isLinearViewOpen}
+        text={linearText}
+        setText={setLinearText}
+        setNodes={setNodes}
+        nextId={nextId}
+        onClose={() => setLinearViewOpen(false)}
+      />
+    </main>
       {showPlay && (
         <Playthrough
           nodes={nodes}
@@ -1205,7 +1209,7 @@ export default function App() {
         // onShowAiSettings={() => setShowAiSettings(true)}
         onLinearView={openLinearView}
         onPlaythrough={startPlaythrough}
-        onAutoLayout={!showModal && !showPlay ? handleAutoLayout : undefined}
+        onAutoLayout={!isLinearViewOpen && !showPlay ? handleAutoLayout : undefined}
         onHelp={openHelp}
       />
       <div
