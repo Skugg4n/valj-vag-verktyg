@@ -477,12 +477,16 @@ export default function App() {
     setTitle('')
   }
 
+  const selectNode = useCallback((id, data) => {
+    setCurrentId(id)
+    setText(data.text || '')
+    setTitle(data.title || '')
+    console.log('Node clicked, setting active ID:', id)
+    setActiveNodeId(id)
+  }, [])
+
   const onNodeClick = (_e, node) => {
-    setCurrentId(node.id)
-    setText(node.data.text || '')
-    setTitle(node.data.title || '')
-    console.log('Node clicked, setting active ID:', node.id)
-    setActiveNodeId(node.id)
+    selectNode(node.id, node.data)
   }
 
   const onPaneClick = e => {
@@ -896,7 +900,7 @@ export default function App() {
       <main className={`workspace ${isPanelExpanded ? 'expanded' : ''}`}>
         <div id="graph-container">
           <div id="graph">
-            <NodeEditorContext.Provider value={{ updateNodeText, resizingRef }}>
+            <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode }}>
               <ReactFlow
                 style={{ width: '100%', height: '100%' }}
                 nodes={nodes}

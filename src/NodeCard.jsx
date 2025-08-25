@@ -16,7 +16,7 @@ function isLightColor(hex) {
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
-  const { updateNodeText, resizingRef } = useContext(NodeEditorContext)
+  const { updateNodeText, resizingRef, selectNode } = useContext(NodeEditorContext)
   const [resizing, setResizing] = useState(false)
   const [overflow, setOverflow] = useState(false)
   const [invalidRef, setInvalidRef] = useState(false)
@@ -95,6 +95,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   return (
     <div
       className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}
+      onClick={() => selectNode(id, data)}
       style={{
         background: bg,
         color: textColor,
