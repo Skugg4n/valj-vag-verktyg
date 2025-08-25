@@ -30,7 +30,6 @@ export function parseLinearText(raw: string): ParsedNode[] {
 export default function useLinearParser(raw: string = '', setNodes: any): void {
   useEffect(() => {
     if (typeof setNodes !== 'function') return
-    if (!raw || !raw.trim()) return
     const parsed = parseLinearText(raw)
     setNodes((ns: any[]) => {
       const map = new Map(ns.map(n => [n.id, n]))
