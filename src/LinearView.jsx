@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -24,7 +24,7 @@ const KeyboardShortcuts = Extension.create({
   },
 })
 
-export default function LinearView({ isOpen, text, setText, setNodes, nextId, onClose }) {
+export default function LinearView({ isExpanded, text, setText, setNodes, nextId, onToggle }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ bulletList: false, orderedList: false, listItem: false }),
@@ -191,20 +191,17 @@ export default function LinearView({ isOpen, text, setText, setNodes, nextId, on
     const handler = e => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault()
-        onClose()
+        onToggle()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  }, [onToggle])
 
   if (!editor) return null
 
   return (
-    <div
-      className="fixed top-0 right-0 h-full w-4/5 bg-gray-800 linear-container shadow-2xl transform transition-transform duration-300 ease-in-out z-[70] flex flex-col"
-      style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
-    >
+    <div className="h-full flex flex-col linear-container">
       <header className="linear-header p-3 flex items-center justify-between border-b">
         <h1 className="text-lg font-bold">Linear View</h1>
         <div className="flex items-center gap-3">
@@ -219,8 +216,13 @@ export default function LinearView({ isOpen, text, setText, setNodes, nextId, on
           <button className="btn" type="button" onClick={exportMarkdown}>
             Exportera
           </button>
-          <button className="btn primary" type="button" onClick={onClose}>
-            Stäng
+          <button
+            className="btn primary"
+            type="button"
+            onClick={onToggle}
+            aria-label="Toggle panel"
+          >
+            {isExpanded ? <ChevronRight /> : <ChevronLeft />}
           </button>
         </div>
       </header>
@@ -235,7 +237,7 @@ export default function LinearView({ isOpen, text, setText, setNodes, nextId, on
                 <li key={item.id}>
                   <button
                     type="button"
-                    className={`outline-btn block w-full text-left text-sm p-2 rounded-md ${
+                    className={`outline-btn block w-full text-left text-sm p-2 rounded-md transition-colors ${
                       activeId === item.id ? 'active' : ''
                     }`}
                     onClick={() => jumpTo(item.id)}
