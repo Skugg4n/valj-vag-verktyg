@@ -203,90 +203,76 @@ export default function LinearView({ text, setText, setNodes, nextId, onClose })
   return (
     <>
       <div id="modal" role="dialog" aria-modal="true" className="show">
-        <div
-          className="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl h-[90vh] flex flex-col"
-        >
-        <header className="bg-gray-900 text-white p-3 flex items-center justify-between border-b border-gray-700">
-          <h1 className="text-lg font-bold">Linear View</h1>
-          <div className="flex items-center gap-3">
-            <button
-              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
-              type="button"
-              onClick={insertNextNodeNumber}
-              aria-label="Next node number"
-            >
-              <Plus aria-hidden="true" />
-            </button>
-            <button
-              className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-md"
-              type="button"
-              onClick={exportMarkdown}
-            >
-              Exportera
-            </button>
-            <button
-              className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md font-semibold"
-              type="button"
-              onClick={onClose}
-            >
-              Stäng
-            </button>
-          </div>
-        </header>
-        <div className="flex flex-1 min-h-0">
-          <aside className="hidden md:flex md:flex-col md:w-1/4 bg-gray-900/50 border-r border-gray-700 h-full min-h-0">
-            <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Outline
-              </h2>
-              <ul className="space-y-1">
-                {outline.map(item => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      className={`block w-full text-left text-sm p-2 rounded-md ${
-                        activeId === item.id
-                          ? 'bg-gray-700 text-white'
-                          : 'text-gray-300 hover:bg-gray-700/50'
-                      }`}
-                      onClick={() => jumpTo(item.id)}
-                    >
-                      #{item.id} {item.title}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+        <div className="w-full max-w-7xl mx-auto linear-container rounded-2xl shadow-2xl h-[90vh] flex flex-col">
+          <header className="linear-header p-3 flex items-center justify-between border-b">
+            <h1 className="text-lg font-bold">Linear View</h1>
+            <div className="flex items-center gap-3">
+              <button
+                className="btn"
+                type="button"
+                onClick={insertNextNodeNumber}
+                aria-label="Next node number"
+              >
+                <Plus aria-hidden="true" />
+              </button>
+              <button className="btn" type="button" onClick={exportMarkdown}>
+                Exportera
+              </button>
+              <button className="btn primary" type="button" onClick={onClose}>
+                Stäng
+              </button>
             </div>
-            <footer className="p-4 border-t border-gray-700">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">Shortcuts</h3>
-              <div className="text-xs text-gray-500 space-y-1">
-                <p>
-                  <span className="font-mono bg-gray-700 px-1.5 py-0.5 rounded">Cmd/Ctrl + B</span>: Bold
-                </p>
-                <p>
-                  <span className="font-mono bg-gray-700 px-1.5 py-0.5 rounded">Cmd/Ctrl + I</span>: Italic
-                </p>
-                <p>
-                  <span className="font-mono bg-gray-700 px-1.5 py-0.5 rounded">Cmd/Ctrl + Opt + 2</span>: Heading
-                </p>
+          </header>
+          <div className="flex flex-1 min-h-0">
+            <aside className="hidden md:flex md:flex-col md:w-1/4 linear-sidebar h-full min-h-0">
+              <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
+                <h2 className="text-sm font-semibold text-dim uppercase tracking-wider mb-4">
+                  Outline
+                </h2>
+                <ul className="space-y-1">
+                  {outline.map(item => (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        className={`outline-btn block w-full text-left text-sm p-2 rounded-md ${
+                          activeId === item.id ? 'active' : ''
+                        }`}
+                        onClick={() => jumpTo(item.id)}
+                      >
+                        #{item.id} {item.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </footer>
-          </aside>
-          <main
-            className="flex-1 flex flex-col bg-gray-100 text-gray-900 min-h-0 overflow-hidden"
-          >
-            <div
-              ref={mainRef}
-              className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 no-scrollbar main-editor-container"
-            >
-            <div className="max-w-3xl mx-auto relative">
-              {editor && <EditorBubbleMenu editor={editor} />}
-              <EditorContent id="linearEditor" editor={editor} />
-            </div>
-            </div>
-          </main>
+              <footer className="p-4 border-t linear-footer">
+                <h3 className="text-xs font-semibold text-dim uppercase mb-2">Shortcuts</h3>
+                <div className="text-xs text-dim space-y-1">
+                  <p>
+                    <span className="font-mono shortcut-key">Cmd/Ctrl + B</span>: Bold
+                  </p>
+                  <p>
+                    <span className="font-mono shortcut-key">Cmd/Ctrl + I</span>: Italic
+                  </p>
+                  <p>
+                    <span className="font-mono shortcut-key">Cmd/Ctrl + Opt + 2</span>: Heading
+                  </p>
+                </div>
+              </footer>
+            </aside>
+            <main className="flex-1 flex flex-col linear-main min-h-0 overflow-hidden">
+              <div
+                ref={mainRef}
+                className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 no-scrollbar main-editor-container"
+              >
+                <div className="max-w-3xl mx-auto relative">
+                  {editor && <EditorBubbleMenu editor={editor} />}
+                  <EditorContent id="linearEditor" editor={editor} />
+                </div>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
       </div>
     </>
   )
