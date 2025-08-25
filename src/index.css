@@ -546,7 +546,7 @@ header {
 
 .linear-id {
   font: 11px/1 monospace;
-  color: #777;
+  color: var(--text-dim);
 }
 
 #linearEditor h2 {
@@ -556,7 +556,7 @@ header {
   margin-top: 2.5rem;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--panel);
 }
 
 #linearEditor p {
@@ -567,8 +567,8 @@ header {
 }
 
 .node-link {
-  background-color: #e0f2fe;
-  color: #0c4a6e;
+  background: var(--accent);
+  color: #fff;
   padding: 2px 8px;
   border-radius: 9999px;
   font-family: 'Inter', sans-serif;
@@ -580,15 +580,15 @@ header {
 }
 
 .node-link:hover {
-  background-color: #bae6fd;
-  color: #0369a1;
+  filter: brightness(1.1);
+  color: #fff;
 }
 
 .ProseMirror h2 {
   font-family: 'Inter', sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--panel);
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
@@ -601,8 +601,8 @@ header {
 
 .bubble-menu {
   display: flex;
-  background-color: #1f2937;
-  color: white;
+  background: var(--card);
+  color: var(--text);
   padding: 4px;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -620,11 +620,60 @@ header {
 }
 
 .bubble-menu button:hover {
-  background-color: #4b5563;
+  background: var(--btn-hover);
 }
 
 .bubble-menu button.is-active {
-  background-color: #374151;
+  background: var(--btn);
+}
+
+.linear-container {
+  background: var(--modal-bg);
+  color: var(--text);
+}
+
+.linear-header {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--panel);
+}
+
+.linear-sidebar {
+  background: var(--panel);
+  border-color: var(--panel);
+  color: var(--text);
+}
+
+.linear-main {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.outline-btn {
+  background: transparent;
+  color: var(--text);
+}
+.outline-btn:hover {
+  background: var(--btn-hover);
+}
+.outline-btn.active {
+  background: var(--btn);
+  color: var(--text);
+}
+
+.linear-footer {
+  border-color: var(--panel);
+}
+
+.shortcut-key {
+  background: var(--btn);
+  color: var(--text);
+  padding: 2px 6px;
+  border-radius: var(--radius);
+}
+
+.text-dim {
+  color: var(--text-dim);
 }
 
 input:focus,
