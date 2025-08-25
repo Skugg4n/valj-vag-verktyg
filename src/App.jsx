@@ -481,13 +481,22 @@ export default function App() {
     setCurrentId(id)
     setText(data.text || '')
     setTitle(data.title || '')
-    console.log('Node clicked, setting active ID:', id)
     setActiveNodeId(id)
   }, [])
 
   const onNodeClick = (_e, node) => {
     selectNode(node.id, node.data)
   }
+
+  const handleLinearSelect = useCallback(
+    id => {
+      const node = nodes.find(n => n.id === id)
+      if (node) {
+        selectNode(node.id, node.data)
+      }
+    },
+    [nodes, selectNode]
+  )
 
   const onPaneClick = e => {
     const t = e.target
@@ -934,6 +943,7 @@ export default function App() {
           expanded={isPanelExpanded}
           onToggleExpand={() => setIsPanelExpanded(e => !e)}
           activeNodeId={activeNodeId}
+          onSelectNode={handleLinearSelect}
         />
       </main>
       {showPlay && (

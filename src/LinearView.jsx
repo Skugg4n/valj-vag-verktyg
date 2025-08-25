@@ -25,7 +25,16 @@ const KeyboardShortcuts = Extension.create({
   },
 })
 
-export default function LinearView({ text, setText, setNodes, nextId, expanded, onToggleExpand, activeNodeId }) {
+export default function LinearView({
+  text,
+  setText,
+  setNodes,
+  nextId,
+  expanded,
+  onToggleExpand,
+  activeNodeId,
+  onSelectNode,
+}) {
   const [outline, setOutline] = useState([])
   const [next, setNext] = useState(nextId)
   const [activeId, setActiveId] = useState(null)
@@ -121,33 +130,39 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
     URL.revokeObjectURL(url)
   }
 
-  const jumpTo = useCallback(id => {
-    if (!editor) return
+  const jumpTo = useCallback(
+    id => {
+      if (!editor) return
 
-    let targetPos = null
-    const targetIdString = `#${id}`
+      let targetPos = null
+      const targetIdString = `#${id}`
 
-    editor.state.doc.descendants((node, pos) => {
-      if (
-        node.type.name === 'heading' &&
-        node.textContent.startsWith(targetIdString)
-      ) {
-        targetPos = pos
-        return false
+      editor.state.doc.descendants((node, pos) => {
+        if (
+          node.type.name === 'heading' &&
+          node.textContent.startsWith(targetIdString)
+        ) {
+          targetPos = pos
+          return false
+        }
+      })
+
+      if (targetPos !== null) {
+        editor
+          .chain()
+          .focus()
+          .setTextSelection(targetPos)
+          .scrollIntoView()
+          .run()
+        setActiveId(id)
+        editor.commands.setActiveNodeId(id)
+        if (onSelectNode && id !== activeNodeId) {
+          onSelectNode(id)
+        }
       }
-    })
-
-    if (targetPos !== null) {
-      editor
-        .chain()
-        .focus()
-        .setTextSelection(targetPos)
-        .scrollIntoView()
-        .run()
-      setActiveId(id)
-      editor.commands.setActiveNodeId(id)
-    }
-  }, [editor])
+    },
+    [editor, onSelectNode, activeNodeId]
+  )
 
   useEffect(() => {
     const root = document.getElementById('linearEditor')
@@ -167,10 +182,7 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
     return () => root.removeEventListener('click', handle)
   }, [jumpTo])
 
-  console.log('LinearView received activeNodeId prop:', activeNodeId)
-
   useEffect(() => {
-    console.log('useEffect triggered for activeNodeId:', activeNodeId)
     if (!editor) return
     if (activeNodeId) {
       jumpTo(activeNodeId)
