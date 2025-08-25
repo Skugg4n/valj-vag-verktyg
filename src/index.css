@@ -563,9 +563,9 @@ header {
 }
 
 .is-active-node {
-  background: var(--btn);
-  color: var(--text);
-  transition: background-color 0.3s;
+  background-color: rgba(59, 130, 246, 0.2);
+  transition: background-color 0.3s ease;
+  border-radius: 4px;
 }
 
 .linear-footer {

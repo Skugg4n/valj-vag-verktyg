@@ -481,6 +481,7 @@ export default function App() {
     setCurrentId(node.id)
     setText(node.data.text || '')
     setTitle(node.data.title || '')
+    console.log('Node clicked, setting active ID:', node.id)
     setActiveNodeId(node.id)
   }
 
