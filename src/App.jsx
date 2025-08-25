@@ -498,7 +498,6 @@ export default function App() {
     setCurrentId(null)
     setText('')
     setTitle('')
-    // setActiveNodeId(null)
   }
 
   const updateNodeText = useCallback(
