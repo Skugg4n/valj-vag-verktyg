@@ -11,6 +11,7 @@ import EditorBubbleMenu from './EditorBubbleMenu.jsx'
 import useLinearParser from './useLinearParser.ts'
 import 'tippy.js/dist/tippy.css'
 import { Extension } from '@tiptap/core'
+import ActiveNodeHighlight from './ActiveNodeHighlight.ts'
 
 const KeyboardShortcuts = Extension.create({
   name: 'keyboardShortcuts',
@@ -24,7 +25,7 @@ const KeyboardShortcuts = Extension.create({
   },
 })
 
-export default function LinearView({ text, setText, setNodes, nextId, expanded, onToggleExpand }) {
+export default function LinearView({ text, setText, setNodes, nextId, expanded, onToggleExpand, activeNodeId }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ bulletList: false, orderedList: false, listItem: false }),
@@ -34,6 +35,7 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
       Markdown.configure({ html: false }),
       BubbleMenuExtension,
       KeyboardShortcuts,
+      ActiveNodeHighlight,
     ],
     content: text || '',
     onUpdate({ editor }) {
@@ -144,6 +146,7 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
         .scrollIntoView()
         .run()
       setActiveId(id)
+      editor.commands.setActiveNodeId(id)
     }
   }, [editor])
 
@@ -164,6 +167,15 @@ export default function LinearView({ text, setText, setNodes, nextId, expanded, 
     root.addEventListener('click', handle)
     return () => root.removeEventListener('click', handle)
   }, [jumpTo])
+
+  useEffect(() => {
+    if (!editor) return
+    if (activeNodeId) {
+      jumpTo(activeNodeId)
+    } else {
+      editor.commands.setActiveNodeId(null)
+    }
+  }, [activeNodeId, editor, jumpTo])
 
   useEffect(() => {
     const container = mainRef.current

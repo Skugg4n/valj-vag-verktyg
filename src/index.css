@@ -562,6 +562,12 @@ header {
   color: var(--text);
 }
 
+.is-active-node {
+  background: var(--btn);
+  color: var(--text);
+  transition: background-color 0.3s;
+}
+
 .linear-footer {
   border-color: var(--panel);
 }

@@ -107,6 +107,7 @@ export default function App() {
     return stored ? Number(stored) : 14
   })
   const [theme, setTheme] = useState(() => localStorage.getItem('vv-theme') || 'dark')
+  const [activeNodeId, setActiveNodeId] = useState(null)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
@@ -480,6 +481,7 @@ export default function App() {
     setCurrentId(node.id)
     setText(node.data.text || '')
     setTitle(node.data.title || '')
+    setActiveNodeId(node.id)
   }
 
   const onPaneClick = e => {
@@ -491,6 +493,7 @@ export default function App() {
     setCurrentId(null)
     setText('')
     setTitle('')
+    setActiveNodeId(null)
   }
 
   const updateNodeText = useCallback(
@@ -926,6 +929,7 @@ export default function App() {
           nextId={nextId}
           expanded={isPanelExpanded}
           onToggleExpand={() => setIsPanelExpanded(e => !e)}
+          activeNodeId={activeNodeId}
         />
       </main>
       {showPlay && (
