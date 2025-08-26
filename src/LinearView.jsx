@@ -12,6 +12,7 @@ import useLinearParser from './useLinearParser.ts'
 import 'tippy.js/dist/tippy.css'
 import { Extension } from '@tiptap/core'
 import ActiveNodeHighlight from './ActiveNodeHighlight.ts'
+import { debugLog } from './utils/debug.js'
 
 const KeyboardShortcuts = Extension.create({
   name: 'keyboardShortcuts',
@@ -132,6 +133,7 @@ export default function LinearView({
 
   const jumpTo = useCallback(
     id => {
+      debugLog('LinearView.jumpTo', id)
       if (!editor) return
 
       let targetPos = null
@@ -184,6 +186,7 @@ export default function LinearView({
 
   useEffect(() => {
     if (!editor) return
+    debugLog('LinearView activeNodeId effect', activeNodeId)
     if (activeNodeId) {
       jumpTo(activeNodeId)
     } else {

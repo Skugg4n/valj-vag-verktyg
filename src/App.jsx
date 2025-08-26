@@ -40,6 +40,7 @@ import pkg from '../package.json'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
+import { setDebug as setDebugFlag, debugLog, isDebug } from './utils/debug.js'
 
 const ROOT_KEY = '__root__'
 
@@ -108,11 +109,21 @@ export default function App() {
   })
   const [theme, setTheme] = useState(() => localStorage.getItem('vv-theme') || 'dark')
   const [activeNodeId, setActiveNodeId] = useState(null)
+  const [debugMode, setDebugMode] = useState(isDebug())
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
   const redoStack = useRef([])
   const resizingRef = useRef(false)
+  const toggleDebug = () => {
+    const next = !debugMode
+    setDebugMode(next)
+    setDebugFlag(next)
+  }
+
+  useEffect(() => {
+    debugLog('activeNodeId', activeNodeId)
+  }, [activeNodeId])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--font-size', `${fontSize}px`)
@@ -478,6 +489,7 @@ export default function App() {
   }
 
   const selectNode = useCallback((id, data) => {
+    debugLog('selectNode', id)
     setCurrentId(id)
     setText(data.text || '')
     setTitle(data.title || '')
@@ -485,11 +497,13 @@ export default function App() {
   }, [])
 
   const onNodeClick = (_e, node) => {
+    debugLog('onNodeClick', node.id)
     selectNode(node.id, node.data)
   }
 
   const handleLinearSelect = useCallback(
     id => {
+      debugLog('handleLinearSelect', id)
       const node = nodes.find(n => n.id === id)
       if (node) {
         selectNode(node.id, node.data)
@@ -894,6 +908,13 @@ export default function App() {
           title="Increase font size"
         >
           A+
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={toggleDebug}
+          title="Toggle debug mode"
+        >
+          {debugMode ? 'Debug On' : 'Debug Off'}
         </Button>
         <Button
           variant="ghost"
