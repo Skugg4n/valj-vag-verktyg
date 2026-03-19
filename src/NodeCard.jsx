@@ -29,6 +29,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   const [overflow, setOverflow] = useState(false)
   const [invalidRef, setInvalidRef] = useState(false)
   const [showColors, setShowColors] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
   const colorBtnRef = useRef(null)
   const textRef = useRef(null)
   const previewRef = useRef(null)
@@ -104,7 +105,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
 
   return (
     <div
-      className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}`}
+      className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}${data.isIdea ? ' idea-node' : ''}`}
       onClick={() => selectNode(id, data)}
       style={{
         background: bg,
@@ -125,7 +126,23 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
         <>
           <div className="node-header">
             <span className="node-id">#{id}</span>
-            {data.title && <span className="node-title">{data.title}</span>}
+            {selected ? (
+              <input
+                className="node-title-input"
+                value={data.title || ''}
+                placeholder="Title..."
+                onChange={e => {
+                  setNodes(ns => ns.map(n =>
+                    n.id === id ? { ...n, data: { ...n.data, title: e.target.value } } : n
+                  ))
+                }}
+                onPointerDown={e => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
+                onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
+              />
+            ) : (
+              data.title && <span className="node-title">{data.title}</span>
+            )}
             {selected && (
               <div
                 className="node-color-picker-wrap"
@@ -172,6 +189,30 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                 })()}
               </div>
             )}
+            {selected && data.isIdea && (
+              <button
+                className="btn ghost"
+                style={{ fontSize: '11px', padding: '2px 6px', marginLeft: 4 }}
+                onMouseDown={e => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  window.dispatchEvent(new CustomEvent('promote-idea', { detail: { ideaId: id } }))
+                }}
+                title="Omvandla till nod"
+              >
+                → Nod
+              </button>
+            )}
+            {selected && !isOverview && (
+              <button
+                className="node-notes-btn"
+                onMouseDown={e => { e.stopPropagation(); e.preventDefault(); setShowNotes(s => !s) }}
+                title="Anteckningar"
+                style={{ float: 'right', marginRight: 4 }}
+              >
+                📝
+              </button>
+            )}
           </div>
           <div className="node-content">
             <div
@@ -180,8 +221,24 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
               aria-hidden={selected}
               onWheelCapture={e => e.stopPropagation()}
             >
-              {data.text}
+              {(data.text || '').split(/(\[#\d{3}\])/).map((part, i) => {
+                const m = part.match(/^\[#(\d{3})\]$/)
+                if (m) {
+                  const target = getNodes().find(n => n.id === m[1])
+                  return (
+                    <span key={i} className="node-link-pill">
+                      → {target?.data?.title || `#${m[1]}`}
+                    </span>
+                  )
+                }
+                return <span key={i}>{part}</span>
+              })}
               {overflow && <div className="preview-more">...</div>}
+              {!selected && (data.text || '').trim().length > 0 && (
+                <span className="node-word-count">
+                  {(data.text || '').split(/\s+/).filter(Boolean).length} ord
+                </span>
+              )}
             </div>
             <div className="node-editor" aria-hidden={!selected}>
               <textarea
@@ -201,6 +258,21 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
               />
             </div>
           </div>
+          {showNotes && selected && (
+            <div className="node-notes" onPointerDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
+              <textarea
+                className="node-notes-textarea"
+                placeholder="Anteckningar om denna nod..."
+                value={data.notes || ''}
+                onChange={e => {
+                  setNodes(ns => ns.map(n =>
+                    n.id === id ? { ...n, data: { ...n.data, notes: e.target.value } } : n
+                  ))
+                }}
+                onWheelCapture={e => e.stopPropagation()}
+              />
+            </div>
+          )}
         </>
       )}
       <NodeResizer

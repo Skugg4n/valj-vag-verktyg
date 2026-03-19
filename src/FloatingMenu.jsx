@@ -7,6 +7,7 @@ import {
   Play,
   LayoutGrid,
   Layers,
+  Lightbulb,
 } from 'lucide-react'
 
 const sectionConfig = [
@@ -21,6 +22,7 @@ const sectionConfig = [
     items: [
       { label: 'Auto-layout', icon: LayoutGrid, action: 'onAutoLayout' },
       { label: 'Add Section', icon: Layers, action: 'onAddSection' },
+      { label: 'Add Idea', icon: Lightbulb, action: 'onAddIdea' },
       { label: 'Settings', icon: Settings, action: 'onShowSettings' },
     ],
   },
@@ -35,6 +37,7 @@ export default function FloatingMenu({
   onPlaythrough,
   onAutoLayout,
   onAddSection,
+  onAddIdea,
   onHelp,
 }) {
   const propMap = {
@@ -42,6 +45,7 @@ export default function FloatingMenu({
     onPlaythrough,
     onAutoLayout,
     onAddSection,
+    onAddIdea,
     onHelp,
   }
 
