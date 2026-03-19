@@ -127,12 +127,21 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
             <span className="node-id">#{id}</span>
             {data.title && <span className="node-title">{data.title}</span>}
             {selected && (
-              <div className="node-color-picker-wrap" onClick={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()}>
+              <div
+                className="node-color-picker-wrap"
+                onClickCapture={e => e.stopPropagation()}
+                onPointerDownCapture={e => e.stopPropagation()}
+                onMouseDownCapture={e => e.stopPropagation()}
+              >
                 <button
                   ref={colorBtnRef}
                   className="node-color-btn"
                   style={{ background: bg }}
-                  onClick={() => setShowColors(c => !c)}
+                  onMouseDown={e => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    setShowColors(c => !c)
+                  }}
                   title="Node color"
                 />
                 {showColors && colorBtnRef.current && (() => {
@@ -141,13 +150,16 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                     <div
                       className="node-color-picker"
                       style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, zIndex: 9999 }}
+                      onMouseDownCapture={e => e.stopPropagation()}
                     >
                       {COLOR_OPTIONS.map(col => (
                         <div
                           key={col}
                           className="node-color-swatch"
                           style={{ background: col }}
-                          onClick={() => {
+                          onMouseDown={e => {
+                            e.stopPropagation()
+                            e.preventDefault()
                             setNodes(ns => ns.map(n =>
                               n.id === id ? { ...n, data: { ...n.data, color: col } } : n
                             ))
