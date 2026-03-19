@@ -69,23 +69,29 @@ export default function LinearView({
       ActiveNodeHighlight,
     ],
     content: text || '',
-    onCreate() {
-      // Delay outline scan to let DOM render and convertHeadings to fire
-      setTimeout(updateOutline, 300)
-    },
     onUpdate({ editor }) {
       setText(editor.storage.markdown.getMarkdown())
-      // Delay to let convertHeadings run first
-      setTimeout(updateOutline, 50)
     },
   })
+
+  // Use MutationObserver to reliably detect when h2 headings appear in DOM
+  useEffect(() => {
+    const el = document.getElementById('linearEditor')
+    if (!el) return
+    const observer = new MutationObserver(() => {
+      updateOutline()
+    })
+    observer.observe(el, { childList: true, subtree: true, characterData: true })
+    // Initial scan
+    updateOutline()
+    return () => observer.disconnect()
+  }, [editor, updateOutline])
 
   useEffect(() => {
     if (editor && text !== editor.storage.markdown.getMarkdown()) {
       editor.commands.setContent(text || '')
-      setTimeout(updateOutline, 300)
     }
-  }, [text, editor, updateOutline])
+  }, [text, editor])
 
   useLinearParser(text, setNodes)
 
@@ -141,9 +147,10 @@ export default function LinearView({
       let targetPos = null
       const targetIdString = `#${id}`
 
+      // Search both headings and paragraphs (paragraphs may not be converted yet)
       editor.state.doc.descendants((node, pos) => {
         if (
-          node.type.name === 'heading' &&
+          (node.type.name === 'heading' || node.type.name === 'paragraph') &&
           node.textContent.startsWith(targetIdString)
         ) {
           targetPos = pos
@@ -154,17 +161,18 @@ export default function LinearView({
       if (targetPos !== null) {
         editor
           .chain()
-          .focus()
           .setTextSelection(targetPos)
           .scrollIntoView()
           .run()
         setActiveId(id)
         editor.commands.setActiveNodeId(id)
         // Also scroll the DOM element into view as fallback
-        const heading = document.getElementById(id)
-        if (heading) {
-          heading.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
+        setTimeout(() => {
+          const heading = document.getElementById(id)
+          if (heading) {
+            heading.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }, 50)
         if (onSelectNode && id !== activeNodeId) {
           onSelectNode(id)
         }
