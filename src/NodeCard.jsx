@@ -29,6 +29,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   const [overflow, setOverflow] = useState(false)
   const [invalidRef, setInvalidRef] = useState(false)
   const [showColors, setShowColors] = useState(false)
+  const colorBtnRef = useRef(null)
   const textRef = useRef(null)
   const previewRef = useRef(null)
   const prevSelectedRef = useRef(selected)
@@ -128,28 +129,35 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
             {selected && (
               <div className="node-color-picker-wrap" onClick={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()}>
                 <button
+                  ref={colorBtnRef}
                   className="node-color-btn"
                   style={{ background: bg }}
                   onClick={() => setShowColors(c => !c)}
                   title="Node color"
                 />
-                {showColors && (
-                  <div className="node-color-picker">
-                    {COLOR_OPTIONS.map(col => (
-                      <div
-                        key={col}
-                        className="node-color-swatch"
-                        style={{ background: col }}
-                        onClick={() => {
-                          setNodes(ns => ns.map(n =>
-                            n.id === id ? { ...n, data: { ...n.data, color: col } } : n
-                          ))
-                          setShowColors(false)
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
+                {showColors && colorBtnRef.current && (() => {
+                  const rect = colorBtnRef.current.getBoundingClientRect()
+                  return (
+                    <div
+                      className="node-color-picker"
+                      style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, zIndex: 9999 }}
+                    >
+                      {COLOR_OPTIONS.map(col => (
+                        <div
+                          key={col}
+                          className="node-color-swatch"
+                          style={{ background: col }}
+                          onClick={() => {
+                            setNodes(ns => ns.map(n =>
+                              n.id === id ? { ...n, data: { ...n.data, color: col } } : n
+                            ))
+                            setShowColors(false)
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )
+                })()}
               </div>
             )}
           </div>

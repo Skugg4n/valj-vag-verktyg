@@ -365,17 +365,14 @@ header {
   padding: 0;
 }
 .node-color-picker {
-  position: absolute;
-  top: 100%;
-  right: 0;
   display: grid;
   grid-template-columns: repeat(4, 20px);
   gap: 3px;
-  padding: 4px;
+  padding: 6px;
   background: var(--panel);
   border: 1px solid var(--text-dim);
   border-radius: var(--radius);
-  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .node-color-swatch {
   width: 20px;
