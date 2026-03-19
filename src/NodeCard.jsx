@@ -117,7 +117,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
     >
       {invalidRef && <div className="invalid-dot" />}
       {isOverview ? (
-        <div className="node-overview-title">
+        <div className="node-overview-title" style={{ fontSize: `${Math.max(20, 40 * (1 - zoom))}px` }}>
           {data.title || `#${id}`}
         </div>
       ) : (

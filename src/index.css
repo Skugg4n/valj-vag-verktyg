@@ -295,9 +295,12 @@ header {
 .node-card .node-preview {
   color: inherit;
   overflow-y: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+.node-card .node-preview::-webkit-scrollbar {
+  display: none;
 }
 
 .node-card .preview-more {
@@ -326,7 +329,10 @@ header {
   overflow-wrap: anywhere;
   overflow-y: auto;
   resize: none;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+}
+.node-card .node-editor .node-textarea::-webkit-scrollbar {
+  display: none;
 }
 .node-card .node-editor .node-textarea:focus {
   outline: none;
