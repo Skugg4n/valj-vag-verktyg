@@ -1,5 +1,5 @@
 import { memo, useState, useContext, useEffect, useRef } from 'react'
-import { Handle, Position, useReactFlow } from 'reactflow'
+import { Handle, Position, useReactFlow, useViewport } from 'reactflow'
 import { NodeResizer } from '@reactflow/node-resizer'
 import '@reactflow/node-resizer/dist/style.css'
 import NodeEditorContext from './NodeEditorContext.ts'
@@ -14,9 +14,13 @@ function isLightColor(hex) {
   return luminance > 186
 }
 
+const OVERVIEW_ZOOM_THRESHOLD = 0.45
+
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
   const { updateNodeText, resizingRef, selectNode } = useContext(NodeEditorContext)
+  const { zoom } = useViewport()
+  const isOverview = zoom < OVERVIEW_ZOOM_THRESHOLD
   const [resizing, setResizing] = useState(false)
   const [overflow, setOverflow] = useState(false)
   const [invalidRef, setInvalidRef] = useState(false)
@@ -107,32 +111,46 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
       }}
     >
       {invalidRef && <div className="invalid-dot" />}
-      <div className="node-header">
-        <span className="node-id">#{id}</span>
-        {data.title && <span className="node-title">{data.title}</span>}
-      </div>
-      <div className="node-content">
-        <div ref={previewRef} className="node-preview" aria-hidden={selected}>
-          {data.text}
-          {overflow && <div className="preview-more">...</div>}
+      {isOverview ? (
+        <div className="node-overview-title">
+          {data.title || `#${id}`}
         </div>
-        <div className="node-editor" aria-hidden={!selected}>
-          <textarea
-            ref={textRef}
-            className="node-textarea"
-            onPointerDown={e => e.stopPropagation()}
-            onClick={e => e.stopPropagation()}
-            value={data.text}
-            onChange={e => {
-              let value = e.target.value
-              value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
-              if (updateNodeText) {
-                updateNodeText(id, value)
-              }
-            }}
-          />
-        </div>
-      </div>
+      ) : (
+        <>
+          <div className="node-header">
+            <span className="node-id">#{id}</span>
+            {data.title && <span className="node-title">{data.title}</span>}
+          </div>
+          <div className="node-content">
+            <div
+              ref={previewRef}
+              className="node-preview"
+              aria-hidden={selected}
+              onWheelCapture={e => e.stopPropagation()}
+            >
+              {data.text}
+              {overflow && <div className="preview-more">...</div>}
+            </div>
+            <div className="node-editor" aria-hidden={!selected}>
+              <textarea
+                ref={textRef}
+                className="node-textarea"
+                onPointerDown={e => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
+                onWheelCapture={e => e.stopPropagation()}
+                value={data.text}
+                onChange={e => {
+                  let value = e.target.value
+                  value = value.replace(/(^|[^[])#(\d{3})(?!\])/g, (_, p1, p2) => `${p1}[#${p2}]`)
+                  if (updateNodeText) {
+                    updateNodeText(id, value)
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </>
+      )}
       <NodeResizer
         isVisible={selected}
         minWidth={180}

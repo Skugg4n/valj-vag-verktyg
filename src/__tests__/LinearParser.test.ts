@@ -1,6 +1,21 @@
 import { parseLinearText } from '../useLinearParser.ts'
 
 describe('parseLinearText', () => {
+  test('parses well-formed nodes', () => {
+    const raw = '## #001 Title One\nBody one\n## #002 Title Two\nBody two'
+    const result = parseLinearText(raw)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toEqual({ id: '001', title: 'Title One', text: 'Body one' })
+    expect(result[1]).toEqual({ id: '002', title: 'Title Two', text: 'Body two' })
+  })
+
+  test('handles nodes without ## prefix', () => {
+    const raw = '#001 Title One\nBody one'
+    const result = parseLinearText(raw)
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('001')
+  })
+
   test('ignores duplicate ids', () => {
     const raw = '#001 First\nText\n\n#001 Duplicate\nMore'
     const parsed = parseLinearText(raw)
