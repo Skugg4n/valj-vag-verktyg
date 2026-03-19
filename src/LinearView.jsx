@@ -69,9 +69,9 @@ export default function LinearView({
       ActiveNodeHighlight,
     ],
     content: text || '',
-    onCreate({ editor }) {
-      void editor
-      updateOutline()
+    onCreate() {
+      // Delay outline scan to let DOM render
+      setTimeout(updateOutline, 100)
     },
     onUpdate({ editor }) {
       setText(editor.storage.markdown.getMarkdown())
@@ -82,8 +82,9 @@ export default function LinearView({
   useEffect(() => {
     if (editor && text !== editor.storage.markdown.getMarkdown()) {
       editor.commands.setContent(text || '')
+      setTimeout(updateOutline, 100)
     }
-  }, [text, editor])
+  }, [text, editor, updateOutline])
 
   useLinearParser(text, setNodes)
 
@@ -158,6 +159,11 @@ export default function LinearView({
           .run()
         setActiveId(id)
         editor.commands.setActiveNodeId(id)
+        // Also scroll the DOM element into view as fallback
+        const heading = document.getElementById(id)
+        if (heading) {
+          heading.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
         if (onSelectNode && id !== activeNodeId) {
           onSelectNode(id)
         }
