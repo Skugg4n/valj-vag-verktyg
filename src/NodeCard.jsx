@@ -15,6 +15,10 @@ function isLightColor(hex) {
 }
 
 const OVERVIEW_ZOOM_THRESHOLD = 0.45
+const COLOR_OPTIONS = [
+  '#1f2937', '#ef4444', '#f97316', '#facc15',
+  '#22c55e', '#3b82f6', '#e879f9', '#d1d5db',
+]
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
@@ -24,6 +28,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   const [resizing, setResizing] = useState(false)
   const [overflow, setOverflow] = useState(false)
   const [invalidRef, setInvalidRef] = useState(false)
+  const [showColors, setShowColors] = useState(false)
   const textRef = useRef(null)
   const previewRef = useRef(null)
   const prevSelectedRef = useRef(selected)
@@ -120,6 +125,33 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
           <div className="node-header">
             <span className="node-id">#{id}</span>
             {data.title && <span className="node-title">{data.title}</span>}
+            {selected && (
+              <div className="node-color-picker-wrap" onClick={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()}>
+                <button
+                  className="node-color-btn"
+                  style={{ background: bg }}
+                  onClick={() => setShowColors(c => !c)}
+                  title="Node color"
+                />
+                {showColors && (
+                  <div className="node-color-picker">
+                    {COLOR_OPTIONS.map(col => (
+                      <div
+                        key={col}
+                        className="node-color-swatch"
+                        style={{ background: col }}
+                        onClick={() => {
+                          setNodes(ns => ns.map(n =>
+                            n.id === id ? { ...n, data: { ...n.data, color: col } } : n
+                          ))
+                          setShowColors(false)
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="node-content">
             <div

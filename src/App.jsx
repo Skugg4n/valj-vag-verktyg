@@ -544,7 +544,6 @@ export default function App() {
       return
     }
     selectNode(node.id, node.data)
-    setIsPanelExpanded(true)
   }
 
   const handleLinearSelect = useCallback(
