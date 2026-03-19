@@ -40,6 +40,9 @@ import pkg from '../package.json'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
+import useFirestoreSync from './useFirestoreSync.js'
+import { useAuth } from './AuthContext.jsx'
+import UserMenu from './UserMenu.jsx'
 import { setDebug as setDebugFlag, debugLog, isDebug } from './utils/debug.js'
 
 const ROOT_KEY = '__root__'
@@ -139,8 +142,11 @@ export default function App() {
     setLinearText(convertNodesToLinearText(nodes))
   }, [nodes])
 
+  const { user } = useAuth()
+
   const {
     projects,
+    setProjects,
     projectId,
     setProjectId,
     setProjectStart,
@@ -154,6 +160,34 @@ export default function App() {
     setNextId,
     setProjectName,
   })
+
+  const { saveToFirestore } = useFirestoreSync({
+    user,
+    projects,
+    setProjects,
+    projectId,
+  })
+
+  // Auto-save to Firestore when project data changes and user is logged in
+  useEffect(() => {
+    if (!user || !autoSave || !projectId) return
+    const data = {
+      projectName,
+      nextNodeId: nextId,
+      nodes: nodes.map(n => ({
+        id: n.id,
+        text: n.data.text || '',
+        title: n.data.title || '',
+        color: n.data.color || '#1f2937',
+        position: n.position,
+        type: n.type || 'card',
+        width: n.width,
+        height: n.height,
+      })),
+    }
+    const timer = setTimeout(() => saveToFirestore(projectId, data), 2000)
+    return () => clearTimeout(timer)
+  }, [user, autoSave, nodes, nextId, projectName, projectId, saveToFirestore])
 
   useEffect(() => {
     if (storageError) alert(storageError)
@@ -961,6 +995,7 @@ export default function App() {
         >
           {theme === 'dark' ? 'Light' : 'Dark'} Mode
         </Button>
+        <UserMenu />
 
       </header>
       <main className={`workspace ${isPanelExpanded ? 'expanded' : ''}`}>
