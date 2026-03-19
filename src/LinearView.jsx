@@ -70,19 +70,20 @@ export default function LinearView({
     ],
     content: text || '',
     onCreate() {
-      // Delay outline scan to let DOM render
-      setTimeout(updateOutline, 100)
+      // Delay outline scan to let DOM render and convertHeadings to fire
+      setTimeout(updateOutline, 300)
     },
     onUpdate({ editor }) {
       setText(editor.storage.markdown.getMarkdown())
-      updateOutline()
+      // Delay to let convertHeadings run first
+      setTimeout(updateOutline, 50)
     },
   })
 
   useEffect(() => {
     if (editor && text !== editor.storage.markdown.getMarkdown()) {
       editor.commands.setContent(text || '')
-      setTimeout(updateOutline, 100)
+      setTimeout(updateOutline, 300)
     }
   }, [text, editor, updateOutline])
 
