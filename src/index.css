@@ -269,10 +269,12 @@ header {
 .node-card .node-title {
   font-weight: bold;
   font-size: 15px;
-  margin-bottom: 0.25rem;
+  display: inline-block;
+  max-width: calc(100% - 3rem);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  vertical-align: middle;
 }
 .node-card .node-content {
   flex: 1;
@@ -292,7 +294,8 @@ header {
 
 .node-card .node-preview {
   color: inherit;
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -306,7 +309,7 @@ header {
   pointer-events: none;
   background: linear-gradient(
     to bottom,
-    rgba(31, 41, 55, 0) 0%,
+    transparent 0%,
     var(--card-bg, var(--card)) 70%
   );
   color: var(--text-dim);
@@ -323,17 +326,26 @@ header {
   overflow-wrap: anywhere;
   overflow-y: auto;
   resize: none;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.node-card .node-editor .node-textarea::-webkit-scrollbar {
-  display: none;
+  scrollbar-width: thin;
 }
 .node-card .node-editor .node-textarea:focus {
   outline: none;
   box-shadow: none;
 }
+.node-card .node-overview-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0.25rem;
+  line-height: 1.2;
+}
+
 .node-card .invalid-dot {
   position: absolute;
   top: 4px;

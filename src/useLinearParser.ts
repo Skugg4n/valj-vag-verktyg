@@ -33,7 +33,10 @@ export default function useLinearParser(raw: string = '', setNodes: any): void {
     const parsed = parseLinearText(raw)
     setNodes((ns: any[]) => {
       const map = new Map(ns.map(n => [n.id, n]))
-      return parsed.map((p, i) => {
+      const seenIds = new Set<string>()
+
+      const updated = parsed.map((p, i) => {
+        seenIds.add(p.id)
         const existing = map.get(p.id)
         if (existing) {
           return { ...existing, data: { ...existing.data, text: p.text, title: p.title } }
@@ -42,11 +45,20 @@ export default function useLinearParser(raw: string = '', setNodes: any): void {
           id: p.id,
           type: 'card',
           position: { x: 0, y: i * DEFAULT_NODE_HEIGHT },
-          data: { text: p.text, title: p.title },
+          data: { text: p.text, title: p.title, color: '#1f2937' },
           width: DEFAULT_NODE_WIDTH,
           height: DEFAULT_NODE_HEIGHT,
         }
       })
+
+      // Preserve nodes not in parsed text (don't destroy on temp malformation)
+      for (const n of ns) {
+        if (!seenIds.has(n.id)) {
+          updated.push(n)
+        }
+      }
+
+      return updated
     })
   }, [raw, setNodes])
 }

@@ -498,7 +498,19 @@ export default function App() {
 
   const onNodeClick = (_e, node) => {
     debugLog('onNodeClick', node.id)
+    // Group nodes: edit label via prompt
+    if (node.type === 'group') {
+      const label = prompt('Section name:', node.data.label || '')
+      if (label !== null) {
+        pushUndoState()
+        setNodes(ns => ns.map(n =>
+          n.id === node.id ? { ...n, data: { ...n.data, label } } : n
+        ))
+      }
+      return
+    }
     selectNode(node.id, node.data)
+    setIsPanelExpanded(true)
   }
 
   const handleLinearSelect = useCallback(
@@ -693,6 +705,31 @@ export default function App() {
     } finally {
       e.target.value = ''
     }
+  }
+
+  const addSection = () => {
+    pushUndoState()
+    const id = `section-${Date.now()}`
+    setNodes(ns => [
+      {
+        id,
+        type: 'group',
+        position: { x: 0, y: 0 },
+        data: { label: 'New Section' },
+        style: {
+          width: 600,
+          height: 400,
+          background: 'rgba(59, 130, 246, 0.05)',
+          border: '2px dashed rgba(59, 130, 246, 0.3)',
+          borderRadius: '12px',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          color: 'rgba(59, 130, 246, 0.5)',
+          padding: '12px',
+        },
+      },
+      ...ns,
+    ])
   }
 
   const openSettings = () => {
@@ -948,6 +985,8 @@ export default function App() {
                 snapToGrid
                 snapGrid={[16, 16]}
                 fitView
+                minZoom={0.1}
+                maxZoom={4}
               >
                 <Background color="#374151" variant="dots" gap={16} size={1} />
                 <MiniMap zoomable pannable />
@@ -1006,9 +1045,9 @@ export default function App() {
       )}
       <FloatingMenu
         onShowSettings={openSettings}
-        // onShowAiSettings={() => setShowAiSettings(true)}
         onPlaythrough={startPlaythrough}
         onAutoLayout={!showPlay ? handleAutoLayout : undefined}
+        onAddSection={addSection}
         onHelp={openHelp}
       />
       <div
@@ -1020,7 +1059,7 @@ export default function App() {
           opacity: 0.6,
         }}
       >
-        v{pkg.version}
+        v{__APP_VERSION__} ({__GIT_HASH__})
       </div>
     </>
   )

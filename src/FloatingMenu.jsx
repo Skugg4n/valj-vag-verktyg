@@ -6,6 +6,7 @@ import {
   HelpCircle,
   Play,
   LayoutGrid,
+  Layers,
 } from 'lucide-react'
 
 const sectionConfig = [
@@ -19,6 +20,7 @@ const sectionConfig = [
     title: 'Tools',
     items: [
       { label: 'Auto-layout', icon: LayoutGrid, action: 'onAutoLayout' },
+      { label: 'Add Section', icon: Layers, action: 'onAddSection' },
       { label: 'Settings', icon: Settings, action: 'onShowSettings' },
     ],
   },
@@ -30,15 +32,16 @@ const sectionConfig = [
 
 export default function FloatingMenu({
   onShowSettings,
-  // onShowAiSettings,
   onPlaythrough,
   onAutoLayout,
+  onAddSection,
   onHelp,
 }) {
   const propMap = {
     onShowSettings,
     onPlaythrough,
     onAutoLayout,
+    onAddSection,
     onHelp,
   }
 
