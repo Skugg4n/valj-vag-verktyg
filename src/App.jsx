@@ -112,6 +112,8 @@ export default function App() {
   })
   const [theme, setTheme] = useState(() => localStorage.getItem('vv-theme') || 'dark')
   const [activeNodeId, setActiveNodeId] = useState(null)
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [debugMode, setDebugMode] = useState(isDebug())
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -246,7 +248,9 @@ export default function App() {
 
   const onNodesChange = useCallback(
     changes => {
-      pushUndoState()
+      // Only push undo for non-drag changes (select, remove, etc.)
+      const dominated = changes.every(c => c.type === 'position' || c.type === 'dimensions')
+      if (!dominated) pushUndoState()
       setNodes(ns => applyNodeChanges(changes, ns))
     },
     [pushUndoState]
@@ -522,6 +526,26 @@ export default function App() {
     setTitle('')
   }
 
+  const duplicateNode = () => {
+    if (!currentId) return
+    pushUndoState()
+    const src = nodes.find(n => n.id === currentId)
+    if (!src) return
+    const id = String(nextId).padStart(3, '0')
+    setNodes(ns => [
+      ...ns,
+      {
+        id,
+        type: 'card',
+        position: { x: src.position.x + 50, y: src.position.y + 50 },
+        data: { text: src.data.text, title: `${src.data.title || ''} (kopia)`, color: src.data.color || '#1f2937' },
+        width: src.width || DEFAULT_NODE_WIDTH,
+        height: src.height || DEFAULT_NODE_HEIGHT,
+      },
+    ])
+    setNextId(n => n + 1)
+  }
+
   const selectNode = useCallback((id, data) => {
     debugLog('selectNode', id)
     setCurrentId(id)
@@ -703,7 +727,13 @@ export default function App() {
     const blob = new Blob([md], { type: 'text/markdown' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `${Date.now()}-story.md`
+    const pad = n => String(n).padStart(2, '0')
+    const now = new Date()
+    const name = projectName.trim()
+      ? projectName.trim().toLowerCase().replace(/\s+/g, '-')
+      : 'story'
+    const date = `${String(now.getFullYear()).slice(2)}${pad(now.getMonth() + 1)}${pad(now.getDate())}`
+    a.download = `${name}-${date}.md`
     a.style.display = 'none'
     document.body.appendChild(a)
     a.click()
@@ -740,6 +770,23 @@ export default function App() {
     }
   }
 
+  const addIdea = () => {
+    pushUndoState()
+    const id = `idea-${Date.now()}`
+    const position = { x: Math.random() * 400, y: Math.random() * 400 }
+    setNodes(ns => [
+      ...ns,
+      {
+        id,
+        type: 'card',
+        position,
+        data: { text: '', title: '💡 Idé', color: '#1e293b', isIdea: true },
+        width: DEFAULT_NODE_WIDTH,
+        height: 80,
+      },
+    ])
+  }
+
   const addSection = () => {
     pushUndoState()
     const id = `section-${Date.now()}`
@@ -766,7 +813,37 @@ export default function App() {
   }
 
   const openSettings = () => {
-    alert('Settings dialog is not implemented yet')
+    const nodeCount = nodes.filter(n => n.type !== 'group').length
+    const wordCount = nodes.reduce((sum, n) => sum + (n.data.text || '').split(/\s+/).filter(Boolean).length, 0)
+    const linkCount = edges.length
+    const orphans = nodes.filter(n => {
+      if (n.type === 'group') return false
+      const hasIncoming = edges.some(e => e.target === n.id)
+      const isFirst = n.id === nodes.filter(nn => nn.type !== 'group').sort((a,b) => a.id.localeCompare(b.id))[0]?.id
+      return !hasIncoming && !isFirst
+    })
+    const deadEnds = nodes.filter(n => {
+      if (n.type === 'group') return false
+      return !edges.some(e => e.source === n.id) && (n.data.text || '').trim().length > 0
+    })
+
+    let msg = `📊 Projektstatistik\n\n`
+    msg += `Noder: ${nodeCount}\n`
+    msg += `Ord: ${wordCount}\n`
+    msg += `Kopplingar: ${linkCount}\n\n`
+
+    if (orphans.length > 0) {
+      msg += `⚠️ Noder utan ingång (föräldralösa):\n`
+      msg += orphans.map(n => `  #${n.id} ${n.data.title || '(utan titel)'}`).join('\n')
+      msg += '\n\n'
+    }
+
+    if (deadEnds.length > 0) {
+      msg += `🔚 Slutnoder (inga utgångar):\n`
+      msg += deadEnds.map(n => `  #${n.id} ${n.data.title || '(utan titel)'}`).join('\n')
+    }
+
+    alert(msg)
   }
 
   const openHelp = () => {
@@ -820,15 +897,56 @@ export default function App() {
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
           e.preventDefault()
           addNode()
+        } else if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+          e.preventDefault()
+          duplicateNode()
+        } else if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+          e.preventDefault()
+          setShowSearch(s => !s)
+          if (showSearch) setSearchQuery('')
+        } else if (e.key === 'Delete' && !e.target.closest('input, textarea, [contenteditable]')) {
+          e.preventDefault()
+          deleteNode()
         }
       }
       window.addEventListener('keydown', handler)
       return () => window.removeEventListener('keydown', handler)
-    }, [undo, redo, addNode])
+    }, [undo, redo, addNode, duplicateNode, deleteNode])
 
   useEffect(() => {
-    setEdges(scanEdges(nodes))
-  }, [nodes])
+    const handler = (e) => {
+      const { ideaId } = e.detail
+      const idea = nodes.find(n => n.id === ideaId)
+      if (!idea) return
+      pushUndoState()
+      const id = String(nextId).padStart(3, '0')
+      setNodes(ns => ns.map(n => {
+        if (n.id !== ideaId) return n
+        return {
+          ...n,
+          id,
+          data: { ...n.data, isIdea: false, title: n.data.title?.replace('💡 ', '') || '' },
+        }
+      }))
+      setNextId(prev => prev + 1)
+      setEdges(scanEdges(nodes))
+    }
+    window.addEventListener('promote-idea', handler)
+    return () => window.removeEventListener('promote-idea', handler)
+  }, [nodes, nextId, pushUndoState])
+
+  useEffect(() => {
+    if (!searchQuery) return
+    const q = searchQuery.toLowerCase()
+    const match = nodes.find(n =>
+      (n.data.title || '').toLowerCase().includes(q) ||
+      (n.data.text || '').toLowerCase().includes(q)
+    )
+    if (match) {
+      selectNode(match.id, match.data)
+      setActiveNodeId(match.id)
+    }
+  }, [searchQuery])
 
   // Persist data after every change
 
@@ -880,7 +998,7 @@ export default function App() {
             checked={autoSave}
             onChange={e => setAutoSave(e.target.checked)}
           />
-          Save
+          Auto-save
         </label>
         <Popover className="relative">
           {({ open }) => (
@@ -979,6 +1097,7 @@ export default function App() {
         >
           A+
         </Button>
+        {(debugMode || window.location.search.includes('debug')) && (
         <Button
           variant="ghost"
           onClick={toggleDebug}
@@ -986,6 +1105,7 @@ export default function App() {
         >
           {debugMode ? 'Debug On' : 'Debug Off'}
         </Button>
+        )}
         <Button
           variant="ghost"
           icon={theme === 'dark' ? Sun : Moon}
@@ -995,7 +1115,21 @@ export default function App() {
           {theme === 'dark' ? 'Light' : 'Dark'} Mode
         </Button>
         <UserMenu />
-
+        {showSearch && (
+          <input
+            autoFocus
+            className="search-input"
+            placeholder="Sök nod..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Escape') { setShowSearch(false); setSearchQuery('') }
+            }}
+          />
+        )}
+        <span style={{ fontSize: '11px', opacity: 0.5, marginLeft: 'auto' }}>
+          {nodes.reduce((sum, n) => sum + (n.data.text || '').split(/\s+/).filter(Boolean).length, 0)} ord
+        </span>
       </header>
       <main className={`workspace ${isPanelExpanded ? 'expanded' : ''}`}>
         <div id="graph-container">
@@ -1014,6 +1148,7 @@ export default function App() {
                 onReconnectStart={onReconnectStart}
                 onReconnectEnd={onReconnectEnd}
                 edgesUpdatable
+                onNodeDragStop={() => pushUndoState()}
                 onPaneClick={onPaneClick}
                 nodeTypes={nodeTypes}
                 snapToGrid
@@ -1082,6 +1217,7 @@ export default function App() {
         onPlaythrough={startPlaythrough}
         onAutoLayout={!showPlay ? handleAutoLayout : undefined}
         onAddSection={addSection}
+        onAddIdea={addIdea}
         onHelp={openHelp}
       />
       <div
