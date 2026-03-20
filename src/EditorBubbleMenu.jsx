@@ -1,4 +1,4 @@
-import { BubbleMenu } from '@tiptap/extension-bubble-menu'
+import { BubbleMenu } from '@tiptap/react'
 import { Bold, Italic, Underline, Strikethrough, Heading2, Link2, Highlighter } from 'lucide-react'
 
 export default function EditorBubbleMenu({ editor }) {
