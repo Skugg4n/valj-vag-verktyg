@@ -223,43 +223,43 @@ export default function LinearView({
   const charCount = editor.storage.characterCount?.characters() || 0
 
   return (
-    <div id="linear-panel" className="linear-container flex flex-col h-full">
-      <header className="linear-header p-3 flex items-center justify-between border-b">
-        <div className="flex items-center gap-2">
+    <div id="linear-panel" className="linear-container">
+      <header className="linear-header">
+        <div className="linear-header-left">
           <button className="btn ghost" type="button" onClick={onToggleExpand}
             title={expanded ? 'Collapse' : 'Expand'}
             aria-label={expanded ? 'Collapse panel' : 'Expand panel'}>
             {expanded ? <ChevronRight /> : <ChevronLeft />}
           </button>
-          <h1 className="text-lg font-bold">Linear View</h1>
-          <span className="text-xs text-dim" style={{ opacity: 0.5 }}>
+          <h1 className="linear-header-title">Linear View</h1>
+          <span className="text-dim linear-header-stats">
             {wordCount} ord · {charCount} tecken
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="linear-header-right">
           <button className="btn" type="button" onClick={insertNewNode} aria-label="Ny nod">
             <Plus aria-hidden="true" />
           </button>
           <button className="btn" type="button" onClick={exportMarkdown}>
-            <Download className="h-4 w-4" /> Exportera
+            <Download /> Exportera
           </button>
         </div>
       </header>
 
       <EditorToolbar editor={editor} onInsertNode={insertNewNode} />
 
-      <div className="flex flex-1 min-h-0">
-        <aside className="hidden md:flex md:flex-col md:w-1/4 linear-sidebar h-full min-h-0">
-          <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
-            <h2 className="text-sm font-semibold text-dim uppercase tracking-wider mb-4">
+      <div className="linear-body">
+        <aside className="linear-sidebar">
+          <div className="linear-sidebar-inner no-scrollbar">
+            <h2 className="linear-sidebar-heading text-dim">
               Outline
             </h2>
-            <ul className="space-y-1">
+            <ul className="outline-list">
               {outlineEntries.map(item => (
                 <li key={item.id}>
                   <button
                     type="button"
-                    className={`outline-btn block w-full text-left text-sm p-2 rounded-md ${
+                    className={`outline-btn ${
                       activeId === item.id ? 'active' : ''
                     }`}
                     onClick={() => jumpTo(item.id)}
@@ -271,12 +271,12 @@ export default function LinearView({
             </ul>
           </div>
         </aside>
-        <main className="flex-1 flex flex-col linear-main min-h-0 overflow-hidden">
+        <main className="linear-main">
           <div
             ref={mainRef}
-            className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 no-scrollbar main-editor-container"
+            className="linear-main-scroll no-scrollbar main-editor-container"
           >
-            <div className="max-w-3xl mx-auto relative">
+            <div className="linear-editor-wrapper">
               {editor && <EditorBubbleMenu editor={editor} />}
               <EditorContent id="linearEditor" editor={editor} />
             </div>
