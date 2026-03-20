@@ -91,6 +91,8 @@ export default function useFirestoreSync({ user, projects, setProjects, projectI
           return merged
         })
       }
+    }, (error) => {
+      console.error('Firestore listener error:', error)
     })
 
     unsubRef.current = unsub

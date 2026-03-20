@@ -36,7 +36,6 @@ import { useAiSettings } from './useAi.js'
 // import AiProofreadPanel from './AiProofreadPanel.jsx'
 import Button from './Button.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
-import pkg from '../package.json'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
@@ -95,8 +94,10 @@ export default function App() {
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
   const [autoSave, setAutoSave] = useState(() => {
-    const saved = localStorage.getItem('cyoa-auto-save')
-    return saved ? JSON.parse(saved) : false
+    try {
+      const saved = localStorage.getItem('cyoa-auto-save')
+      return saved ? JSON.parse(saved) : false
+    } catch { return false }
   })
   const [aiSettings, setAiSettings] = useAiSettings()
   // const [suggestions, setSuggestions] = useState([])
@@ -276,29 +277,6 @@ export default function App() {
     },
     [pushUndoState]
   )
-
-  useEffect(() => {
-    const data = {
-      projectName,
-      nextNodeId: nextId,
-      nodes: nodes.map(n => ({
-        id: n.id,
-        text: n.data.text || '',
-        title: n.data.title || '',
-        color: n.data.color || '#1f2937',
-        position: n.position,
-        type: n.type || 'card',
-        width: n.width,
-        height: n.height,
-      })),
-      edges,
-    }
-    try {
-      localStorage.setItem('cyoa-data', JSON.stringify(data))
-    } catch (e) {
-      console.error('Failed to save nodes', e)
-    }
-  }, [nodes, edges, projectName, nextId])
 
   /*
   const fetchAiSuggestions = async () => {
@@ -767,6 +745,7 @@ export default function App() {
     const file = e.target.files[0]
     if (!file) return
     pushUndoState()
+    linearInitialized.current = false
     try {
       const json = await file.text()
       const data = JSON.parse(json)
@@ -934,6 +913,8 @@ export default function App() {
   }
 
   const startNewProject = () => {
+    linearInitialized.current = false
+    setLinearText('')
     const id = String(Date.now())
     setNodes([])
     setEdges([])
