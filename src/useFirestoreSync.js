@@ -71,24 +71,30 @@ export default function useFirestoreSync({ user, projects, setProjects, projectI
         // First load: merge Firestore projects with any localStorage projects
         setProjects((localProjects) => {
           const merged = { ...localProjects }
+          let changed = false
           for (const [id, fp] of Object.entries(firestoreProjects)) {
             const local = merged[id]
             // Firestore wins if newer or local doesn't exist
             if (!local || (fp.updated || 0) >= (local.updated || 0)) {
               merged[id] = fp
+              changed = true
             }
           }
-          return merged
+          return changed ? merged : localProjects
         })
         initialLoadDone.current = true
       } else {
-        // Subsequent updates: just use Firestore as source of truth
+        // Subsequent updates: only update if data actually changed
         setProjects((prev) => {
           const merged = { ...prev }
+          let changed = false
           for (const [id, fp] of Object.entries(firestoreProjects)) {
-            merged[id] = fp
+            if (!prev[id] || (fp.updated || 0) !== (prev[id].updated || 0)) {
+              merged[id] = fp
+              changed = true
+            }
           }
-          return merged
+          return changed ? merged : prev
         })
       }
     }, (error) => {

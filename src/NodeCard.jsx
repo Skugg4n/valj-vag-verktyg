@@ -58,7 +58,8 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
       if (!nodes.has(m[1])) invalid = true
     }
     setInvalidRef(invalid)
-  }, [data.text, getNodes])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.text])
 
   const handleResizeEnd = (_e, { width: w, height: h }) => {
     setResizing(false)

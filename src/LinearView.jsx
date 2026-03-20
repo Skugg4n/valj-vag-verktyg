@@ -76,20 +76,28 @@ export default function LinearView({
   }, [nextId])
 
   // Auto-convert paragraphs starting with #NNN to h2 headings
+  // Uses a re-entry guard to prevent dispatch → update → dispatch infinite loop
   useEffect(() => {
     if (!editor) return
+    let converting = false
     const convertHeadings = () => {
-      const { doc, schema } = editor.state
-      let tr = editor.state.tr
-      let modified = false
-      doc.descendants((node, pos) => {
-        if (node.type.name === 'paragraph' && /^#\d{3}\s/.test(node.textContent)) {
-          tr = tr.setNodeMarkup(pos, schema.nodes.heading, { level: 2 })
-          modified = true
+      if (converting) return
+      converting = true
+      try {
+        const { doc, schema } = editor.state
+        let tr = editor.state.tr
+        let modified = false
+        doc.descendants((node, pos) => {
+          if (node.type.name === 'paragraph' && /^#\d{3}\s/.test(node.textContent)) {
+            tr = tr.setNodeMarkup(pos, schema.nodes.heading, { level: 2 })
+            modified = true
+          }
+        })
+        if (modified) {
+          editor.view.dispatch(tr)
         }
-      })
-      if (modified) {
-        editor.view.dispatch(tr)
+      } finally {
+        converting = false
       }
     }
     convertHeadings()
