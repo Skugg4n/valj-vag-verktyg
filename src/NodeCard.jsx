@@ -170,31 +170,27 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                 )}
               </span>
             )}
-            {showColors && colorBtnRef.current && (() => {
-              const rect = colorBtnRef.current.getBoundingClientRect()
-              return (
-                <div
-                  className="node-color-picker"
-                  style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, zIndex: 9999 }}
-                  onPointerDown={e => e.stopPropagation()}
-                  onClick={e => e.stopPropagation()}
-                >
-                  {COLOR_OPTIONS.map(col => (
-                    <div
-                      key={col}
-                      className="node-color-swatch"
-                      style={{ background: col }}
-                      onClick={() => {
-                        setNodes(ns => ns.map(n =>
-                          n.id === id ? { ...n, data: { ...n.data, color: col } } : n
-                        ))
-                        setShowColors(false)
-                      }}
-                    />
-                  ))}
-                </div>
-              )
-            })()}
+            {showColors && (
+              <div
+                className="node-color-picker"
+                onPointerDown={e => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
+              >
+                {COLOR_OPTIONS.map(col => (
+                  <div
+                    key={col}
+                    className="node-color-swatch"
+                    style={{ background: col }}
+                    onClick={() => {
+                      setNodes(ns => ns.map(n =>
+                        n.id === id ? { ...n, data: { ...n.data, color: col } } : n
+                      ))
+                      setShowColors(false)
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           <div className="node-content">
             <div
