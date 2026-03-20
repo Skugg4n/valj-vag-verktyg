@@ -141,7 +141,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                 onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
               />
             ) : (
-              data.title && <span className="node-title">{data.title}</span>
+              data.title && <span className="node-title">{String(data.title)}</span>
             )}
             {selected && (
               <span className="node-toolbar" onPointerDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
@@ -199,7 +199,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
               aria-hidden={selected}
               onWheelCapture={e => e.stopPropagation()}
             >
-              {(data.text || '').split(/(\[#\d{3}\])/).map((part, i) => {
+              {String(data.text || '').split(/(\[#\d{3}\])/).map((part, i) => {
                 const m = part.match(/^\[#(\d{3})\]$/)
                 if (m) {
                   const target = getNodes().find(n => n.id === m[1])
@@ -209,7 +209,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                     </span>
                   )
                 }
-                return <span key={i}>{part}</span>
+                return part
               })}
               {overflow && <div className="preview-more">...</div>}
               {!selected && (data.text || '').trim().length > 0 && (

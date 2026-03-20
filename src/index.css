@@ -263,7 +263,6 @@ header {
 .node-card .node-header {
   position: relative;
   margin-bottom: 0.25rem;
-  overflow: visible;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
