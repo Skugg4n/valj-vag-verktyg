@@ -140,15 +140,17 @@ export default function App() {
     localStorage.setItem('vv-theme', theme)
   }, [theme])
 
-  // Only generate linear text on demand (not on every node change — that causes the feedback loop)
-  const generateLinearText = useCallback(() => {
+  // Generate linear text from nodes — only when nodes change from OUTSIDE
+  // the editor (e.g. initial load, project switch, graph edits).
+  // The LinearView editor sets linearText directly via setText, so we
+  // use a ref to track whether the editor is the source of truth.
+  const editorIsSource = useRef(false)
+
+  useEffect(() => {
+    if (editorIsSource.current) return
+    if (nodes.length === 0) return
     setLinearText(convertNodesToLinearText(nodes))
   }, [nodes])
-
-  // Generate linear text on initial load and when expanding/collapsing
-  useEffect(() => {
-    generateLinearText()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for parser-driven node updates and scan edges
   useEffect(() => {
@@ -669,6 +671,7 @@ export default function App() {
   )
 
   const handleProjectSwitch = id => {
+    editorIsSource.current = false
     const p = projects[id]
     if (!p) return
     const loaded = (p.data.nodes || []).map(n => ({
@@ -1232,7 +1235,7 @@ export default function App() {
         </div>
         <LinearView
           text={linearText}
-          setText={setLinearText}
+          setText={(t) => { editorIsSource.current = true; setLinearText(t) }}
           setNodes={setNodes}
           nextId={nextId}
           expanded={isPanelExpanded}
