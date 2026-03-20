@@ -363,9 +363,11 @@ header {
   line-height: 1.2;
 }
 
-.node-color-picker-wrap {
+.node-toolbar {
   float: right;
-  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
 }
 .node-color-btn {
   width: 16px;
