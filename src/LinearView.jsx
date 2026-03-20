@@ -57,27 +57,13 @@ export default function LinearView({
     },
   })
 
-  // Sync text prop into editor when it changes from outside (initial load, project switch)
-  // but NOT when the editor itself is the source of the change
-  const lastEditorText = useRef('')
+  // Load text into editor when it arrives (initial load / project switch)
+  const hasLoadedContent = useRef(false)
   useEffect(() => {
-    if (!editor || !text) return
-    // Only sync if editor content is empty or text differs from what editor last produced
-    const editorMd = editor.storage.markdown?.getMarkdown() || ''
-    if (editorMd === lastEditorText.current && text !== editorMd) {
-      editor.commands.setContent(text)
-    }
+    if (!editor || !text || hasLoadedContent.current) return
+    hasLoadedContent.current = true
+    editor.commands.setContent(text)
   }, [text, editor])
-
-  // Track what the editor produces so we can distinguish external changes
-  useEffect(() => {
-    if (!editor) return
-    const handler = () => {
-      lastEditorText.current = editor.storage.markdown?.getMarkdown() || ''
-    }
-    editor.on('update', handler)
-    return () => editor.off('update', handler)
-  }, [editor])
 
   // Parse text into outline entries (lightweight, no DOM scanning)
   const outlineEntries = useMemo(() => parseLinearText(text || ''), [text])

@@ -140,15 +140,14 @@ export default function App() {
     localStorage.setItem('vv-theme', theme)
   }, [theme])
 
-  // Generate linear text from nodes — only when nodes change from OUTSIDE
-  // the editor (e.g. initial load, project switch, graph edits).
-  // The LinearView editor sets linearText directly via setText, so we
-  // use a ref to track whether the editor is the source of truth.
-  const editorIsSource = useRef(false)
+  // Generate linear text ONCE when nodes first load (empty → non-empty).
+  // After that, LinearView owns the text and syncs back via parser.
+  const linearInitialized = useRef(false)
 
   useEffect(() => {
-    if (editorIsSource.current) return
+    if (linearInitialized.current) return
     if (nodes.length === 0) return
+    linearInitialized.current = true
     setLinearText(convertNodesToLinearText(nodes))
   }, [nodes])
 
@@ -671,7 +670,7 @@ export default function App() {
   )
 
   const handleProjectSwitch = id => {
-    editorIsSource.current = false
+    linearInitialized.current = false
     const p = projects[id]
     if (!p) return
     const loaded = (p.data.nodes || []).map(n => ({
@@ -1235,7 +1234,7 @@ export default function App() {
         </div>
         <LinearView
           text={linearText}
-          setText={(t) => { editorIsSource.current = true; setLinearText(t) }}
+          setText={setLinearText}
           setNodes={setNodes}
           nextId={nextId}
           expanded={isPanelExpanded}
