@@ -483,8 +483,15 @@ export default function App() {
           )
         }
       } else {
-        const count = spawnCounts[ROOT_KEY] || 0
-        position = { x: count * 300, y: 0 }
+        // Place new node in the visible center of the graph area
+        const graphEl = document.getElementById('graph')
+        if (graphEl) {
+          const rect = graphEl.getBoundingClientRect()
+          position = { x: rect.width / 2 - DEFAULT_NODE_WIDTH / 2, y: rect.height / 2 - DEFAULT_NODE_HEIGHT / 2 }
+        } else {
+          const count = spawnCounts[ROOT_KEY] || 0
+          position = { x: count * 300, y: 0 }
+        }
       }
       const updated = [
         ...updatedNodes,

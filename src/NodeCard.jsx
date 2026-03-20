@@ -144,75 +144,57 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
               data.title && <span className="node-title">{data.title}</span>
             )}
             {selected && (
-              <div
-                className="node-color-picker-wrap"
-                onClickCapture={e => e.stopPropagation()}
-                onPointerDownCapture={e => e.stopPropagation()}
-                onMouseDownCapture={e => e.stopPropagation()}
-              >
+              <span className="node-toolbar" onPointerDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
                 <button
                   ref={colorBtnRef}
                   className="node-color-btn"
                   style={{ background: bg }}
-                  onMouseDown={e => {
-                    e.stopPropagation()
-                    e.preventDefault()
-                    setShowColors(c => !c)
-                  }}
+                  onClick={() => setShowColors(c => !c)}
                   title="Node color"
                 />
-                {showColors && colorBtnRef.current && (() => {
-                  const rect = colorBtnRef.current.getBoundingClientRect()
-                  return (
+                <button
+                  className="node-notes-btn"
+                  onClick={() => setShowNotes(s => !s)}
+                  title="Anteckningar"
+                >
+                  📝
+                </button>
+                {data.isIdea && (
+                  <button
+                    className="node-notes-btn"
+                    onClick={() => window.dispatchEvent(new CustomEvent('promote-idea', { detail: { ideaId: id } }))}
+                    title="Omvandla till nod"
+                  >
+                    → Nod
+                  </button>
+                )}
+              </span>
+            )}
+            {showColors && colorBtnRef.current && (() => {
+              const rect = colorBtnRef.current.getBoundingClientRect()
+              return (
+                <div
+                  className="node-color-picker"
+                  style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, zIndex: 9999 }}
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
+                >
+                  {COLOR_OPTIONS.map(col => (
                     <div
-                      className="node-color-picker"
-                      style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, zIndex: 9999 }}
-                      onMouseDownCapture={e => e.stopPropagation()}
-                    >
-                      {COLOR_OPTIONS.map(col => (
-                        <div
-                          key={col}
-                          className="node-color-swatch"
-                          style={{ background: col }}
-                          onMouseDown={e => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            setNodes(ns => ns.map(n =>
-                              n.id === id ? { ...n, data: { ...n.data, color: col } } : n
-                            ))
-                            setShowColors(false)
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )
-                })()}
-              </div>
-            )}
-            {selected && data.isIdea && (
-              <button
-                className="btn ghost"
-                style={{ fontSize: '11px', padding: '2px 6px', marginLeft: 4 }}
-                onMouseDown={e => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                  window.dispatchEvent(new CustomEvent('promote-idea', { detail: { ideaId: id } }))
-                }}
-                title="Omvandla till nod"
-              >
-                → Nod
-              </button>
-            )}
-            {selected && !isOverview && (
-              <button
-                className="node-notes-btn"
-                onMouseDown={e => { e.stopPropagation(); e.preventDefault(); setShowNotes(s => !s) }}
-                title="Anteckningar"
-                style={{ float: 'right', marginRight: 4 }}
-              >
-                📝
-              </button>
-            )}
+                      key={col}
+                      className="node-color-swatch"
+                      style={{ background: col }}
+                      onClick={() => {
+                        setNodes(ns => ns.map(n =>
+                          n.id === id ? { ...n, data: { ...n.data, color: col } } : n
+                        ))
+                        setShowColors(false)
+                      }}
+                    />
+                  ))}
+                </div>
+              )
+            })()}
           </div>
           <div className="node-content">
             <div
@@ -259,7 +241,12 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
             </div>
           </div>
           {showNotes && selected && (
-            <div className="node-notes" onPointerDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
+            <div
+              className="node-notes"
+              onPointerDown={e => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
+              onWheelCapture={e => e.stopPropagation()}
+            >
               <textarea
                 className="node-notes-textarea"
                 placeholder="Anteckningar om denna nod..."
@@ -269,7 +256,6 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                     n.id === id ? { ...n, data: { ...n.data, notes: e.target.value } } : n
                   ))
                 }}
-                onWheelCapture={e => e.stopPropagation()}
               />
             </div>
           )}
