@@ -25,15 +25,21 @@ export function convertNodesToHtml(nodes: Node[]): string {
 }
 
 export function convertNodesToLinearText(nodes: Node[]): string {
-  return nodes
+  // Sort by numeric ID for consistent ordering
+  const sorted = [...nodes]
+    .filter(n => n.type !== 'group')
+    .sort((a, b) => a.id.localeCompare(b.id))
+
+  return sorted
     .map(n => {
-      const header = `#${String(n.id).padStart(3, '0')} ${n.data?.title || ''}`
-      let body = (n.data?.text || '')
-        .split('\n')
-        .map(p => p.trimEnd())
-        .join('\n')
-      body = body.replace(/\n+$/, '')
-      return body ? `${header}\n\n${body}` : header
+      const title = n.data?.title || ''
+      const text = n.data?.text || ''
+      const lines = [`## #${n.id} ${title}`.trimEnd()]
+      if (text) {
+        lines.push('')  // blank line after heading
+        lines.push(text)
+      }
+      return lines.join('\n')
     })
     .join('\n\n')
 }

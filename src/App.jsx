@@ -140,8 +140,21 @@ export default function App() {
     localStorage.setItem('vv-theme', theme)
   }, [theme])
 
-  useEffect(() => {
+  // Only generate linear text on demand (not on every node change — that causes the feedback loop)
+  const generateLinearText = useCallback(() => {
     setLinearText(convertNodesToLinearText(nodes))
+  }, [nodes])
+
+  // Generate linear text on initial load and when expanding/collapsing
+  useEffect(() => {
+    generateLinearText()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Listen for parser-driven node updates and scan edges
+  useEffect(() => {
+    const handler = () => setEdges(scanEdges(nodes))
+    window.addEventListener('nodes-updated-from-parser', handler)
+    return () => window.removeEventListener('nodes-updated-from-parser', handler)
   }, [nodes])
 
   const { user } = useAuth()

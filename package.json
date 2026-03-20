@@ -1,7 +1,7 @@
 {
   "name": "valj-vag-verktyg",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,8 +14,14 @@
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
     "@tiptap/extension-bubble-menu": "^2.13.0",
+    "@tiptap/extension-character-count": "^3.20.4",
+    "@tiptap/extension-highlight": "^3.20.4",
     "@tiptap/extension-link": "^2.13.0",
+    "@tiptap/extension-placeholder": "^3.20.4",
+    "@tiptap/extension-text-align": "^3.20.4",
+    "@tiptap/extension-typography": "^3.20.4",
     "@tiptap/extension-underline": "^2.13.0",
+    "@tiptap/extensions": "^3.20.4",
     "@tiptap/react": "^2.13.0",
     "@tiptap/starter-kit": "^2.13.0",
     "dagre": "^0.8.5",

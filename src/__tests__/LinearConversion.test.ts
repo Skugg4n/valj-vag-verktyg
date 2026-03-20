@@ -64,7 +64,7 @@ describe('parseHtmlToNodes', () => {
       { id: '002', data: { title: 'Next', text: '' } } as any,
     ]
     const md = convertNodesToLinearText(nodes)
-    expect(md).toBe('#001 Start\n\nFirst line\nSecond line\n\n#002 Next')
+    expect(md).toBe('## #001 Start\n\nFirst line\nSecond line\n\n## #002 Next')
   })
 
   test('preserves blank lines in node text', () => {
@@ -72,7 +72,7 @@ describe('parseHtmlToNodes', () => {
       { id: '001', data: { title: 'Start', text: 'Line1\n\nLine3' } } as any,
     ]
     const md = convertNodesToLinearText(nodes)
-    expect(md).toBe('#001 Start\n\nLine1\n\nLine3')
+    expect(md).toBe('## #001 Start\n\nLine1\n\nLine3')
   })
 
   test('parseHtmlToNodes preserves blank paragraphs', () => {
@@ -83,7 +83,7 @@ describe('parseHtmlToNodes', () => {
   })
 
   test('parseLinearText handles blank line after header', () => {
-    const raw = '#001 Start\n\nFirst line\n\n#002 Next'
+    const raw = '## #001 Start\n\nFirst line\n\n## #002 Next'
     const parsed = parseLinearText(raw)
     expect(parsed).toHaveLength(2)
     expect(parsed[0]).toEqual({ id: '001', title: 'Start', text: 'First line' })
