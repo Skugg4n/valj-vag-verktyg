@@ -8,6 +8,7 @@ import {
   LayoutGrid,
   Layers,
   Lightbulb,
+  History,
 } from 'lucide-react'
 
 const sectionConfig = [
@@ -23,6 +24,7 @@ const sectionConfig = [
       { label: 'Auto-layout', icon: LayoutGrid, action: 'onAutoLayout' },
       { label: 'Add Section', icon: Layers, action: 'onAddSection' },
       { label: 'Add Idea', icon: Lightbulb, action: 'onAddIdea' },
+      { label: 'Historik', icon: History, action: 'onShowHistory' },
       { label: 'Settings', icon: Settings, action: 'onShowSettings' },
     ],
   },
@@ -34,6 +36,7 @@ const sectionConfig = [
 
 export default function FloatingMenu({
   onShowSettings,
+  onShowHistory,
   onPlaythrough,
   onAutoLayout,
   onAddSection,
@@ -42,6 +45,7 @@ export default function FloatingMenu({
 }) {
   const propMap = {
     onShowSettings,
+    onShowHistory,
     onPlaythrough,
     onAutoLayout,
     onAddSection,

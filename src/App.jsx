@@ -163,16 +163,16 @@ export default function App() {
     setProjectName,
   })
 
-  const { saveToFirestore } = useFirestoreSync({
+  const { saveToFirestore, getHistory } = useFirestoreSync({
     user,
     projects,
     setProjects,
     projectId,
   })
 
-  // Auto-save to Firestore when project data changes and user is logged in
+  // Always save to Firestore when logged in (no autoSave requirement)
   useEffect(() => {
-    if (!user || !autoSave || !projectId) return
+    if (!user || !projectId || nodes.length === 0) return
     const data = {
       projectName,
       nextNodeId: nextId,
@@ -189,7 +189,7 @@ export default function App() {
     }
     const timer = setTimeout(() => saveToFirestore(projectId, data), 2000)
     return () => clearTimeout(timer)
-  }, [user, autoSave, nodes, nextId, projectName, projectId, saveToFirestore])
+  }, [user, nodes, nextId, projectName, projectId, saveToFirestore])
 
   useEffect(() => {
     if (storageError) alert(storageError)
@@ -819,6 +819,52 @@ export default function App() {
     ])
   }
 
+  const showHistory = async () => {
+    if (!user) {
+      alert('Logga in för att se historik')
+      return
+    }
+    const history = await getHistory(projectId)
+    if (history.length === 0) {
+      alert('Ingen historik ännu. Versioner sparas automatiskt var 5:e minut när du är inloggad.')
+      return
+    }
+    const list = history.map((h, i) => `${i + 1}. ${h.savedAt} — ${h.projectName || 'Utan namn'} (${(h.nodes || []).length} noder)`).join('\n')
+    const choice = prompt(`Välj version att återställa (1-${history.length}):\n\n${list}`)
+    if (!choice) return
+    const idx = parseInt(choice, 10) - 1
+    if (idx < 0 || idx >= history.length) return
+    const version = history[idx]
+    if (!confirm(`Återställ till version från ${version.savedAt}? Nuvarande version sparas först.`)) return
+    // Save current as history before restoring
+    const currentData = {
+      projectName,
+      nextNodeId: nextId,
+      nodes: nodes.map(n => ({
+        id: n.id, text: n.data.text || '', title: n.data.title || '',
+        color: n.data.color || '#1f2937', position: n.position,
+        type: n.type || 'card', width: n.width, height: n.height,
+      })),
+    }
+    await saveToFirestore(projectId, currentData)
+    // Restore selected version
+    const loaded = (version.nodes || []).map(n => ({
+      id: n.id, type: 'card',
+      position: n.position || { x: 0, y: 0 },
+      data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+      width: n.width || DEFAULT_NODE_WIDTH,
+      height: n.height || DEFAULT_NODE_HEIGHT,
+    }))
+    pushUndoState()
+    setNodes(loaded)
+    setEdges(scanEdges(loaded))
+    setNextId(version.nextNodeId || 1)
+    setProjectName(version.projectName || '')
+    setCurrentId(null)
+    setText('')
+    setTitle('')
+  }
+
   const openSettings = () => {
     const nodeCount = nodes.filter(n => n.type !== 'group').length
     const wordCount = nodes.reduce((sum, n) => sum + (n.data.text || '').split(/\s+/).filter(Boolean).length, 0)
@@ -1225,6 +1271,7 @@ export default function App() {
         onAutoLayout={!showPlay ? handleAutoLayout : undefined}
         onAddSection={addSection}
         onAddIdea={addIdea}
+        onShowHistory={showHistory}
         onHelp={openHelp}
       />
       <div
