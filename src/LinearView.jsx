@@ -62,7 +62,7 @@ export default function LinearView({
   useEffect(() => {
     if (!editor || !text || hasLoadedContent.current) return
     hasLoadedContent.current = true
-    editor.commands.setContent(text)
+    editor.commands.setContent(text, false)
   }, [text, editor])
 
   // Parse text into outline entries (lightweight, no DOM scanning)
@@ -195,22 +195,26 @@ export default function LinearView({
   // Set data-id on h2 elements for scroll tracking
   useEffect(() => {
     if (!editor) return
+    let timer
     const setIds = () => {
-      const el = document.getElementById('linearEditor')
-      if (!el) return
-      el.querySelectorAll('h2').forEach(h => {
-        const m = h.textContent?.match(/^#(\d{3})/)
-        if (m) {
-          h.dataset.id = m[1]
-          h.id = m[1]
-        }
-      })
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        const el = document.getElementById('linearEditor')
+        if (!el) return
+        el.querySelectorAll('h2').forEach(h => {
+          const m = h.textContent?.match(/^#(\d{3})/)
+          if (m) {
+            h.dataset.id = m[1]
+            h.id = m[1]
+          }
+        })
+      }, 100)
     }
     const observer = new MutationObserver(setIds)
     const el = document.getElementById('linearEditor')
     if (el) observer.observe(el, { childList: true, subtree: true, characterData: true })
     setIds()
-    return () => observer.disconnect()
+    return () => { observer.disconnect(); clearTimeout(timer) }
   }, [editor])
 
   if (!editor) return null

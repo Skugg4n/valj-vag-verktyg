@@ -11,8 +11,15 @@ const firebaseConfig = {
   appId: '1:275505491683:web:11c3adb9b7239b75ca5fd6',
 }
 
-const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
-export const googleProvider = new GoogleAuthProvider()
-export const db = getFirestore(app)
+let app, auth, googleProvider, db
+try {
+  app = initializeApp(firebaseConfig)
+  auth = getAuth(app)
+  googleProvider = new GoogleAuthProvider()
+  db = getFirestore(app)
+} catch (err) {
+  console.error('Firebase init failed:', err)
+}
+
+export { auth, googleProvider, db }
 export default app

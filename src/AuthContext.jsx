@@ -9,6 +9,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(false)
+      return
+    }
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u)
       setLoading(false)
@@ -16,8 +20,14 @@ export function AuthProvider({ children }) {
     return unsubscribe
   }, [])
 
-  const loginWithGoogle = () => signInWithPopup(auth, googleProvider)
-  const logout = () => signOut(auth)
+  const loginWithGoogle = () => {
+    if (!auth) return Promise.resolve()
+    return signInWithPopup(auth, googleProvider)
+  }
+  const logout = () => {
+    if (!auth) return Promise.resolve()
+    return signOut(auth)
+  }
 
   return (
     <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
