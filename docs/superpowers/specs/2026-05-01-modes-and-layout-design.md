@@ -356,9 +356,11 @@ Scoped to fire only when not in `<input>` or `[contenteditable]` (existing helpe
 | `1` / `2` / `3` / `4` | Switch mode (skiss / split / text / read) |
 | Esc | Close palette → close settings → exit focus mode (in priority order) |
 | ⌘Z / ⌘⇧Z | Undo / Redo (existing) |
-| ⌘N | New node (existing) — when graph focus; in palette opens "Nytt projekt..." |
+| ⌘N | New node (existing — preserved as-is) |
 | ⌘D | Delete selected node (existing) |
-| ⌘F | Existing find behaviour preserved if still wired; otherwise opens palette |
+| ⌘F | Existing find behaviour preserved as-is |
+
+`Nytt projekt...` has no keyboard shortcut — only reachable through the command palette and the existing modal.
 
 ## Header migration
 
@@ -368,7 +370,7 @@ Each existing header control gets a new home:
 |---|---|
 | Project-name input | Topbar (left) — same binding |
 | Project switcher popover | Command palette ("Byt projekt...") |
-| New Project button | Command palette + ⌘N → `NewProjectModal` |
+| New Project button | Command palette ("Nytt projekt...") → `NewProjectModal` |
 | Import / Export markdown | Command palette ("Importera markdown" / "Exportera markdown") |
 | New Node | GraphPane toolbar + Command palette + ⌘N |
 | Delete Node | Command palette ("Ta bort vald nod") + Backspace/Delete |
@@ -379,8 +381,8 @@ Each existing header control gets a new home:
 | Theme | Removed (dark-only) |
 | Debug toggle | Settings modal |
 | AI Settings | Settings modal → opens existing `AiSettingsModal` |
-| AI Proofread | Command palette → opens `AiProofreadPanel` overlay |
-| AI Suggestions | Command palette → opens `AiSuggestionsPanel` overlay |
+| AI Proofread | **Not exposed.** Logic is currently disabled in App.jsx (imports commented out). Re-wiring is out of scope. |
+| AI Suggestions | **Not exposed.** Same status as Proofread. Re-wiring is out of scope. |
 | Search (current `showSearch`) | Replaced by command palette |
 | User menu | Topbar avatar → existing `UserMenu` |
 
@@ -397,7 +399,6 @@ Each existing header control gets a new home:
   - **Lägen** — Skiss (1), Skiss + Innehåll (2), Innehåll (3), Läsa (4).
   - **Skapa** — Ny nod (⌘N), Nytt projekt..., Auto-layout.
   - **Verktyg** — Ångra (⌘Z), Gör om (⌘⇧Z), Importera markdown..., Exportera markdown.
-  - **AI** — AI Korrektur..., AI Förslag..., AI-inställningar...
   - **Visa** — Visa historik..., Inställningar..., Hjälp.
 - Filter: substring match on label (case-insensitive). Up/Down arrow navigates; Enter activates; Esc closes.
 
@@ -471,6 +472,7 @@ Single branch `feature/redesign-modes-and-layout` cut from `master` after taggin
 
 - Light app theme.
 - "Sektion" and "Idé" buttons in graph toolbar — render as disabled placeholders; behaviour added in a later spec.
+- AI Proofread and AI Suggestions re-wiring (the underlying calls in `useAi.js` are currently commented out in App.jsx). Only `AiSettingsModal` is preserved.
 - Search inside doc body (existing `showSearch` is replaced by palette; in-doc text search is a separate concern).
 - Multi-select / bulk operations in graph.
 - Node-card colour picker UI rework (existing `node.data.color` still respected by accent-bar).
