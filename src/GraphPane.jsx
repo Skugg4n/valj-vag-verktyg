@@ -1,5 +1,4 @@
-import { useReactFlow } from 'reactflow'
-import ReactFlow, { MiniMap, Background } from 'reactflow'
+import ReactFlow, { MiniMap, Background, ReactFlowProvider, useReactFlow } from 'reactflow'
 import { Plus, LayoutGrid, Layers, Lightbulb } from 'lucide-react'
 import NodeEditorContext from './NodeEditorContext.ts'
 
@@ -27,6 +26,7 @@ export default function GraphPane({
   onAddIdea,
 }) {
   return (
+    <ReactFlowProvider>
     <div className="graph-pane" id="graph">
       <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode, activeNodeId }}>
         <ReactFlow
@@ -64,6 +64,7 @@ export default function GraphPane({
         <ZoomControls />
       </NodeEditorContext.Provider>
     </div>
+    </ReactFlowProvider>
   )
 }
 
