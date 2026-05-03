@@ -4,7 +4,7 @@ import { loadLS, saveLS } from './utils/persistence.js'
 
 const CHOICE_RE = /\[#(\d{3})]|#(\d{3})/g
 
-function splitChoices(text, nodeMap) {
+export function splitChoices(text, nodeMap) {
   // Returns { body, choices } — strips ref tokens from body, lists them as choices.
   const choices = []
   const seen = new Set()
@@ -15,7 +15,11 @@ function splitChoices(text, nodeMap) {
     const target = nodeMap.get(id)
     choices.push({ id, label: target?.data?.title || `Gå till #${id}` })
   }
-  const body = (text || '').replace(CHOICE_RE, '').replace(/[ \t]+\n/g, '\n').trim()
+  const body = (text || '')
+    .replace(CHOICE_RE, '')
+    .replace(/ {2,}/g, ' ')      // collapse mid-line double-spaces left behind
+    .replace(/[ \t]+\n/g, '\n')  // trim trailing whitespace before newlines
+    .trim()
   return { body, choices }
 }
 
