@@ -16,17 +16,6 @@ body {
   height: 100vh;   /* ensures child <main> can stretch */
 }
 
-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap);
-  padding: var(--gap);
-  border-bottom: 1px solid var(--panel);
-  background: var(--bg);
-}
 
 .btn {
   display: inline-flex;
@@ -915,16 +904,6 @@ textarea:focus {
   white-space: nowrap;
 }
 
-.search-input {
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 4px 8px;
-  font-size: 13px;
-  width: 200px;
-}
-
 .node-card.idea-node {
   border-style: dashed;
   border-color: var(--accent);
@@ -1021,3 +1000,153 @@ textarea:focus {
     display: none;
   }
 }
+
+/* ----- App shell ----- */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+  font-size: 14px;
+  font-family: var(--font-ui);
+}
+.app-shell .right-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ----- Top bar (slim, 44px) ----- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  flex: 0 0 auto;
+}
+.topbar .project-name {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-doc);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink);
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 200px;
+}
+.topbar .project-name:hover,
+.topbar .project-name:focus { background: var(--panel); }
+.topbar .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+.topbar .pill .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--good);
+}
+.topbar .pill.saving .dot { background: var(--warn); }
+.topbar .divider { width: 1px; height: 22px; background: var(--line); }
+.topbar .avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #b88dff);
+  border: none;
+  cursor: pointer;
+}
+.topbar .kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  margin-left: 6px;
+}
+
+/* ----- Workspace ----- */
+.workspace {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ----- Sidebar nav ----- */
+.sidebar-nav {
+  width: 56px;
+  flex: 0 0 auto;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 4px;
+}
+.sidebar-nav .logo {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #b88dff);
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+.sidebar-nav .logo::after {
+  content: "";
+  position: absolute; inset: 12px;
+  border: 1.5px solid rgba(13,17,23,.5);
+  border-radius: 2px;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
+.sidebar-nav .sep { width: 28px; height: 1px; background: var(--line); margin: 8px 0; }
+.sidebar-nav .sb-btn {
+  width: 40px; height: 40px;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--ink-dim);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+.sidebar-nav .sb-btn:hover { background: var(--panel); color: var(--ink); }
+.sidebar-nav .sb-btn.active { background: var(--panel-2); color: var(--accent); }
+.sidebar-nav .sb-btn.active::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 8px; bottom: 8px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+.sidebar-nav .sb-btn svg { width: 18px; height: 18px; }
+.sidebar-nav .spacer { flex: 1; }
+
+/* Scrollbar tweaks for the new shell */
+.app-shell ::-webkit-scrollbar { width: 8px; height: 8px; }
+.app-shell ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+.app-shell ::-webkit-scrollbar-thumb:hover { background: var(--ink-dim); }
+.app-shell ::-webkit-scrollbar-track { background: transparent; }

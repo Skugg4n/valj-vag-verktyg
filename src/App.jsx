@@ -1,16 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect, Fragment } from 'react'
-import {
-  Plus,
-  Trash2,
-  RotateCcw,
-  RotateCw,
-  Download,
-  Upload,
-  FilePlus,
-  FileText,
-  ChevronDown,
-} from 'lucide-react'
 import { Popover, Transition } from '@headlessui/react'
+import AppShell from './AppShell.jsx'
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
@@ -110,8 +100,6 @@ export default function App() {
     return stored ? Number(stored) : 14
   })
   const [activeNodeId, setActiveNodeId] = useState(null)
-  const [showSearch, setShowSearch] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [debugMode, setDebugMode] = useState(isDebug())
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -947,8 +935,7 @@ export default function App() {
           duplicateNode()
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
           e.preventDefault()
-          setShowSearch(s => !s)
-          if (showSearch) setSearchQuery('')
+          // legacy search removed in Task 2; ⌘F currently a no-op until palette wires it in Task 6
         } else if (e.key === 'Delete' && !e.target.closest('input, textarea, [contenteditable]')) {
           e.preventDefault()
           deleteNode()
@@ -980,197 +967,16 @@ export default function App() {
     return () => window.removeEventListener('promote-idea', handler)
   }, [nodes, nextId, pushUndoState])
 
-  useEffect(() => {
-    if (!searchQuery) return
-    const q = searchQuery.toLowerCase()
-    const match = nodes.find(n =>
-      (n.data.title || '').toLowerCase().includes(q) ||
-      (n.data.text || '').toLowerCase().includes(q)
-    )
-    if (match) {
-      selectNode(match.id, match.data)
-      setActiveNodeId(match.id)
-    }
-  }, [searchQuery])
-
   // Persist data after every change
 
   return (
     <>
-      <header>
-        <Button
-          variant="primary"
-          icon={Plus}
-          onClick={addNode}
-          title="New Node (Ctrl+N)"
-        >
-          New Node
-        </Button>
-        <Button
-          variant="danger"
-          icon={Trash2}
-          onClick={deleteNode}
-          title="Delete Node"
-        >
-          Delete Node
-        </Button>
-        <Button
-          variant="ghost"
-          icon={RotateCcw}
-          onClick={undo}
-          title="Undo (Ctrl+Z)"
-        >
-          Undo
-        </Button>
-        <Button
-          variant="ghost"
-          icon={RotateCw}
-          onClick={redo}
-          title="Redo (Ctrl+Shift+Z)"
-        >
-          Redo
-        </Button>
-        <input
-          id="projectName"
-          value={projectName}
-          onChange={e => setProjectName(e.target.value)}
-          placeholder="Projektnamn"
-        />
-        <label id="autoSaveLabel" style={{ display: 'flex', alignItems: 'center' }}>
-          <input
-            id="autoSave"
-            type="checkbox"
-            checked={autoSave}
-            onChange={e => setAutoSave(e.target.checked)}
-          />
-          Auto-save
-        </label>
-        <Popover className="relative">
-          {({ open }) => (
-            <>
-              <Popover.Button className="btn ghost flex items-center gap-1" title="Project actions">
-                Project <ChevronDown className="h-4 w-4" />
-              </Popover.Button>
-              <Transition
-                as={Fragment}
-                show={open}
-                enter="transition ease-out duration-200"
-                enterFrom="opacity-0 translate-y-1"
-                enterTo="opacity-100 translate-y-0"
-                leave="transition ease-in duration-150"
-                leaveFrom="opacity-100 translate-y-0"
-                leaveTo="opacity-0 translate-y-1"
-              >
-                <Popover.Panel className="absolute z-10 mt-2 w-40 rounded bg-[var(--panel)] p-2 text-sm text-[var(--text)] shadow-lg">
-                  <div className="flex flex-col gap-1">
-                    <button
-                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                      onClick={confirmNewProject}
-                      title="New project"
-                    >
-                      <span className="flex items-center gap-2">
-                        <FilePlus className="h-4 w-4" />
-                        New project
-                      </span>
-                    </button>
-                    <button
-                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                      onClick={() => importRef.current?.click()}
-                      title="Import"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Upload className="h-4 w-4" />
-                        Import
-                      </span>
-                    </button>
-                    <button
-                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                      onClick={exportProject}
-                      title="Export"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Download className="h-4 w-4" />
-                        Export
-                      </span>
-                    </button>
-                    <button
-                      className="rounded px-3 py-1 text-left hover:bg-[var(--card)]"
-                      onClick={exportMarkdown}
-                      title="Export MD"
-                    >
-                      <span className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Export MD
-                      </span>
-                    </button>
-                  </div>
-                </Popover.Panel>
-              </Transition>
-            </>
-          )}
-        </Popover>
-        <select
-          id="projectList"
-          value={projectId}
-          onChange={e => handleProjectSwitch(e.target.value)}
-        >
-          {Object.values(projects)
-            .sort((a, b) => (b.updated || 0) - (a.updated || 0))
-            .map(p => (
-              <option key={p.id} value={p.id}>
-                {p.data.projectName?.trim() || new Date(p.start).toLocaleString()}
-              </option>
-            ))}
-        </select>
-        <input
-          ref={importRef}
-          type="file"
-          onChange={importProject}
-          style={{ display: 'none' }}
-        />
-        <Button
-          variant="ghost"
-          onClick={() => setFontSize(f => Math.max(10, f - 1))}
-          title="Decrease font size"
-        >
-          A-
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => setFontSize(f => f + 1)}
-          title="Increase font size"
-        >
-          A+
-        </Button>
-        {(debugMode || window.location.search.includes('debug')) && (
-        <Button
-          variant="ghost"
-          onClick={toggleDebug}
-          title="Toggle debug mode"
-        >
-          {debugMode ? 'Debug On' : 'Debug Off'}
-        </Button>
-        )}
-        <UserMenu />
-        {showSearch && (
-          <input
-            autoFocus
-            className="search-input"
-            placeholder="Sök nod..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Escape') { setShowSearch(false); setSearchQuery('') }
-            }}
-          />
-        )}
-        <span style={{ fontSize: '11px', opacity: 0.5, marginLeft: 'auto' }}>
-          {nodes.reduce((sum, n) => sum + (n.data.text || '').split(/\s+/).filter(Boolean).length, 0)} ord
-        </span>
-      </header>
-      <main className={`workspace ${isPanelExpanded ? 'expanded' : ''}`}>
-        <div id="graph-container">
-          <div id="graph">
+      <AppShell
+        projectName={projectName}
+        setProjectName={setProjectName}
+        isSaving={false /* TODO: wire isSaving in Task 6 */}
+        renderSkiss={() => (
+          <div id="graph" style={{ flex: 1, position: 'relative' }}>
             <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode }}>
               <ReactFlow
                 style={{ width: '100%', height: '100%' }}
@@ -1200,18 +1006,94 @@ export default function App() {
               </ReactFlow>
             </NodeEditorContext.Provider>
           </div>
-        </div>
-        <LinearView
-          text={linearText}
-          setText={setLinearText}
-          setNodes={setNodes}
-          nextId={nextId}
-          expanded={isPanelExpanded}
-          onToggleExpand={() => setIsPanelExpanded(e => !e)}
-          activeNodeId={activeNodeId}
-          onSelectNode={handleLinearSelect}
-        />
-      </main>
+        )}
+        renderSplit={({ ratio, setRatio }) => (
+          <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
+            <div style={{ flex: ratio, minWidth: 0, display: 'flex' }}>
+              <div id="graph" style={{ flex: 1, position: 'relative' }}>
+                <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode }}>
+                  <ReactFlow
+                    style={{ width: '100%', height: '100%' }}
+                    nodes={nodes}
+                    edges={edges}
+                    defaultEdgeOptions={defaultEdgeOptions}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    onNodeClick={onNodeClick}
+                    onReconnect={onReconnect}
+                    onReconnectStart={onReconnectStart}
+                    onReconnectEnd={onReconnectEnd}
+                    edgesUpdatable
+                    onNodeDragStop={() => pushUndoState()}
+                    onPaneClick={onPaneClick}
+                    nodeTypes={nodeTypes}
+                    snapToGrid
+                    snapGrid={[16, 16]}
+                    fitView
+                    minZoom={0.1}
+                    maxZoom={4}
+                  >
+                    <Background color="#374151" variant="dots" gap={16} size={1} />
+                    <MiniMap zoomable pannable />
+                    <Controls />
+                  </ReactFlow>
+                </NodeEditorContext.Provider>
+              </div>
+            </div>
+            <div
+              className="split-divider"
+              onMouseDown={() => {
+                const onMove = (e) => {
+                  const root = document.querySelector('.workspace')
+                  if (!root) return
+                  const rect = root.getBoundingClientRect()
+                  const r = (e.clientX - rect.left) / rect.width
+                  setRatio(Math.max(0.2, Math.min(0.8, r)))
+                }
+                const onUp = () => {
+                  window.removeEventListener('mousemove', onMove)
+                  window.removeEventListener('mouseup', onUp)
+                }
+                window.addEventListener('mousemove', onMove)
+                window.addEventListener('mouseup', onUp)
+              }}
+            />
+            <div style={{ flex: 1 - ratio, minWidth: 0, display: 'flex' }}>
+              <LinearView
+                text={linearText}
+                setText={setLinearText}
+                setNodes={setNodes}
+                nextId={nextId}
+                expanded={false}
+                onToggleExpand={() => {}}
+                activeNodeId={activeNodeId}
+                onSelectNode={handleLinearSelect}
+              />
+            </div>
+          </div>
+        )}
+        renderText={() => (
+          <LinearView
+            text={linearText}
+            setText={setLinearText}
+            setNodes={setNodes}
+            nextId={nextId}
+            expanded={true}
+            onToggleExpand={() => {}}
+            activeNodeId={activeNodeId}
+            onSelectNode={handleLinearSelect}
+          />
+        )}
+        renderRead={() => null /* placeholder until Task 5 */}
+        onShowHistory={showHistory}
+        onOpenPalette={() => alert('Command palette coming in Task 6')}
+        onShowSettings={openSettings}
+        onShare={() => {}}
+        onAvatarClick={() => {}}
+      />
+
+      {/* Modals/overlays kept at root for now */}
       {showPlay && (
         <Playthrough
           nodes={nodes}
@@ -1226,29 +1108,22 @@ export default function App() {
           onClose={() => setShowAiSettings(false)}
         />
       )}
-      {/*
-      {showSuggestions && (
-        <AiSuggestionsPanel
-          suggestions={suggestions}
-          onPick={applySuggestion}
-          onClose={() => setShowSuggestions(false)}
-        />
-      )}
-      {showProofread && proofreadResult && (
-        <AiProofreadPanel
-          original={proofreadResult.original}
-          improved={proofreadResult.improved}
-          onApply={applyProofread}
-          onClose={() => setShowProofread(false)}
-        />
-      )}
-      */}
       {showNewProject && (
         <NewProjectModal
           onConfirm={startNewProject}
           onClose={() => setShowNewProject(false)}
         />
       )}
+
+      {/* Hidden file input for legacy import flow (still used by FloatingMenu) */}
+      <input
+        ref={importRef}
+        type="file"
+        onChange={importProject}
+        style={{ display: 'none' }}
+      />
+
+      {/* FloatingMenu kept until Task 7 so all functions remain reachable */}
       <FloatingMenu
         onShowSettings={openSettings}
         onPlaythrough={startPlaythrough}
@@ -1258,6 +1133,7 @@ export default function App() {
         onShowHistory={showHistory}
         onHelp={openHelp}
       />
+
       <div
         style={{
           position: 'fixed',
@@ -1265,6 +1141,7 @@ export default function App() {
           right: 16,
           fontSize: '12px',
           opacity: 0.6,
+          zIndex: 5,
         }}
       >
         v{__APP_VERSION__} ({__GIT_HASH__})
