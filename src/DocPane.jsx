@@ -21,7 +21,7 @@ import useLinearParser, { parseLinearText } from './useLinearParser.ts'
 import 'tippy.js/dist/tippy.css'
 
 export default function DocPane({
-  text, setText, setNodes, nextId, nodes,
+  text, setText, setNodes, nextId,
   activeNodeId, onSelectNode,
   full = false,
   focusMode = false,
@@ -134,27 +134,27 @@ export default function DocPane({
   }, [outlineEntries, onSelectNode, activeNodeId])
 
   // Ref-link click handler (delegated on the scroll container)
+  // ArrowLink.ts renders: <a class="node-link" href="#NNN"> — match that contract.
   useEffect(() => {
     const container = scrollRef.current
     if (!container) return
     const onClick = (e) => {
-      const a = e.target.closest('a.ref-link')
+      const a = e.target.closest('a.node-link')
       if (!a) return
-      const target = a.getAttribute('data-target')
-      if (target) {
+      const href = a.getAttribute('href') || ''
+      const m = href.match(/^#(\d{3})$/)
+      if (m) {
         e.preventDefault()
-        onSelectNode?.(target)
+        onSelectNode?.(m[1])
       }
     }
     container.addEventListener('click', onClick)
     return () => container.removeEventListener('click', onClick)
   }, [onSelectNode])
 
-  // Status: word count
-  const wordCount = useMemo(
-    () => (text || '').split(/\s+/).filter(Boolean).length,
-    [text]
-  )
+  // Status: word count — use TipTap's CharacterCount API so markdown syntax
+  // tokens don't inflate the count.
+  const wordCount = editor?.storage.characterCount?.words?.() ?? 0
   const sectionCount = outlineEntries.length
 
   return (
@@ -187,6 +187,7 @@ export default function DocPane({
           <span className="sep">·</span>
           <span>{wordCount} ord</span>
           <span className="sep">·</span>
+          {/* TODO(Task 6): wire isSaving from useFirestoreSync */}
           <span className="saved">● Sparad</span>
           <span style={{ flex: 1 }} />
           <span>v{__APP_VERSION__} · skiss</span>
@@ -291,7 +292,7 @@ function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, 
 
 function Outline({ entries, activeId, hidden, onPick }) {
   return (
-    <aside className={`doc-outline${hidden ? ' hidden' : ''}`} aria-label="Outline">
+    <aside className={`doc-outline${hidden ? ' hidden' : ''}`} aria-label="Outline" aria-hidden={hidden}>
       <div className="doc-outline-title">Outline</div>
       <ul className="doc-outline-list">
         {entries.map(e => (

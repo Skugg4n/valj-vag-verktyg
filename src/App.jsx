@@ -1050,7 +1050,6 @@ export default function App() {
                 setText={setLinearText}
                 setNodes={setNodes}
                 nextId={nextId}
-                nodes={nodes}
                 activeNodeId={activeNodeId}
                 onSelectNode={handleLinearSelect}
                 full={false}
@@ -1064,7 +1063,6 @@ export default function App() {
             setText={setLinearText}
             setNodes={setNodes}
             nextId={nextId}
-            nodes={nodes}
             activeNodeId={activeNodeId}
             onSelectNode={handleLinearSelect}
             full={true}

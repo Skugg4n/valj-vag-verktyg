@@ -1450,7 +1450,7 @@ textarea:focus {
 .doc-page h2.is-active .node-id { color: var(--accent); border-color: var(--accent-soft); background: var(--accent-soft); }
 .doc-page p { margin: 0 0 1em; text-wrap: pretty; }
 .doc-page p:last-child { margin-bottom: 0; }
-.doc-page .ref-link {
+.doc-page .node-link {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -1466,7 +1466,7 @@ textarea:focus {
   border: 1px solid transparent;
   transition: border-color 0.15s var(--ease);
 }
-.doc-page .ref-link:hover { border-color: var(--accent); }
+.doc-page .node-link:hover { border-color: var(--accent); }
 
 .doc-status {
   display: flex;

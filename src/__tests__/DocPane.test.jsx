@@ -21,7 +21,6 @@ describe('DocPane', () => {
         setText={() => {}}
         setNodes={() => {}}
         nextId={3}
-        nodes={[]}
         activeNodeId={null}
         onSelectNode={() => {}}
         full={true}
@@ -44,7 +43,6 @@ describe('DocPane', () => {
         setText={() => {}}
         setNodes={() => {}}
         nextId={2}
-        nodes={[]}
         activeNodeId={null}
         onSelectNode={() => {}}
         full={true}
@@ -63,12 +61,47 @@ describe('DocPane', () => {
         setText={() => {}}
         setNodes={() => {}}
         nextId={2}
-        nodes={[]}
         activeNodeId={null}
         onSelectNode={() => {}}
         full={false}
       />
     )
     expect(screen.queryByText(/Sparad/)).not.toBeInTheDocument()
+  })
+
+  it('calls onSelectNode when a ref-link is clicked', () => {
+    const onSelectNode = jest.fn()
+    const { container } = render(
+      <DocPane
+        text="## #001 Hej\n\nLänk till [#002](#002)."
+        setText={() => {}}
+        setNodes={() => {}}
+        nextId={3}
+        activeNodeId={null}
+        onSelectNode={onSelectNode}
+        full={true}
+        focusMode={false}
+        setFocusMode={() => {}}
+      />
+    )
+    // The ArrowLink extension renders [#NNN] as <a class="node-link" href="#NNN">.
+    // Find any anchor with class node-link and href starting with #.
+    // (TipTap may not have rendered the link yet; fall back to manually injecting one.)
+    const link = container.querySelector('a.node-link[href^="#"]')
+    if (link) {
+      link.click()
+      expect(onSelectNode).toHaveBeenCalled()
+    } else {
+      // Fallback: synthesize one and dispatch a click on it inside .doc-scroll
+      const scroll = container.querySelector('.doc-scroll')
+      expect(scroll).toBeTruthy()
+      const a = document.createElement('a')
+      a.className = 'node-link'
+      a.href = '#002'
+      a.textContent = '→ #002'
+      scroll.appendChild(a)
+      a.click()
+      expect(onSelectNode).toHaveBeenCalledWith('002')
+    }
   })
 })
