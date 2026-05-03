@@ -540,7 +540,7 @@ header {
 }
 
 #linearEditor {
-  font-family: 'Lora', serif;
+  font-family: var(--font-doc);
   line-height: 1.7;
   max-width: 720px;
   margin: auto;
@@ -620,7 +620,7 @@ header {
 }
 
 .ProseMirror p {
-  font-family: 'Lora', serif;
+  font-family: var(--font-doc);
   line-height: 1.7;
   margin-bottom: 1rem;
 }
@@ -945,7 +945,7 @@ textarea:focus {
 
 /* Editor typography — book-like reading experience */
 #linearEditor .ProseMirror {
-  font-family: 'Lora', 'Georgia', serif;
+  font-family: var(--font-doc);
   font-size: 1.1rem;
   line-height: 1.8;
   color: var(--text);
