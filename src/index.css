@@ -1080,6 +1080,7 @@ textarea:focus {
   border-radius: 3px;
   margin-left: 6px;
 }
+.topbar .spacer { flex: 1; }
 
 /* ----- Workspace ----- */
 .workspace {
@@ -1150,3 +1151,19 @@ textarea:focus {
 .app-shell ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
 .app-shell ::-webkit-scrollbar-thumb:hover { background: var(--ink-dim); }
 .app-shell ::-webkit-scrollbar-track { background: transparent; }
+
+/* ----- Split divider ----- */
+.split-divider {
+  width: 1px;
+  background: var(--line);
+  flex: 0 0 auto;
+  cursor: col-resize;
+  position: relative;
+  transition: background 0.15s var(--ease);
+}
+.split-divider:hover { background: var(--accent); }
+.split-divider::before {
+  content: "";
+  position: absolute;
+  inset: 0 -3px;
+}

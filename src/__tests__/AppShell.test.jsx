@@ -75,6 +75,11 @@ describe('clampRatio', () => {
   it('returns 0.42 for NaN', () => {
     expect(clampRatio(Number.NaN)).toBe(0.42)
   })
+  it('returns 0.42 for non-numbers', () => {
+    expect(clampRatio(undefined)).toBe(0.42)
+    expect(clampRatio(null)).toBe(0.42)
+    expect(clampRatio('0.5')).toBe(0.42)
+  })
   it('passes valid values through', () => {
     expect(clampRatio(0.5)).toBe(0.5)
   })

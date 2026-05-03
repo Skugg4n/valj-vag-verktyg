@@ -105,6 +105,6 @@ export default function AppShell({
 }
 
 export function clampRatio(r) {
-  if (Number.isNaN(r)) return 0.42
+  if (typeof r !== 'number' || Number.isNaN(r)) return 0.42
   return Math.max(0.2, Math.min(0.8, r))
 }

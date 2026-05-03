@@ -1,5 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect, Fragment } from 'react'
-import { Popover, Transition } from '@headlessui/react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import AppShell from './AppShell.jsx'
 import ReactFlow, {
   applyNodeChanges,
@@ -22,14 +21,12 @@ import AiSettingsModal from './AiSettingsModal.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
 import { useAiSettings } from './useAi.js'
 // import AiProofreadPanel from './AiProofreadPanel.jsx'
-import Button from './Button.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
 import NewProjectModal from './NewProjectModal.jsx'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
 import useFirestoreSync from './useFirestoreSync.js'
 import { useAuth } from './AuthContext.jsx'
-import UserMenu from './UserMenu.jsx'
 import { setDebug as setDebugFlag, debugLog, isDebug } from './utils/debug.js'
 
 const ROOT_KEY = '__root__'
@@ -78,9 +75,9 @@ export default function App() {
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
-  const [isPanelExpanded, setIsPanelExpanded] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [showPlay, setShowPlay] = useState(false)
+  // TODO(Task 6): wire setAutoSave to SettingsModal
   const [autoSave, setAutoSave] = useState(() => {
     try {
       const saved = localStorage.getItem('cyoa-auto-save')
@@ -95,17 +92,20 @@ export default function App() {
   // const [showProofread, setShowProofread] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
   // const [loadingAi, setLoadingAi] = useState(false)
+  // TODO(Task 6): wire setFontSize to SettingsModal
   const [fontSize, setFontSize] = useState(() => {
     const stored = localStorage.getItem('cyoa-font-size')
     return stored ? Number(stored) : 14
   })
   const [activeNodeId, setActiveNodeId] = useState(null)
+  // TODO(Task 6): wire to SettingsModal "Avancerat" section
   const [debugMode, setDebugMode] = useState(isDebug())
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
   const redoStack = useRef([])
   const resizingRef = useRef(false)
+  // TODO(Task 6): wire to SettingsModal "Avancerat" section
   const toggleDebug = () => {
     const next = !debugMode
     setDebugMode(next)
@@ -631,6 +631,7 @@ export default function App() {
     [currentId, pushUndoState]
   )
 
+  // TODO(Task 6): wire to CommandPalette projectSwitchItems
   const handleProjectSwitch = id => {
     linearInitialized.current = false
     const p = projects[id]
@@ -912,6 +913,7 @@ export default function App() {
     setShowNewProject(false)
   }
 
+  // TODO(Task 6): wire to CommandPalette "Nytt projekt..." entry
   const confirmNewProject = () => {
     setShowNewProject(true)
   }

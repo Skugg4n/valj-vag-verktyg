@@ -21,7 +21,7 @@ export default function Topbar({
         <span className="dot" aria-hidden="true" />
         {isSaving ? 'sparar…' : 'sparad'}
       </span>
-      <span style={{ flex: 1 }} />
+      <span className="spacer" aria-hidden="true" />
       <button className="btn ghost sm" onClick={onCmdK} title="Sök / Kommandopalett">
         <Search />
         Sök
