@@ -8,12 +8,15 @@ export interface NodeEditorContextType {
    */
   resizingRef: MutableRefObject<boolean>
   selectNode: (id: string, data: { text?: string; title?: string }) => void
+  /** The globally active node id (e.g. from Doc → Graph sync). */
+  activeNodeId: string | null
 }
 
 const NodeEditorContext = createContext<NodeEditorContextType>({
-  updateNodeText: () => {},
+  updateNodeText: (_id, _value) => {},
   resizingRef: { current: false },
-  selectNode: () => {},
+  selectNode: (_id, _data) => {},
+  activeNodeId: null,
 })
 
 export default NodeEditorContext

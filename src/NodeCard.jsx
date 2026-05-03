@@ -22,7 +22,8 @@ const COLOR_OPTIONS = [
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
-  const { updateNodeText, resizingRef, selectNode } = useContext(NodeEditorContext)
+  const { updateNodeText, resizingRef, selectNode, activeNodeId } = useContext(NodeEditorContext)
+  const isActive = activeNodeId === id || selected
   const { zoom } = useViewport()
   const isOverview = zoom < OVERVIEW_ZOOM_THRESHOLD
   const [resizing, setResizing] = useState(false)
@@ -105,7 +106,14 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
 
   return (
     <div
-      className={`node-card${selected ? ' selected' : ''}${resizing ? ' resizing' : ''}${data.isIdea ? ' idea-node' : ''}`}
+      className={[
+        'node-card',
+        'redesigned',
+        selected ? 'selected' : '',
+        resizing ? 'resizing' : '',
+        data.isIdea ? 'idea-node' : '',
+        isActive ? 'is-active' : '',
+      ].filter(Boolean).join(' ')}
       onClick={() => selectNode(id, data)}
       style={{
         background: bg,
@@ -117,6 +125,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
         height: '100%',
       }}
     >
+      <span className="accent-bar" style={{ background: bg }} aria-hidden="true" />
       {invalidRef && <div className="invalid-dot" />}
       {isOverview ? (
         <div className="node-overview-title" style={{ fontSize: `${Math.max(20, 40 * (1 - zoom))}px` }}>

@@ -1,18 +1,15 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import AppShell from './AppShell.jsx'
-import ReactFlow, {
+import GraphPane from './GraphPane.jsx'
+import {
   applyNodeChanges,
   applyEdgeChanges,
-  Background,
   MarkerType,
-  MiniMap,
-  Controls,
 } from 'reactflow'
 import getLayoutedElements from './dagreLayout'
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
-import NodeEditorContext from './NodeEditorContext.ts'
 import Playthrough from './Playthrough.jsx'
 import LinearView from './LinearView.jsx'
 import { convertNodesToLinearText } from './utils/linearConversion.ts'
@@ -978,12 +975,37 @@ export default function App() {
         setProjectName={setProjectName}
         isSaving={false /* TODO: wire isSaving in Task 6 */}
         renderSkiss={() => (
-          <div id="graph" style={{ flex: 1, position: 'relative' }}>
-            <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode }}>
-              <ReactFlow
-                style={{ width: '100%', height: '100%' }}
+          <GraphPane
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            defaultEdgeOptions={defaultEdgeOptions}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeClick={onNodeClick}
+            onReconnect={onReconnect}
+            onReconnectStart={onReconnectStart}
+            onReconnectEnd={onReconnectEnd}
+            onPaneClick={onPaneClick}
+            onNodeDragStop={() => pushUndoState()}
+            updateNodeText={updateNodeText}
+            resizingRef={resizingRef}
+            selectNode={selectNode}
+            activeNodeId={activeNodeId}
+            onAddNode={addNode}
+            onAutoLayout={handleAutoLayout}
+            onAddSection={addSection}
+            onAddIdea={addIdea}
+          />
+        )}
+        renderSplit={({ ratio, setRatio }) => (
+          <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
+            <div style={{ flex: ratio, minWidth: 0, display: 'flex' }}>
+              <GraphPane
                 nodes={nodes}
                 edges={edges}
+                nodeTypes={nodeTypes}
                 defaultEdgeOptions={defaultEdgeOptions}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
@@ -992,56 +1014,17 @@ export default function App() {
                 onReconnect={onReconnect}
                 onReconnectStart={onReconnectStart}
                 onReconnectEnd={onReconnectEnd}
-                edgesUpdatable
-                onNodeDragStop={() => pushUndoState()}
                 onPaneClick={onPaneClick}
-                nodeTypes={nodeTypes}
-                snapToGrid
-                snapGrid={[16, 16]}
-                fitView
-                minZoom={0.1}
-                maxZoom={4}
-              >
-                <Background color="#374151" variant="dots" gap={16} size={1} />
-                <MiniMap zoomable pannable />
-                <Controls />
-              </ReactFlow>
-            </NodeEditorContext.Provider>
-          </div>
-        )}
-        renderSplit={({ ratio, setRatio }) => (
-          <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
-            <div style={{ flex: ratio, minWidth: 0, display: 'flex' }}>
-              <div id="graph" style={{ flex: 1, position: 'relative' }}>
-                <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode }}>
-                  <ReactFlow
-                    style={{ width: '100%', height: '100%' }}
-                    nodes={nodes}
-                    edges={edges}
-                    defaultEdgeOptions={defaultEdgeOptions}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    onNodeClick={onNodeClick}
-                    onReconnect={onReconnect}
-                    onReconnectStart={onReconnectStart}
-                    onReconnectEnd={onReconnectEnd}
-                    edgesUpdatable
-                    onNodeDragStop={() => pushUndoState()}
-                    onPaneClick={onPaneClick}
-                    nodeTypes={nodeTypes}
-                    snapToGrid
-                    snapGrid={[16, 16]}
-                    fitView
-                    minZoom={0.1}
-                    maxZoom={4}
-                  >
-                    <Background color="#374151" variant="dots" gap={16} size={1} />
-                    <MiniMap zoomable pannable />
-                    <Controls />
-                  </ReactFlow>
-                </NodeEditorContext.Provider>
-              </div>
+                onNodeDragStop={() => pushUndoState()}
+                updateNodeText={updateNodeText}
+                resizingRef={resizingRef}
+                selectNode={selectNode}
+                activeNodeId={activeNodeId}
+                onAddNode={addNode}
+                onAutoLayout={handleAutoLayout}
+                onAddSection={addSection}
+                onAddIdea={addIdea}
+              />
             </div>
             <div
               className="split-divider"

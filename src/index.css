@@ -1167,3 +1167,130 @@ textarea:focus {
   position: absolute;
   inset: 0 -3px;
 }
+
+/* ===== GRAPH PANE ===== */
+.graph-pane {
+  flex: 1;
+  position: relative;
+  background:
+    radial-gradient(circle at 20px 20px, var(--line) 1px, transparent 1.5px),
+    var(--bg-soft);
+  background-size: 22px 22px;
+  overflow: hidden;
+  min-width: 0;
+}
+.graph-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 4px;
+  z-index: 5;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.graph-toolbar .btn.icon { width: 28px; height: 28px; padding: 0; }
+
+.graph-zoom {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  z-index: 5;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.graph-zoom button {
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  width: 32px; height: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+}
+.graph-zoom button:last-child { border-bottom: none; }
+.graph-zoom button:hover { color: var(--ink); background: var(--panel-2); }
+
+.graph-minimap {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  width: 180px;
+  height: 110px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  z-index: 5;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+
+/* React-Flow visual overrides */
+.graph-pane .react-flow__minimap {
+  background: var(--panel) !important;
+}
+.graph-pane .react-flow__edge path {
+  stroke: #3a4250;
+}
+.graph-pane .react-flow__edge.selected path,
+.graph-pane .react-flow__edge:hover path {
+  stroke: var(--accent);
+}
+
+/* Node card (re-styled in NodeCard.jsx) */
+.node-card.redesigned {
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.15s var(--ease);
+  position: relative;
+}
+.node-card.redesigned:hover { border-color: var(--accent); transform: translateY(-1px); }
+.node-card.redesigned.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 8px 22px rgba(0,0,0,.4);
+}
+.node-card.redesigned .accent-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 8px 0 0 8px;
+}
+.node-card.redesigned .nc-id {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  margin-bottom: 4px;
+}
+.node-card.redesigned .nc-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.node-card.redesigned .nc-text {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.node-card.redesigned .nc-text .ref {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
