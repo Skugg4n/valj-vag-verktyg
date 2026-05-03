@@ -20,6 +20,10 @@ import { useAiSettings } from './useAi.js'
 // import AiProofreadPanel from './AiProofreadPanel.jsx'
 import FloatingMenu from './FloatingMenu.jsx'
 import NewProjectModal from './NewProjectModal.jsx'
+import CommandPalette from './CommandPalette.jsx'
+import SettingsModal from './SettingsModal.jsx'
+import UserMenu from './UserMenu.jsx'
+import { FilePlus } from 'lucide-react'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
 import useFirestoreSync from './useFirestoreSync.js'
@@ -73,7 +77,6 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
   const [projectName, setProjectName] = useState('')
-  // TODO(Task 6): wire setAutoSave to SettingsModal
   const [autoSave, setAutoSave] = useState(() => {
     try {
       const saved = localStorage.getItem('cyoa-auto-save')
@@ -88,20 +91,20 @@ export default function App() {
   // const [showProofread, setShowProofread] = useState(false)
   const [showNewProject, setShowNewProject] = useState(false)
   // const [loadingAi, setLoadingAi] = useState(false)
-  // TODO(Task 6): wire setFontSize to SettingsModal
   const [fontSize, setFontSize] = useState(() => {
     const stored = localStorage.getItem('cyoa-font-size')
     return stored ? Number(stored) : 14
   })
   const [activeNodeId, setActiveNodeId] = useState(null)
-  // TODO(Task 6): wire to SettingsModal "Avancerat" section
   const [debugMode, setDebugMode] = useState(isDebug())
+  const [cmdOpen, setCmdOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
   const redoStack = useRef([])
   const resizingRef = useRef(false)
-  // TODO(Task 6): wire to SettingsModal "Avancerat" section
   const toggleDebug = () => {
     const next = !debugMode
     setDebugMode(next)
@@ -168,6 +171,7 @@ export default function App() {
   // Always save to Firestore when logged in (no autoSave requirement)
   useEffect(() => {
     if (!user || !projectId || nodes.length === 0) return
+    setIsSaving(true)
     const data = {
       projectName,
       nextNodeId: nextId,
@@ -182,8 +186,18 @@ export default function App() {
         height: n.height,
       })),
     }
-    const timer = setTimeout(() => saveToFirestore(projectId, data), 2000)
-    return () => clearTimeout(timer)
+    let cancelled = false
+    const timer = setTimeout(async () => {
+      try {
+        await saveToFirestore(projectId, data)
+      } finally {
+        if (!cancelled) setIsSaving(false)
+      }
+    }, 2000)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
   }, [user, nodes, nextId, projectName, projectId, saveToFirestore])
 
   useEffect(() => {
@@ -627,7 +641,6 @@ export default function App() {
     [currentId, pushUndoState]
   )
 
-  // TODO(Task 6): wire to CommandPalette projectSwitchItems
   const handleProjectSwitch = id => {
     linearInitialized.current = false
     const p = projects[id]
@@ -905,7 +918,6 @@ export default function App() {
     setShowNewProject(false)
   }
 
-  // TODO(Task 6): wire to CommandPalette "Nytt projekt..." entry
   const confirmNewProject = () => {
     setShowNewProject(true)
   }
@@ -961,14 +973,21 @@ export default function App() {
     return () => window.removeEventListener('promote-idea', handler)
   }, [nodes, nextId, pushUndoState])
 
-  // Persist data after every change
+  const projectSwitchItems = Object.values(projects)
+    .sort((a, b) => (b.updated || 0) - (a.updated || 0))
+    .map(p => ({
+      id: `switch-${p.id}`,
+      label: `Byt till: ${p.data?.projectName?.trim() || new Date(p.start).toLocaleString()}`,
+      icon: <FilePlus />,
+      run: () => handleProjectSwitch(p.id),
+    }))
 
   return (
     <>
       <AppShell
         projectName={projectName}
         setProjectName={setProjectName}
-        isSaving={false /* TODO: wire isSaving in Task 6 */}
+        isSaving={isSaving}
         renderSkiss={() => (
           <GraphPane
             nodes={nodes}
@@ -1077,10 +1096,10 @@ export default function App() {
           />
         )}
         onShowHistory={showHistory}
-        onOpenPalette={() => alert('Command palette coming in Task 6')}
-        onShowSettings={openSettings}
+        onOpenPalette={() => setCmdOpen(true)}
+        onShowSettings={() => setSettingsOpen(true)}
         onShare={() => {}}
-        onAvatarClick={() => {}}
+        userMenuSlot={<UserMenu />}
       />
 
       {/* Modals/overlays kept at root for now */}
@@ -1097,6 +1116,39 @@ export default function App() {
           onClose={() => setShowNewProject(false)}
         />
       )}
+
+      <CommandPalette
+        open={cmdOpen}
+        onClose={() => setCmdOpen(false)}
+        actions={{
+          setMode: (m) => { window.dispatchEvent(new CustomEvent('vv-set-mode', { detail: m })) },
+          addNode,
+          newProject: confirmNewProject,
+          autoLayout: handleAutoLayout,
+          addSection,
+          addIdea,
+          undo, redo,
+          importProject: () => importRef.current?.click(),
+          exportProject,
+          exportMarkdown,
+          showHistory,
+          showSettings: () => setSettingsOpen(true),
+          openHelp,
+        }}
+        extraSection={{ title: 'Projekt', items: projectSwitchItems }}
+      />
+
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+        autoSave={autoSave}
+        setAutoSave={setAutoSave}
+        debugMode={debugMode}
+        setDebugMode={(v) => { setDebugMode(v); setDebugFlag(v) }}
+        onOpenAiSettings={() => { setSettingsOpen(false); setShowAiSettings(true) }}
+      />
 
       {/* Hidden file input for legacy import flow (still used by FloatingMenu) */}
       <input

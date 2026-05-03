@@ -16,7 +16,7 @@ export default function AppShell({
   onOpenPalette,
   onShowSettings,
   onShare,
-  onAvatarClick,
+  userMenuSlot,
 }) {
   const [mode, setModeRaw] = useState(() => {
     const m = loadLS('mode', 'split')
@@ -38,6 +38,12 @@ export default function AppShell({
   useEffect(() => {
     saveLS('split-ratio', splitRatio)
   }, [splitRatio])
+
+  useEffect(() => {
+    const onSetMode = (e) => setMode(e.detail)
+    window.addEventListener('vv-set-mode', onSetMode)
+    return () => window.removeEventListener('vv-set-mode', onSetMode)
+  }, [setMode])
 
   useEffect(() => {
     const onKey = (e) => {
@@ -87,7 +93,7 @@ export default function AppShell({
           isSaving={isSaving}
           onCmdK={onOpenPalette}
           onShare={onShare}
-          onAvatarClick={onAvatarClick}
+          userMenuSlot={userMenuSlot}
         />
         <div className="workspace">{workspace}</div>
       </div>

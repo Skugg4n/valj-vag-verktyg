@@ -6,7 +6,7 @@ export default function Topbar({
   isSaving,
   onCmdK,
   onShare,
-  onAvatarClick,
+  userMenuSlot,
 }) {
   return (
     <header className="topbar">
@@ -31,7 +31,7 @@ export default function Topbar({
         <Share2 />
       </button>
       <span className="divider" aria-hidden="true" />
-      <button className="avatar" onClick={onAvatarClick} title="Konto" aria-label="Konto" />
+      {userMenuSlot ?? <button className="avatar" title="Konto" aria-label="Konto" />}
     </header>
   )
 }
