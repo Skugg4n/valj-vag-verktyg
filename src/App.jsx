@@ -18,7 +18,6 @@ import AiSettingsModal from './AiSettingsModal.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
 import { useAiSettings } from './useAi.js'
 // import AiProofreadPanel from './AiProofreadPanel.jsx'
-import FloatingMenu from './FloatingMenu.jsx'
 import NewProjectModal from './NewProjectModal.jsx'
 import CommandPalette from './CommandPalette.jsx'
 import SettingsModal from './SettingsModal.jsx'
@@ -105,12 +104,6 @@ export default function App() {
   const undoStack = useRef([])
   const redoStack = useRef([])
   const resizingRef = useRef(false)
-  const toggleDebug = () => {
-    const next = !debugMode
-    setDebugMode(next)
-    setDebugFlag(next)
-  }
-
   useEffect(() => {
     debugLog('activeNodeId', activeNodeId)
   }, [activeNodeId])
@@ -853,40 +846,6 @@ export default function App() {
     setTitle('')
   }
 
-  const openSettings = () => {
-    const nodeCount = nodes.filter(n => n.type !== 'group').length
-    const wordCount = nodes.reduce((sum, n) => sum + (n.data.text || '').split(/\s+/).filter(Boolean).length, 0)
-    const linkCount = edges.length
-    const orphans = nodes.filter(n => {
-      if (n.type === 'group') return false
-      const hasIncoming = edges.some(e => e.target === n.id)
-      const isFirst = n.id === nodes.filter(nn => nn.type !== 'group').sort((a,b) => a.id.localeCompare(b.id))[0]?.id
-      return !hasIncoming && !isFirst
-    })
-    const deadEnds = nodes.filter(n => {
-      if (n.type === 'group') return false
-      return !edges.some(e => e.source === n.id) && (n.data.text || '').trim().length > 0
-    })
-
-    let msg = `📊 Projektstatistik\n\n`
-    msg += `Noder: ${nodeCount}\n`
-    msg += `Ord: ${wordCount}\n`
-    msg += `Kopplingar: ${linkCount}\n\n`
-
-    if (orphans.length > 0) {
-      msg += `⚠️ Noder utan ingång (föräldralösa):\n`
-      msg += orphans.map(n => `  #${n.id} ${n.data.title || '(utan titel)'}`).join('\n')
-      msg += '\n\n'
-    }
-
-    if (deadEnds.length > 0) {
-      msg += `🔚 Slutnoder (inga utgångar):\n`
-      msg += deadEnds.map(n => `  #${n.id} ${n.data.title || '(utan titel)'}`).join('\n')
-    }
-
-    alert(msg)
-  }
-
   const openHelp = () => {
     window.open('help.html', '_blank')
   }
@@ -1152,22 +1111,12 @@ export default function App() {
         onOpenAiSettings={() => { setSettingsOpen(false); setShowAiSettings(true) }}
       />
 
-      {/* Hidden file input for legacy import flow (still used by FloatingMenu) */}
+      {/* Hidden file input for import flow */}
       <input
         ref={importRef}
         type="file"
         onChange={importProject}
         style={{ display: 'none' }}
-      />
-
-      {/* FloatingMenu kept until Task 7 so all functions remain reachable */}
-      <FloatingMenu
-        onShowSettings={openSettings}
-        onAutoLayout={handleAutoLayout}
-        onAddSection={addSection}
-        onAddIdea={addIdea}
-        onShowHistory={showHistory}
-        onHelp={openHelp}
       />
 
       <div

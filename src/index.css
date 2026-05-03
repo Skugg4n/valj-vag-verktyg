@@ -6,9 +6,9 @@ body {
   margin: 0;
   height: 100vh;
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   font-family: Inter, sans-serif;
-  font-size: var(--font-size);
+  font-size: var(--font-size, 14px);
 }
 #root {
   display: flex;
@@ -24,16 +24,16 @@ body {
   padding: 6px 12px;
   font-size: 13px;
   font-weight: normal;
-  border-radius: var(--radius);
+  border-radius: var(--r);
   cursor: pointer;
   text-decoration: none;
   border: none;
-  background: var(--btn);
-  color: var(--text);
+  background: var(--panel-2);
+  color: var(--ink);
 }
 
 .btn:hover {
-  background: var(--btn-hover);
+  background: var(--line);
 }
 
 .btn svg {
@@ -50,11 +50,11 @@ body {
 }
 
 .btn.ghost {
-  background: var(--btn);
-  color: var(--text);
+  background: var(--panel-2);
+  color: var(--ink);
 }
 .btn.ghost:hover {
-  background: var(--btn-hover);
+  background: var(--line);
 }
 
 .btn.danger {
@@ -103,19 +103,19 @@ body {
 
 #projectName {
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   border: none;
   border-bottom: 1px solid var(--panel);
-  padding: var(--gap);
+  padding: 8px;
   font-size: 1rem;
 }
 
 #projectList {
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   border: none;
   border-bottom: 1px solid var(--panel);
-  padding: var(--gap);
+  padding: 8px;
   font-size: 1rem;
 }
 
@@ -132,7 +132,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: var(--modal-bg);
+  background: var(--panel);
   color: #f0f0f0;
   display: none;
   flex-direction: column;
@@ -145,7 +145,7 @@ body {
 
 #closeModal {
   align-self: flex-end;
-  margin: var(--gap);
+  margin: 8px;
 }
 
 #modalList {
@@ -155,7 +155,7 @@ body {
   max-width: 800px;
   margin: auto;
   background: var(--panel);
-  border-radius: var(--radius);
+  border-radius: var(--r);
   border: 1px solid var(--panel);
   line-height: 1.6;
   font-family: system-ui, sans-serif;
@@ -205,7 +205,7 @@ body {
 .suggestion {
   background: var(--card);
   border: 1px solid var(--panel);
-  border-radius: var(--radius);
+  border-radius: var(--r);
   padding: 0.5rem;
   margin: 0.5rem 0;
   cursor: pointer;
@@ -213,16 +213,16 @@ body {
 }
 
 .suggestion:hover {
-  background: var(--btn-hover);
+  background: var(--line);
 }
 
 .node-card {
   width: 100%;
   height: 100%;
   background: var(--card);
-  color: var(--text);
+  color: var(--ink);
   border: 1px solid var(--panel);
-  border-radius: var(--radius);
+  border-radius: var(--r);
   padding: 0.75rem;
   font-size: 0.8rem;
   min-width: 180px;
@@ -246,7 +246,7 @@ body {
 .node-card .node-id {
   font-family: monospace;
   font-size: 0.75rem;
-  color: var(--text-dim);
+  color: var(--ink-dim);
   margin-right: 0.25rem;
 }
 .node-card .node-header {
@@ -270,7 +270,7 @@ body {
   font-size: 14px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--text-dim);
+  border-bottom: 1px solid var(--ink-dim);
   color: inherit;
   outline: none;
   width: calc(100% - 5rem);
@@ -315,7 +315,7 @@ body {
     transparent 0%,
     var(--card-bg, var(--card)) 70%
   );
-  color: var(--text-dim);
+  color: var(--ink-dim);
 }
 .node-card .node-editor .node-textarea {
   width: 100%;
@@ -375,8 +375,8 @@ body {
   gap: 3px;
   padding: 6px;
   background: var(--panel);
-  border: 1px solid var(--text-dim);
-  border-radius: var(--radius);
+  border: 1px solid var(--ink-dim);
+  border-radius: var(--r);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   z-index: 20;
 }
@@ -412,22 +412,22 @@ body {
   opacity: 1;
 }
 .react-flow__controls button {
-  background: var(--btn);
-  color: var(--text);
+  background: var(--panel-2);
+  color: var(--ink);
   border: none;
   width: 32px;
   height: 32px;
   cursor: pointer;
-  border-radius: var(--radius);
+  border-radius: var(--r);
 }
 .react-flow__controls button:hover {
-  background: var(--btn-hover);
+  background: var(--line);
 }
 
 .react-flow__minimap {
   background: var(--panel);
   border: 1px solid var(--panel);
-  border-radius: var(--radius);
+  border-radius: var(--r);
 }
 
 #playthrough {
@@ -436,8 +436,8 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: var(--modal-bg);
-  color: var(--text);
+  background: var(--panel);
+  color: var(--ink);
   display: none;
   flex-direction: column;
   z-index: 1000;
@@ -514,7 +514,7 @@ body {
   padding-top: 1rem;
   border-top: 1px solid var(--panel);
   font-size: 0.8rem;
-  color: var(--text-dim);
+  color: var(--ink-dim);
   max-width: 640px;
   width: 100%;
 }
@@ -525,7 +525,7 @@ body {
 
 .breadcrumb-current {
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 #linearEditor {
@@ -561,7 +561,7 @@ body {
 
 .linear-id {
   font: 11px/1 monospace;
-  color: var(--text-dim);
+  color: var(--ink-dim);
 }
 
 #linearEditor h2 {
@@ -617,7 +617,7 @@ body {
 .bubble-menu {
   display: flex;
   background: var(--card);
-  color: var(--text);
+  color: var(--ink);
   padding: 4px;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -635,16 +635,16 @@ body {
 }
 
 .bubble-menu button:hover {
-  background: var(--btn-hover);
+  background: var(--line);
 }
 
 .bubble-menu button.is-active {
-  background: var(--btn);
+  background: var(--panel-2);
 }
 
 .linear-container {
-  background: var(--modal-bg);
-  color: var(--text);
+  background: var(--panel);
+  color: var(--ink);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -652,7 +652,7 @@ body {
 
 .linear-header {
   background: var(--panel);
-  color: var(--text);
+  color: var(--ink);
   border-color: var(--panel);
   padding: 0.75rem;
   display: flex;
@@ -692,7 +692,7 @@ body {
 .linear-sidebar {
   background: var(--panel);
   border-color: var(--panel);
-  color: var(--text);
+  color: var(--ink);
   display: none;
   flex-direction: column;
   width: 25%;
@@ -731,7 +731,7 @@ body {
 
 .linear-main {
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -766,7 +766,7 @@ body {
 
 .outline-btn {
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   display: block;
   width: 100%;
   text-align: left;
@@ -777,11 +777,11 @@ body {
   cursor: pointer;
 }
 .outline-btn:hover {
-  background: var(--btn-hover);
+  background: var(--line);
 }
 .outline-btn.active {
-  background: var(--btn);
-  color: var(--text);
+  background: var(--panel-2);
+  color: var(--ink);
 }
 
 .is-active-node {
@@ -795,14 +795,14 @@ body {
 }
 
 .shortcut-key {
-  background: var(--btn);
-  color: var(--text);
+  background: var(--panel-2);
+  color: var(--ink);
   padding: 2px 6px;
-  border-radius: var(--radius);
+  border-radius: var(--r);
 }
 
 .text-dim {
-  color: var(--text-dim);
+  color: var(--ink-dim);
 }
 
 .editor-toolbar {
@@ -830,14 +830,14 @@ body {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   cursor: pointer;
   font-size: 12px;
   transition: background 0.15s;
 }
 
 .toolbar-btn:hover {
-  background: var(--btn-hover);
+  background: var(--line);
 }
 
 .toolbar-btn.active {
@@ -876,8 +876,8 @@ textarea:focus {
   right: 0;
   z-index: 15;
   background: var(--panel);
-  border: 1px solid var(--text-dim);
-  border-radius: var(--radius);
+  border: 1px solid var(--ink-dim);
+  border-radius: var(--r);
   padding: 4px;
 }
 .node-notes-textarea {
@@ -885,7 +885,7 @@ textarea:focus {
   height: 60px;
   border: none;
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   font-size: 12px;
   resize: none;
   outline: none;
@@ -927,7 +927,7 @@ textarea:focus {
   font-family: var(--font-doc);
   font-size: 1.1rem;
   line-height: 1.8;
-  color: var(--text);
+  color: var(--ink);
   min-height: 80vh;
   outline: none;
 }
@@ -964,7 +964,7 @@ textarea:focus {
 #linearEditor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: var(--text-dim);
+  color: var(--ink-dim);
   pointer-events: none;
   height: 0;
 }
@@ -973,7 +973,7 @@ textarea:focus {
   border-left: 3px solid var(--accent);
   padding-left: 1rem;
   margin: 1rem 0;
-  color: var(--text-dim);
+  color: var(--ink-dim);
   font-style: italic;
 }
 

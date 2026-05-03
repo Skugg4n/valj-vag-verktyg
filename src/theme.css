@@ -37,16 +37,6 @@
   /* Easing */
   --ease: cubic-bezier(.2,.8,.2,1);
 
-  /* Legacy aliases — kept until Task 7 cleanup so existing index.css
-     rules (--text, --btn, --modal-bg, etc.) keep resolving. */
-  --text:       var(--ink);
-  --text-dim:   var(--ink-dim);
-  --btn:        var(--panel-2);
-  --btn-hover:  var(--line);
-  --modal-bg:   var(--panel);
-  --radius:     var(--r);
-  --gap:        0.5rem;
-  --font-size:  14px;
 }
 
 /* Reading-mode tokens (used by ReadPane via [data-reading="..."]) */
@@ -63,9 +53,4 @@
   --paper-rule:    #2a3140;
 }
 
-@media (max-width: 768px) {
-  :root {
-    --font-size: 12px;
-    --gap: 0.25rem;
-  }
-}
+
