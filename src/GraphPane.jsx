@@ -1,4 +1,4 @@
-import ReactFlow, { MiniMap, Background, ReactFlowProvider, useReactFlow } from 'reactflow'
+import ReactFlow, { MiniMap, ReactFlowProvider, useReactFlow } from 'reactflow'
 import { Plus, LayoutGrid, Layers, Lightbulb } from 'lucide-react'
 import NodeEditorContext from './NodeEditorContext.ts'
 
@@ -51,8 +51,7 @@ export default function GraphPane({
           minZoom={0.1}
           maxZoom={4}
         >
-          <Background variant="dots" gap={16} size={1} />
-          <MiniMap zoomable pannable className="graph-minimap-inner" />
+          <MiniMap zoomable pannable />
         </ReactFlow>
 
         <GraphToolbar

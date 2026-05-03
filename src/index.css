@@ -1218,23 +1218,19 @@ textarea:focus {
 .graph-zoom button:last-child { border-bottom: none; }
 .graph-zoom button:hover { color: var(--ink); background: var(--panel-2); }
 
-.graph-minimap {
+/* React-Flow visual overrides */
+.graph-pane .react-flow__minimap {
   position: absolute;
   bottom: 12px;
   left: 12px;
   width: 180px;
   height: 110px;
-  background: var(--panel);
+  background: var(--panel) !important;
   border: 1px solid var(--line);
   border-radius: var(--r);
   z-index: 5;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0,0,0,.25);
-}
-
-/* React-Flow visual overrides */
-.graph-pane .react-flow__minimap {
-  background: var(--panel) !important;
 }
 .graph-pane .react-flow__edge path {
   stroke: #3a4250;
@@ -1267,20 +1263,20 @@ textarea:focus {
   width: 3px;
   border-radius: 8px 0 0 8px;
 }
-.node-card.redesigned .nc-id {
+.node-card.redesigned .node-id {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--ink-dim);
   margin-bottom: 4px;
 }
-.node-card.redesigned .nc-title {
+.node-card.redesigned .node-title {
   font-weight: 600;
   font-size: 13px;
   margin-bottom: 4px;
   line-height: 1.25;
   color: var(--ink);
 }
-.node-card.redesigned .nc-text {
+.node-card.redesigned .node-preview {
   font-size: 11.5px;
   color: var(--ink-soft);
   line-height: 1.4;
@@ -1289,7 +1285,7 @@ textarea:focus {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.node-card.redesigned .nc-text .ref {
+.node-card.redesigned .node-preview .node-link-pill {
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 10.5px;
