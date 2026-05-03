@@ -10,7 +10,7 @@ import getLayoutedElements from './dagreLayout'
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
-import Playthrough from './Playthrough.jsx'
+import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
 import { convertNodesToLinearText } from './utils/linearConversion.ts'
 import AiSettingsModal from './AiSettingsModal.jsx'
@@ -73,7 +73,6 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [linearText, setLinearText] = useState('')
   const [projectName, setProjectName] = useState('')
-  const [showPlay, setShowPlay] = useState(false)
   // TODO(Task 6): wire setAutoSave to SettingsModal
   const [autoSave, setAutoSave] = useState(() => {
     try {
@@ -890,10 +889,6 @@ export default function App() {
     setEdges(layoutedEdges)
   }, [nodes, edges, pushUndoState])
 
-  const startPlaythrough = () => {
-    setShowPlay(true)
-  }
-
   const startNewProject = () => {
     linearInitialized.current = false
     setLinearText('')
@@ -1070,7 +1065,17 @@ export default function App() {
             setFocusMode={setFocusMode}
           />
         )}
-        renderRead={() => null /* placeholder until Task 5 */}
+        renderRead={() => (
+          <ReadPane
+            nodes={nodes}
+            startId={currentId || undefined}
+            activeNodeId={activeNodeId}
+            onSelectNode={(id) => {
+              const node = nodes.find(n => n.id === id)
+              if (node) selectNode(id, node.data)
+            }}
+          />
+        )}
         onShowHistory={showHistory}
         onOpenPalette={() => alert('Command palette coming in Task 6')}
         onShowSettings={openSettings}
@@ -1079,13 +1084,6 @@ export default function App() {
       />
 
       {/* Modals/overlays kept at root for now */}
-      {showPlay && (
-        <Playthrough
-          nodes={nodes}
-          startId={currentId || undefined}
-          onClose={() => setShowPlay(false)}
-        />
-      )}
       {showAiSettings && (
         <AiSettingsModal
           settings={aiSettings}
@@ -1111,8 +1109,7 @@ export default function App() {
       {/* FloatingMenu kept until Task 7 so all functions remain reachable */}
       <FloatingMenu
         onShowSettings={openSettings}
-        onPlaythrough={startPlaythrough}
-        onAutoLayout={!showPlay ? handleAutoLayout : undefined}
+        onAutoLayout={handleAutoLayout}
         onAddSection={addSection}
         onAddIdea={addIdea}
         onShowHistory={showHistory}
