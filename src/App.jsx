@@ -9,8 +9,6 @@ import {
   FilePlus,
   FileText,
   ChevronDown,
-  Sun,
-  Moon
 } from 'lucide-react'
 import { Popover, Transition } from '@headlessui/react'
 import ReactFlow, {
@@ -111,7 +109,6 @@ export default function App() {
     const stored = localStorage.getItem('cyoa-font-size')
     return stored ? Number(stored) : 14
   })
-  const [theme, setTheme] = useState(() => localStorage.getItem('vv-theme') || 'dark')
   const [activeNodeId, setActiveNodeId] = useState(null)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -137,9 +134,8 @@ export default function App() {
   }, [fontSize])
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('vv-theme', theme)
-  }, [theme])
+    document.documentElement.removeAttribute('data-theme')
+  }, [])
 
   // Generate linear text ONCE when nodes first load (empty → non-empty).
   // After that, LinearView owns the text and syncs back via parser.
@@ -1155,14 +1151,6 @@ export default function App() {
           {debugMode ? 'Debug On' : 'Debug Off'}
         </Button>
         )}
-        <Button
-          variant="ghost"
-          icon={theme === 'dark' ? Sun : Moon}
-          onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
-          title="Toggle light/dark mode"
-        >
-          {theme === 'dark' ? 'Light' : 'Dark'} Mode
-        </Button>
         <UserMenu />
         {showSearch && (
           <input

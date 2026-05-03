@@ -1,30 +1,66 @@
+/* === Välj Väg Verktyg — Design tokens === */
 :root {
-  --radius: 6px;
-  --gap: 0.5rem;
-  --font-size: 14px;
-  --accent: #3b82f6;
+  /* Background */
+  --bg:          #0d1117;
+  --bg-soft:     #11161e;
+  --panel:       #161b22;
+  --panel-2:     #1b212b;
+  --line:        #232a36;
+  --line-strong: #2f3845;
+  --card:        #1f2937;
+
+  /* Ink */
+  --ink:      #e8ecf2;
+  --ink-soft: #b6bdc9;
+  --ink-dim:  #7d8696;
+
+  /* Accent */
+  --accent:      #6ea8ff;
+  --accent-soft: #2a3b5c;
+
+  /* Status */
+  --good:   #6cd09a;
+  --warn:   #f0b955;
+  --danger: #f06a6a;
+
+  /* Typography */
+  --font-ui:   "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-doc:  "Source Serif Pro", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Scale */
+  --r-sm: 4px;
+  --r:    6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  /* Easing */
+  --ease: cubic-bezier(.2,.8,.2,1);
+
+  /* Legacy aliases — kept until Task 7 cleanup so existing index.css
+     rules (--text, --btn, --modal-bg, etc.) keep resolving. */
+  --text:       var(--ink);
+  --text-dim:   var(--ink-dim);
+  --btn:        var(--panel-2);
+  --btn-hover:  var(--line);
+  --modal-bg:   var(--panel);
+  --radius:     var(--r);
+  --gap:        0.5rem;
+  --font-size:  14px;
 }
 
-[data-theme="light"] {
-  --bg: #f9fafb;
-  --panel: #f3f4f6;
-  --card: #e5e7eb;
-  --text: #111827;
-  --text-dim: #6b7280;
-  --btn: #e5e7eb;
-  --btn-hover: #d1d5db;
-  --modal-bg: #ffffff;
+/* Reading-mode tokens (used by ReadPane via [data-reading="..."]) */
+[data-reading="paper"] {
+  --paper-bg:      #f6f1e6;
+  --paper-ink:     #1d1a16;
+  --paper-ink-dim: #6a6258;
+  --paper-rule:    #d9d0bf;
 }
-
-[data-theme="dark"] {
-  --bg: #0d1117;
-  --panel: #161b22;
-  --card: #1f2937;
-  --text: #f3f4f6;
-  --text-dim: #9ca3af;
-  --btn: #4a5568;
-  --btn-hover: #5b667a;
-  --modal-bg: #222222;
+[data-reading="dark"] {
+  --paper-bg:      #15191f;
+  --paper-ink:     #e8ecf2;
+  --paper-ink-dim: #8a93a3;
+  --paper-rule:    #2a3140;
 }
 
 @media (max-width: 768px) {
