@@ -11,7 +11,7 @@ import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
 import Playthrough from './Playthrough.jsx'
-import LinearView from './LinearView.jsx'
+import DocPane from './DocPane.jsx'
 import { convertNodesToLinearText } from './utils/linearConversion.ts'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
@@ -1045,29 +1045,31 @@ export default function App() {
               }}
             />
             <div style={{ flex: 1 - ratio, minWidth: 0, display: 'flex' }}>
-              <LinearView
+              <DocPane
                 text={linearText}
                 setText={setLinearText}
                 setNodes={setNodes}
                 nextId={nextId}
-                expanded={false}
-                onToggleExpand={() => {}}
+                nodes={nodes}
                 activeNodeId={activeNodeId}
                 onSelectNode={handleLinearSelect}
+                full={false}
               />
             </div>
           </div>
         )}
-        renderText={() => (
-          <LinearView
+        renderText={({ focusMode, setFocusMode }) => (
+          <DocPane
             text={linearText}
             setText={setLinearText}
             setNodes={setNodes}
             nextId={nextId}
-            expanded={true}
-            onToggleExpand={() => {}}
+            nodes={nodes}
             activeNodeId={activeNodeId}
             onSelectNode={handleLinearSelect}
+            full={true}
+            focusMode={focusMode}
+            setFocusMode={setFocusMode}
           />
         )}
         renderRead={() => null /* placeholder until Task 5 */}
