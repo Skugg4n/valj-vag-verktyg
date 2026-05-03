@@ -131,12 +131,26 @@ export default function LinearView({
         }
       })
       if (targetPos !== null) {
-        editor.chain().setTextSelection(targetPos).scrollIntoView().run()
+        editor.chain().setTextSelection(targetPos).run()
         setActiveId(id)
         editor.commands.setActiveNodeId(id)
         if (onSelectNode && id !== activeNodeId) {
           onSelectNode(id)
         }
+        // Scroll the actual DOM heading to the top of the scroll container
+        requestAnimationFrame(() => {
+          const container = mainRef.current
+          if (!container) return
+          const headings = container.querySelectorAll('h2')
+          for (const h of headings) {
+            if (h.textContent.startsWith(`#${id}`)) {
+              const containerRect = container.getBoundingClientRect()
+              const headingRect = h.getBoundingClientRect()
+              container.scrollTop += headingRect.top - containerRect.top - 16
+              break
+            }
+          }
+        })
       }
     },
     [editor, onSelectNode, activeNodeId]
