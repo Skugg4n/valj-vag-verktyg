@@ -23,7 +23,7 @@ import NewProjectModal from './NewProjectModal.jsx'
 import CommandPalette from './CommandPalette.jsx'
 import SettingsModal from './SettingsModal.jsx'
 import UserMenu from './UserMenu.jsx'
-import { FilePlus } from 'lucide-react'
+import { FolderOpen } from 'lucide-react'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import useProjectStorage from './useProjectStorage.js'
 import useFirestoreSync from './useFirestoreSync.js'
@@ -973,14 +973,16 @@ export default function App() {
     return () => window.removeEventListener('promote-idea', handler)
   }, [nodes, nextId, pushUndoState])
 
-  const projectSwitchItems = Object.values(projects)
-    .sort((a, b) => (b.updated || 0) - (a.updated || 0))
-    .map(p => ({
-      id: `switch-${p.id}`,
-      label: `Byt till: ${p.data?.projectName?.trim() || new Date(p.start).toLocaleString()}`,
-      icon: <FilePlus />,
-      run: () => handleProjectSwitch(p.id),
-    }))
+  const projectSwitchItems = useMemo(() => (
+    Object.values(projects)
+      .sort((a, b) => (b.updated || 0) - (a.updated || 0))
+      .map(p => ({
+        id: `switch-${p.id}`,
+        label: `Byt till: ${p.data?.projectName?.trim() || new Date(p.start).toLocaleString()}`,
+        icon: <FolderOpen />,
+        run: () => handleProjectSwitch(p.id),
+      }))
+  ), [projects, handleProjectSwitch])
 
   return (
     <>
