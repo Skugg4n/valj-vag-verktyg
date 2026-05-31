@@ -287,9 +287,12 @@ body {
   inset: 0;
 }
 
+/* !important so the editing toggle wins over the redesigned preview's
+   display:-webkit-box (equal specificity, declared later). Without it the
+   hidden preview stayed visible and overlapped the editor → doubled text. */
 .node-card .node-preview[aria-hidden="true"],
 .node-card .node-editor[aria-hidden="true"] {
-  display: none;
+  display: none !important;
 }
 
 .node-card .node-preview {

@@ -32,9 +32,31 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   const [showColors, setShowColors] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
   const colorBtnRef = useRef(null)
+  const colorPickerRef = useRef(null)
   const textRef = useRef(null)
   const previewRef = useRef(null)
   const prevSelectedRef = useRef(selected)
+
+  // Auto-close the colour picker on an outside click (clicks on the swatches
+  // and the trigger are excluded so picking still works).
+  useEffect(() => {
+    if (!showColors) return
+    const onDown = e => {
+      if (colorPickerRef.current?.contains(e.target)) return
+      if (colorBtnRef.current?.contains(e.target)) return
+      setShowColors(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [showColors])
+
+  // Deselecting the node closes its inline popovers.
+  useEffect(() => {
+    if (!selected) {
+      setShowColors(false)
+      setShowNotes(false)
+    }
+  }, [selected])
 
   useEffect(() => {
     if (selected && !prevSelectedRef.current) {
@@ -191,6 +213,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
             )}
             {showColors && (
               <div
+                ref={colorPickerRef}
                 className="node-color-picker"
                 onPointerDown={e => e.stopPropagation()}
                 onClick={e => e.stopPropagation()}
