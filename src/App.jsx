@@ -24,6 +24,7 @@ import SettingsModal from './SettingsModal.jsx'
 import InsightsModal from './InsightsModal.jsx'
 import HistoryModal from './HistoryModal.jsx'
 import ExportModal from './ExportModal.jsx'
+import ProjectMenu from './ProjectMenu.jsx'
 import { buildReaderHTML, downloadFile } from './utils/buildReaderHTML.js'
 import UserMenu from './UserMenu.jsx'
 import { FolderOpen } from 'lucide-react'
@@ -176,7 +177,7 @@ export default function App() {
     setProjectName,
   })
 
-  const { saveToFirestore, saveHistorySnapshot, getHistory } = useFirestoreSync({
+  const { saveToFirestore, saveHistorySnapshot, deleteFromFirestore, getHistory } = useFirestoreSync({
     user,
     projects,
     setProjects,
@@ -683,6 +684,58 @@ export default function App() {
     setProjectStart(p.start || Date.now())
   }
 
+  const duplicateProject = id => {
+    const src = projects[id]
+    if (!src) return
+    const newId = String(Date.now())
+    const data = {
+      projectName: `${src.data?.projectName?.trim() || 'Namnlös'} (kopia)`,
+      nextNodeId: src.data?.nextNodeId || 1,
+      nodes: (src.data?.nodes || []).map(n => ({ ...n })),
+    }
+    setProjects(p => ({
+      ...p,
+      [newId]: { id: newId, start: Date.now(), updated: Date.now(), data },
+    }))
+    linearInitialized.current = false
+    const loaded = (data.nodes || []).map(n => ({
+      id: n.id,
+      type: n.type || 'card',
+      position: n.position || { x: 0, y: 0 },
+      data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+      width: n.width ?? DEFAULT_NODE_WIDTH,
+      height: n.height ?? estimateNodeHeight(n.text || ''),
+    }))
+    setNodes(loaded)
+    setEdges(scanEdges(loaded))
+    setNextId(data.nextNodeId || 1)
+    setProjectName(data.projectName)
+    setCurrentId(null)
+    setText('')
+    setTitle('')
+    setProjectId(newId)
+    setProjectStart(Date.now())
+  }
+
+  const deleteProject = id => {
+    const remaining = Object.keys(projects).filter(k => k !== id)
+    deleteFromFirestore(id)
+    setProjects(p => {
+      const next = { ...p }
+      delete next[id]
+      return next
+    })
+    if (id === projectId) {
+      if (remaining.length) handleProjectSwitch(remaining[0])
+      else startNewProject()
+    }
+  }
+
+  const renameProject = () => {
+    const name = prompt('Nytt namn på berättelsen:', projectName)
+    if (name != null) setProjectName(name.trim())
+  }
+
   const exportProject = () => {
     const data = {
       projectName,
@@ -1010,6 +1063,21 @@ export default function App() {
       }))
   ), [projects, handleProjectSwitch])
 
+  const projectList = useMemo(() => {
+    const list = Object.entries(projects).map(([id, p]) => ({
+      id,
+      name: p.data?.projectName || '',
+      nodeCount: (p.data?.nodes || []).length,
+      updated: p.updated || p.start || 0,
+    }))
+    // The active project may not be persisted yet (logged out, auto-save off);
+    // always surface it so the switcher reflects what's open.
+    if (projectId && !list.some(p => p.id === projectId)) {
+      list.push({ id: projectId, name: projectName, nodeCount: nodes.length, updated: Date.now() })
+    }
+    return list.sort((a, b) => (b.updated || 0) - (a.updated || 0))
+  }, [projects, projectId, projectName, nodes])
+
   return (
     <>
       <AppShell
@@ -1129,6 +1197,19 @@ export default function App() {
         onShowSettings={() => setSettingsOpen(true)}
         onShare={() => setExportOpen(true)}
         userMenuSlot={<UserMenu />}
+        projectMenuSlot={
+          <ProjectMenu
+            projects={projectList}
+            currentId={projectId}
+            currentName={projectName}
+            ops={{ switchProject: handleProjectSwitch, duplicateProject, deleteProject }}
+            onNew={confirmNewProject}
+            onRename={renameProject}
+            onImport={() => importRef.current?.click()}
+            onExport={() => setExportOpen(true)}
+            onHistory={showHistory}
+          />
+        }
       />
 
       {/* Modals/overlays kept at root for now */}
