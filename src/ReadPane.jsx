@@ -17,6 +17,7 @@ export function splitChoices(text, nodeMap) {
   }
   const body = (text || '')
     .replace(CHOICE_RE, '')
+    .replace(/[ \t]+([.,!?;:…»)\]])/g, '$1') // drop space left before punctuation by a stripped ref
     .replace(/ {2,}/g, ' ')      // collapse mid-line double-spaces left behind
     .replace(/[ \t]+\n/g, '\n')  // trim trailing whitespace before newlines
     .trim()

@@ -128,6 +128,19 @@ export default function App() {
     setLinearText(convertNodesToLinearText(nodes))
   }, [nodes])
 
+  // Scan edges once when nodes first arrive from storage. The storage hook
+  // loads nodes via setNodes directly without computing edges, so a freshly
+  // loaded project would otherwise show nodes with no connections until the
+  // first edit. Mutation paths (addNode/onConnect/import/switch) set edges
+  // themselves, so this only covers the initial mount load.
+  const edgesInitialized = useRef(false)
+  useEffect(() => {
+    if (edgesInitialized.current) return
+    if (nodes.length === 0) return
+    edgesInitialized.current = true
+    setEdges(scanEdges(nodes))
+  }, [nodes])
+
   // Listen for parser-driven node updates and scan edges
   useEffect(() => {
     const handler = () => setEdges(scanEdges(nodes))

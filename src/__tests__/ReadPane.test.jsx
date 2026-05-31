@@ -105,7 +105,17 @@ describe('splitChoices', () => {
 
   it('strips inline ref tokens and collapses leftover double-spaces', () => {
     const { body } = splitChoices('Du ser [#002] eller [#003].', nodeMap)
-    expect(body).toBe('Du ser eller .')
+    expect(body).toBe('Du ser eller.')
+  })
+
+  it('drops the space a stripped ref leaves before punctuation', () => {
+    // "en längs vattnet [#002], och en upp mot byn [#003]." should read
+    // cleanly without floating spaces before the comma / period.
+    const { body } = splitChoices(
+      'en längs vattnet [#002], och en upp mot byn [#003].',
+      nodeMap
+    )
+    expect(body).toBe('en längs vattnet, och en upp mot byn.')
   })
 
   it('handles empty/null text gracefully', () => {
