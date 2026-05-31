@@ -22,7 +22,7 @@ const COLOR_OPTIONS = [
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
-  const { updateNodeText, resizingRef, selectNode, activeNodeId, matchSet } = useContext(NodeEditorContext)
+  const { updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet } = useContext(NodeEditorContext)
   const isActive = activeNodeId === id || selected
   const { zoom } = useViewport()
   const isOverview = zoom < OVERVIEW_ZOOM_THRESHOLD
@@ -173,6 +173,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                 value={data.title || ''}
                 placeholder="Title..."
                 onChange={e => {
+                  beginEdit?.(`title-${id}`)
                   setNodes(ns => ns.map(n =>
                     n.id === id ? { ...n, data: { ...n.data, title: e.target.value } } : n
                   ))
@@ -224,6 +225,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                     className="node-color-swatch"
                     style={{ background: col }}
                     onClick={() => {
+                      beginEdit?.(`color-${id}`)
                       setNodes(ns => ns.map(n =>
                         n.id === id ? { ...n, data: { ...n.data, color: col } } : n
                       ))
@@ -290,6 +292,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                 placeholder="Anteckningar om denna nod..."
                 value={data.notes || ''}
                 onChange={e => {
+                  beginEdit?.(`notes-${id}`)
                   setNodes(ns => ns.map(n =>
                     n.id === id ? { ...n, data: { ...n.data, notes: e.target.value } } : n
                   ))

@@ -252,6 +252,18 @@ export default function App() {
     redoStack.current = []
   }, [nodes, edges, nextId, currentId, text, title])
 
+  // Coalesced undo checkpoint: snapshots once per edit burst (keyed by
+  // field+node), so continuous typing / rapid tweaks become one undo step.
+  const beginEdit = useCallback(
+    key => {
+      const now = Date.now()
+      const last = textEditRef.current
+      if (last.id !== key || now - last.t > 700) pushUndoState()
+      textEditRef.current = { id: key, t: now }
+    },
+    [pushUndoState]
+  )
+
   const applyState = state => {
     setNodes(state.nodes)
     setEdges(state.edges)
@@ -630,12 +642,7 @@ export default function App() {
 
   const updateNodeText = useCallback(
     (id, value) => {
-      // Snapshot once per edit burst (different node or >700ms since last key)
-      // instead of on every keystroke.
-      const now = Date.now()
-      const last = textEditRef.current
-      if (last.id !== id || now - last.t > 700) pushUndoState()
-      textEditRef.current = { id, t: now }
+      beginEdit(`text-${id}`)
       let created = []
       setNodes(ns => {
         let updated = ns.map(n =>
@@ -686,7 +693,7 @@ export default function App() {
         setText(value)
       }
     },
-    [currentId, pushUndoState]
+    [currentId, beginEdit]
   )
 
   const handleProjectSwitch = id => {
@@ -1152,6 +1159,7 @@ export default function App() {
             onPaneClick={onPaneClick}
             onNodeDragStop={() => pushUndoState()}
             updateNodeText={updateNodeText}
+            beginEdit={beginEdit}
             resizingRef={resizingRef}
             selectNode={selectNode}
             activeNodeId={activeNodeId}
@@ -1179,6 +1187,7 @@ export default function App() {
                 onPaneClick={onPaneClick}
                 onNodeDragStop={() => pushUndoState()}
                 updateNodeText={updateNodeText}
+                beginEdit={beginEdit}
                 resizingRef={resizingRef}
                 selectNode={selectNode}
                 activeNodeId={activeNodeId}

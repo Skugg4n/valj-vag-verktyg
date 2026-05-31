@@ -18,6 +18,7 @@ export default function GraphPane({
   onPaneClick,
   onNodeDragStop,
   updateNodeText,
+  beginEdit,
   resizingRef,
   selectNode,
   activeNodeId,
@@ -45,7 +46,7 @@ export default function GraphPane({
   return (
     <ReactFlowProvider>
     <div className="graph-pane" id="graph">
-      <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode, activeNodeId, matchSet }}>
+      <NodeEditorContext.Provider value={{ updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet }}>
         <ReactFlow
           style={{ width: '100%', height: '100%' }}
           nodes={nodes}

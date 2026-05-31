@@ -1,3 +1,16 @@
+## v0.9.5 — Undo for all node edits + two-way scroll sync — 2026-05-31
+
+### Added
+- **Doc → graph scroll sync**: scrolling the document now highlights the
+  matching scene in the graph and outline (the reverse direction already
+  worked). A guard prevents the two scroll directions from fighting.
+
+### Fixed
+- **Title, colour and notes edits are now undoable** — they create
+  coalesced undo checkpoints like text edits (one step per edit burst),
+  so Ctrl+Z reverts them and they're no longer silently discarded by a
+  later undo.
+
 ## v0.9.4 — Audit fixes, round 2 — 2026-05-31
 
 ### Fixed

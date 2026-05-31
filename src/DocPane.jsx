@@ -31,6 +31,12 @@ export default function DocPane({
   const [outlineHidden, setOutlineHidden] = useState(false)
   const scrollRef = useRef(null)
   const initialTextRef = useRef(text)
+  // Latest activeNodeId for the observer callback (avoids rebuilding it on
+  // every change), and a guard so an activeNodeId set BY doc-scrolling doesn't
+  // trigger the graph→doc scroll effect back (which would fight the scroll).
+  const activeNodeIdRef = useRef(activeNodeId)
+  const fromScrollRef = useRef(null)
+  useEffect(() => { activeNodeIdRef.current = activeNodeId }, [activeNodeId])
 
   const editor = useEditor({
     extensions: [
@@ -98,6 +104,17 @@ export default function DocPane({
     if (!activeNodeId) return
     const container = scrollRef.current
     if (!container) return
+    // If this activeNodeId came from the doc being scrolled (Doc→Graph), don't
+    // scroll back — that would fight the user's manual scroll.
+    if (fromScrollRef.current === activeNodeId) {
+      fromScrollRef.current = null
+      const target = tagHeadings(activeNodeId)
+      if (target) {
+        container.querySelectorAll('h2.is-active').forEach(el => el.classList.remove('is-active'))
+        target.classList.add('is-active')
+      }
+      return
+    }
     requestAnimationFrame(() => {
       const target = tagHeadings(activeNodeId)
       if (!target) return
@@ -109,26 +126,42 @@ export default function DocPane({
     })
   }, [activeNodeId, tagHeadings])
 
-  // Doc -> Graph: IntersectionObserver detects which heading is at the top
+  // Doc -> Graph: the topmost heading in view becomes the active scene. The
+  // heading id is read from its "#NNN" text (not a persisted attribute, which
+  // ProseMirror wipes), and the IntersectionObserver is (re)attached via a
+  // MutationObserver so it survives ProseMirror's async render of the content.
   useEffect(() => {
     const container = scrollRef.current
     if (!container) return
-    const headings = Array.from(container.querySelectorAll('h2[data-node-id]'))
-    if (headings.length === 0) return
-    const obs = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        if (visible.length === 0) return
-        const id = visible[0].target.getAttribute('data-node-id')
-        if (id && id !== activeNodeId) onSelectNode?.(id)
-      },
-      { root: container, rootMargin: '-60px 0px -60% 0px', threshold: 0 }
-    )
-    headings.forEach(h => obs.observe(h))
-    return () => obs.disconnect()
-  }, [outlineEntries, onSelectNode, activeNodeId])
+    let io = null
+    let raf = 0
+    const attach = () => {
+      const h2s = [...container.querySelectorAll('h2')]
+      io?.disconnect()
+      if (!h2s.length) return
+      io = new IntersectionObserver(
+        entries => {
+          const visible = entries
+            .filter(e => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+          if (!visible.length) return
+          const m = (visible[0].target.textContent || '').match(/^#(\d{3})/)
+          const id = m?.[1]
+          if (id && id !== activeNodeIdRef.current) {
+            fromScrollRef.current = id
+            onSelectNode?.(id)
+          }
+        },
+        { root: container, rootMargin: '-60px 0px -60% 0px', threshold: 0 }
+      )
+      h2s.forEach(h => io.observe(h))
+    }
+    const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(attach) }
+    schedule()
+    const mo = new MutationObserver(schedule)
+    mo.observe(container, { childList: true, subtree: true })
+    return () => { cancelAnimationFrame(raf); mo.disconnect(); io?.disconnect() }
+  }, [onSelectNode])
 
   // Ref-link click handler (delegated on the scroll container)
   // ArrowLink.ts renders: <a class="node-link" href="#NNN"> — match that contract.
