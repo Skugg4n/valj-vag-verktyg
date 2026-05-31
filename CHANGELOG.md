@@ -1,3 +1,12 @@
+## v0.9.2 — Graph→doc scroll sync — 2026-05-31
+
+### Fixed
+- Clicking a node in the graph now scrolls the document on the right to
+  that scene. Headings are (re)tagged with their `#NNN` id on demand at
+  click time — the previous tagging relied on the editor's `update`
+  event, which the initial `setContent` doesn't emit, so the scroll
+  target was never found.
+
 ## v0.9.1 — Node card bugfixes — 2026-05-31
 
 ### Fixed

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -69,48 +69,44 @@ export default function DocPane({
   // Outline: parsed from current text
   const outlineEntries = useMemo(() => parseLinearText(text || ''), [text])
 
-  // Tag rendered <h2> headings with data-node-id="NNN" so scroll-sync can find them.
-  // After every editor update, walk the rendered h2 elements.
-  useEffect(() => {
-    if (!editor) return
-    const apply = () => {
-      const container = scrollRef.current
-      if (!container) return
-      const h2s = container.querySelectorAll('h2')
-      h2s.forEach(h => {
-        const m = (h.textContent || '').match(/^#(\d{3})/)
-        if (m) {
-          h.setAttribute('data-node-id', m[1])
-          // Wrap the matched id token in <span class="node-id"> if not already
-          if (!h.querySelector('.node-id')) {
-            const idText = `#${m[1]}`
-            h.innerHTML = h.innerHTML.replace(idText, `<span class="node-id">${idText}</span>`)
-          }
-        }
-      })
-    }
-    apply()
-    editor.on('update', apply)
-    return () => editor.off('update', apply)
-  }, [editor])
+  // Tag every rendered <h2> with data-node-id="NNN" from its "#NNN" text.
+  // Returns the heading matching `wantId` (if any). ProseMirror regenerates
+  // heading DOM on its own schedule and wipes external attributes, and the
+  // initial setContent uses emitUpdate=false, so we (re)tag on demand right
+  // before we need it rather than trusting a persisted attribute.
+  const tagHeadings = useCallback((wantId) => {
+    const container = scrollRef.current
+    if (!container) return null
+    let match = null
+    container.querySelectorAll('h2').forEach(h => {
+      const m = (h.textContent || '').match(/^#(\d{3})/)
+      if (!m) return
+      if (h.getAttribute('data-node-id') !== m[1]) h.setAttribute('data-node-id', m[1])
+      if (wantId && m[1] === wantId) match = h
+    })
+    return match
+  }, [])
 
-  // Graph -> Doc: when activeNodeId changes from outside, scroll to that h2.
-  // Use the manual DOM scroll pattern from the LinearView fix
-  // (ProseMirror's scrollIntoView doesn't position to the top of the scroll container).
+  // Graph -> Doc: when activeNodeId changes from outside (e.g. clicking a node
+  // in the graph), scroll to that scene's heading. Self-contained: it (re)tags
+  // every heading by its "#NNN" text and finds the target by id at click time,
+  // when the DOM is guaranteed rendered — so it doesn't depend on the async
+  // tagging effect having already run. Manual DOM scroll because ProseMirror's
+  // scrollIntoView doesn't line up with the top of the scroll container.
   useEffect(() => {
     if (!activeNodeId) return
     const container = scrollRef.current
     if (!container) return
     requestAnimationFrame(() => {
-      const h2 = container.querySelector(`h2[data-node-id="${activeNodeId}"]`)
-      if (!h2) return
+      const target = tagHeadings(activeNodeId)
+      if (!target) return
       const cRect = container.getBoundingClientRect()
-      const hRect = h2.getBoundingClientRect()
+      const hRect = target.getBoundingClientRect()
       container.scrollTop += hRect.top - cRect.top - 16
       container.querySelectorAll('h2.is-active').forEach(el => el.classList.remove('is-active'))
-      h2.classList.add('is-active')
+      target.classList.add('is-active')
     })
-  }, [activeNodeId])
+  }, [activeNodeId, tagHeadings])
 
   // Doc -> Graph: IntersectionObserver detects which heading is at the top
   useEffect(() => {
