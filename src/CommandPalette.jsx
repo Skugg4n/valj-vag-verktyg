@@ -112,11 +112,10 @@ function buildSections(a) {
     {
       title: 'Verktyg',
       items: [
-        { id: 'undo',        label: 'Ångra',                 icon: <RotateCcw />, shortcut: '⌘Z',   run: a.undo },
-        { id: 'redo',        label: 'Gör om',                icon: <RotateCw />,  shortcut: '⌘⇧Z', run: a.redo },
-        { id: 'import-md',   label: 'Importera markdown...', icon: <Upload />,                     run: a.importProject },
-        { id: 'export-json', label: 'Exportera JSON',        icon: <Download />,                   run: a.exportProject },
-        { id: 'export-md',   label: 'Exportera markdown',    icon: <Download />,                   run: a.exportMarkdown },
+        { id: 'undo',     label: 'Ångra',          icon: <RotateCcw />, shortcut: '⌘Z',   run: a.undo },
+        { id: 'redo',     label: 'Gör om',         icon: <RotateCw />,  shortcut: '⌘⇧Z', run: a.redo },
+        { id: 'import',   label: 'Importera JSON...', icon: <Upload />,                    run: a.importProject },
+        { id: 'export',   label: 'Exportera...',   icon: <Download />,                     run: a.showExport },
       ],
     },
     {

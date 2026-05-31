@@ -1892,3 +1892,33 @@ textarea:focus {
 .hist-main { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .hist-label { font-size: 13px; color: var(--ink); font-weight: 500; }
 .hist-meta { font-size: 11px; color: var(--ink-dim); font-family: var(--font-mono); }
+
+/* ===== Exportera ===== */
+.export-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color .15s var(--ease), background .15s var(--ease);
+}
+.export-opt:hover { border-color: var(--accent); background: var(--panel-2); }
+.export-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.export-title { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
+.export-desc { display: block; font-size: 12px; color: var(--ink-dim); margin-top: 2px; line-height: 1.4; }

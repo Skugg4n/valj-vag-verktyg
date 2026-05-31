@@ -23,6 +23,8 @@ import CommandPalette from './CommandPalette.jsx'
 import SettingsModal from './SettingsModal.jsx'
 import InsightsModal from './InsightsModal.jsx'
 import HistoryModal from './HistoryModal.jsx'
+import ExportModal from './ExportModal.jsx'
+import { buildReaderHTML, downloadFile } from './utils/buildReaderHTML.js'
 import UserMenu from './UserMenu.jsx'
 import { FolderOpen } from 'lucide-react'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
@@ -104,6 +106,7 @@ export default function App() {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyItems, setHistoryItems] = useState([])
   const [historyBusy, setHistoryBusy] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -747,6 +750,15 @@ export default function App() {
     URL.revokeObjectURL(a.href)
   }
 
+  const exportReaderHTML = () => {
+    const safe = (projectName.trim() || 'berattelse').toLowerCase().replace(/[^\w-]+/g, '_')
+    downloadFile(
+      `${safe}-att-lasa.html`,
+      buildReaderHTML(nodes, projectName.trim() || 'Berättelse'),
+      'text/html'
+    )
+  }
+
   const importProject = async e => {
     const file = e.target.files[0]
     if (!file) return
@@ -1115,7 +1127,7 @@ export default function App() {
         onShowHistory={showHistory}
         onOpenPalette={() => setCmdOpen(true)}
         onShowSettings={() => setSettingsOpen(true)}
-        onShare={() => {}}
+        onShare={() => setExportOpen(true)}
         userMenuSlot={<UserMenu />}
       />
 
@@ -1148,6 +1160,7 @@ export default function App() {
           importProject: () => importRef.current?.click(),
           exportProject,
           exportMarkdown,
+          showExport: () => setExportOpen(true),
           showInsights: () => setInsightsOpen(true),
           showHistory,
           showSettings: () => setSettingsOpen(true),
@@ -1171,6 +1184,14 @@ export default function App() {
         busy={historyBusy}
         onSaveVersion={saveVersion}
         onRestore={restoreVersion}
+      />
+
+      <ExportModal
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        onExportJSON={exportProject}
+        onExportMarkdown={exportMarkdown}
+        onExportHTML={exportReaderHTML}
       />
 
       <SettingsModal
