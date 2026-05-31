@@ -904,6 +904,8 @@ textarea:focus {
   white-space: nowrap;
 }
 
+/* Higher specificity than .node-card.redesigned so the dashed idea border wins. */
+.node-card.redesigned.idea-node,
 .node-card.idea-node {
   border-style: dashed;
   border-width: 1.5px;
