@@ -1,3 +1,13 @@
+## v0.9.1 — Node card bugfixes — 2026-05-31
+
+### Fixed
+- Doubled/overlapping text on a node card while editing — the read-view
+  preview no longer renders under the editor textarea (the line-clamp
+  `display` was overriding the `aria-hidden` hide).
+- Colour picker now closes on an outside click and when the node is
+  deselected (it previously stayed open over the text). Picking a
+  swatch still sets the colour and closes the picker.
+
 ## v0.9.0 — Modes & Layout Redesign — 2026-05-03
 
 Major UI overhaul derived from the Claude Design handoff
