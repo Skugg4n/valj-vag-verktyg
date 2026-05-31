@@ -22,6 +22,27 @@ modes: Skiss, Skiss + Innehåll, Innehåll, Läsa.
   preserved
 - `pre-redesign-v0.8.2` git tag on master for rollback
 
+### Added — Variant C completion (2026-05-31)
+- **Insikter & analys** modal (sidebar Layers button + ⌘K): scene,
+  choice, ending, word counts; longest path; unreachable / orphan /
+  dead-end / empty scene detection; loop warning; click a scene to jump
+  to it. Pure logic in `storyAnalysis.js` with unit tests.
+- **Versionshistorik** modal wired to Firestore history with manual
+  "Spara nuvarande som version" (⌘S) and restore — replaces the old
+  alert/prompt flow; graceful logged-out state.
+- **Projekt-switcher** in the topbar (replaces the bare name input):
+  project list with scene count + last edited, switch, new, rename,
+  duplicate, delete.
+- **Export** modal: JSON backup, Markdown, and a standalone,
+  offline-playable **shareable reader HTML** (`buildReaderHTML`).
+- **Grafsök**: search overlay that dims non-matching scenes and rings
+  matches (title / text / id), with a live match count.
+- **Idé-noder**: diagonally-striped fill + dashed border; "Befordra
+  till scen"; excluded from Innehåll, Läsa, the shareable reader, and
+  the analysis (identified by data flag or persisted `idea-` id prefix).
+- Edges are scanned on project load (no more empty graph until first
+  edit); reader strips the space a removed ref left before punctuation.
+
 ### Changed
 - App.jsx slimmed dramatically; UI orchestration moves to AppShell
 - Light theme dropped (dark-only); reading mode keeps its own
