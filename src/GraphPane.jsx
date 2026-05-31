@@ -1,5 +1,6 @@
+import { useMemo, useState } from 'react'
 import ReactFlow, { MiniMap, ReactFlowProvider, useReactFlow } from 'reactflow'
-import { Plus, LayoutGrid, Layers, Lightbulb } from 'lucide-react'
+import { Plus, LayoutGrid, Layers, Lightbulb, Search, X } from 'lucide-react'
 import NodeEditorContext from './NodeEditorContext.ts'
 
 export default function GraphPane({
@@ -25,10 +26,26 @@ export default function GraphPane({
   onAddSection,
   onAddIdea,
 }) {
+  const [search, setSearch] = useState('')
+
+  const matchSet = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return null
+    return new Set(
+      nodes
+        .filter(n =>
+          (n.data?.title || '').toLowerCase().includes(q) ||
+          (n.data?.text || '').toLowerCase().includes(q) ||
+          n.id.toLowerCase().includes(q)
+        )
+        .map(n => n.id)
+    )
+  }, [search, nodes])
+
   return (
     <ReactFlowProvider>
     <div className="graph-pane" id="graph">
-      <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode, activeNodeId }}>
+      <NodeEditorContext.Provider value={{ updateNodeText, resizingRef, selectNode, activeNodeId, matchSet }}>
         <ReactFlow
           style={{ width: '100%', height: '100%' }}
           nodes={nodes}
@@ -60,6 +77,25 @@ export default function GraphPane({
           onAddSection={onAddSection}
           onAddIdea={onAddIdea}
         />
+
+        <div className="graph-search">
+          <Search size={14} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Sök scen…"
+            aria-label="Sök scen"
+          />
+          {search && (
+            <>
+              <span className="graph-search-count">{matchSet ? matchSet.size : 0}</span>
+              <button className="graph-search-clear" onClick={() => setSearch('')} aria-label="Rensa sökning">
+                <X size={13} />
+              </button>
+            </>
+          )}
+        </div>
+
         <ZoomControls />
       </NodeEditorContext.Provider>
     </div>

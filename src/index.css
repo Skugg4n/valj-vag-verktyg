@@ -2014,3 +2014,51 @@ textarea:focus {
 }
 .proj-action:hover { background: var(--panel-2); color: var(--ink); }
 .proj-action svg { color: var(--ink-dim); }
+
+/* ===== Grafsök ===== */
+.graph-search {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  z-index: 6;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: var(--ink-dim);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+}
+.graph-search input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  width: 150px;
+}
+.graph-search input::placeholder { color: var(--ink-dim); }
+.graph-search-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.graph-search-clear {
+  display: inline-flex;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-dim);
+  padding: 2px;
+  border-radius: 4px;
+}
+.graph-search-clear:hover { color: var(--ink); background: var(--panel-2); }
+.node-card.dimmed { opacity: 0.28; filter: saturate(.5); transition: opacity .15s var(--ease); }
+.node-card.matched { box-shadow: 0 0 0 2px var(--accent), 0 8px 22px rgba(0, 0, 0, .4); }

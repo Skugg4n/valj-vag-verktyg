@@ -22,7 +22,7 @@ const COLOR_OPTIONS = [
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
-  const { updateNodeText, resizingRef, selectNode, activeNodeId } = useContext(NodeEditorContext)
+  const { updateNodeText, resizingRef, selectNode, activeNodeId, matchSet } = useContext(NodeEditorContext)
   const isActive = activeNodeId === id || selected
   const { zoom } = useViewport()
   const isOverview = zoom < OVERVIEW_ZOOM_THRESHOLD
@@ -113,6 +113,8 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
         resizing ? 'resizing' : '',
         data.isIdea ? 'idea-node' : '',
         isActive ? 'is-active' : '',
+        matchSet && !matchSet.has(id) ? 'dimmed' : '',
+        matchSet && matchSet.has(id) ? 'matched' : '',
       ].filter(Boolean).join(' ')}
       onClick={() => selectNode(id, data)}
       style={{
