@@ -1863,3 +1863,32 @@ textarea:focus {
 .insight-ok { font-size: 12.5px; color: var(--good); }
 .longest-path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .path-arrow { color: var(--ink-dim); font-family: var(--font-mono); }
+
+/* ===== Versionshistorik ===== */
+.hist-empty {
+  font-size: 13px;
+  color: var(--ink-dim);
+  text-align: center;
+  padding: 24px 12px;
+  line-height: 1.5;
+}
+.hist-list { display: flex; flex-direction: column; }
+.hist-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.hist-item:last-child { border-bottom: none; }
+.hist-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.hist-main { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.hist-label { font-size: 13px; color: var(--ink); font-weight: 500; }
+.hist-meta { font-size: 11px; color: var(--ink-dim); font-family: var(--font-mono); }

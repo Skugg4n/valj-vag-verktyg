@@ -22,6 +22,7 @@ import NewProjectModal from './NewProjectModal.jsx'
 import CommandPalette from './CommandPalette.jsx'
 import SettingsModal from './SettingsModal.jsx'
 import InsightsModal from './InsightsModal.jsx'
+import HistoryModal from './HistoryModal.jsx'
 import UserMenu from './UserMenu.jsx'
 import { FolderOpen } from 'lucide-react'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
@@ -100,6 +101,9 @@ export default function App() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyItems, setHistoryItems] = useState([])
+  const [historyBusy, setHistoryBusy] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -169,7 +173,7 @@ export default function App() {
     setProjectName,
   })
 
-  const { saveToFirestore, getHistory } = useFirestoreSync({
+  const { saveToFirestore, saveHistorySnapshot, getHistory } = useFirestoreSync({
     user,
     projects,
     setProjects,
@@ -815,50 +819,76 @@ export default function App() {
     ])
   }
 
-  const showHistory = async () => {
-    if (!user) {
-      alert('Logga in för att se historik')
-      return
+  // Snapshot of the current project in the Firestore/export node shape.
+  const buildProjectData = () => ({
+    projectName,
+    nextNodeId: nextId,
+    nodes: nodes.map(n => ({
+      id: n.id,
+      text: n.data.text || '',
+      title: n.data.title || '',
+      color: n.data.color || '#1f2937',
+      position: n.position,
+      type: n.type || 'card',
+      width: n.width,
+      height: n.height,
+    })),
+  })
+
+  const refreshHistory = async () => {
+    if (!user) { setHistoryItems([]); return }
+    setHistoryBusy(true)
+    try {
+      setHistoryItems(await getHistory(projectId))
+    } finally {
+      setHistoryBusy(false)
     }
-    const history = await getHistory(projectId)
-    if (history.length === 0) {
-      alert('Ingen historik ännu. Versioner sparas automatiskt var 5:e minut när du är inloggad.')
-      return
+  }
+
+  const showHistory = () => {
+    setHistoryOpen(true)
+    refreshHistory()
+  }
+
+  const saveVersion = async () => {
+    if (!user) { alert('Logga in för att spara versioner.'); return }
+    if (nodes.length === 0) return
+    setHistoryBusy(true)
+    try {
+      await saveHistorySnapshot(projectId, buildProjectData(), 'Manuell sparning')
+      await refreshHistory()
+    } finally {
+      setHistoryBusy(false)
     }
-    const list = history.map((h, i) => `${i + 1}. ${h.savedAt} — ${h.projectName || 'Utan namn'} (${(h.nodes || []).length} noder)`).join('\n')
-    const choice = prompt(`Välj version att återställa (1-${history.length}):\n\n${list}`)
-    if (!choice) return
-    const idx = parseInt(choice, 10) - 1
-    if (idx < 0 || idx >= history.length) return
-    const version = history[idx]
-    if (!confirm(`Återställ till version från ${version.savedAt}? Nuvarande version sparas först.`)) return
-    // Save current as history before restoring
-    const currentData = {
-      projectName,
-      nextNodeId: nextId,
-      nodes: nodes.map(n => ({
-        id: n.id, text: n.data.text || '', title: n.data.title || '',
-        color: n.data.color || '#1f2937', position: n.position,
-        type: n.type || 'card', width: n.width, height: n.height,
-      })),
+  }
+
+  const restoreVersion = async version => {
+    if (!version) return
+    if (!confirm(`Återställ till "${version.label || 'Auto-sparad'}" (${version.savedAt})? Nuvarande version sparas först.`)) return
+    setHistoryBusy(true)
+    try {
+      await saveHistorySnapshot(projectId, buildProjectData(), 'Före återställning')
+      const loaded = (version.nodes || []).map(n => ({
+        id: n.id,
+        type: n.type || 'card',
+        position: n.position || { x: 0, y: 0 },
+        data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+        width: n.width || DEFAULT_NODE_WIDTH,
+        height: n.height || DEFAULT_NODE_HEIGHT,
+      }))
+      pushUndoState()
+      linearInitialized.current = false
+      setNodes(loaded)
+      setEdges(scanEdges(loaded))
+      setNextId(version.nextNodeId || 1)
+      setProjectName(version.projectName || '')
+      setCurrentId(null)
+      setText('')
+      setTitle('')
+    } finally {
+      setHistoryBusy(false)
+      setHistoryOpen(false)
     }
-    await saveToFirestore(projectId, currentData)
-    // Restore selected version
-    const loaded = (version.nodes || []).map(n => ({
-      id: n.id, type: 'card',
-      position: n.position || { x: 0, y: 0 },
-      data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
-      width: n.width || DEFAULT_NODE_WIDTH,
-      height: n.height || DEFAULT_NODE_HEIGHT,
-    }))
-    pushUndoState()
-    setNodes(loaded)
-    setEdges(scanEdges(loaded))
-    setNextId(version.nextNodeId || 1)
-    setProjectName(version.projectName || '')
-    setCurrentId(null)
-    setText('')
-    setTitle('')
   }
 
   const openHelp = () => {
@@ -913,6 +943,9 @@ export default function App() {
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
           e.preventDefault()
           duplicateNode()
+        } else if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+          e.preventDefault()
+          saveVersion()
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
           e.preventDefault()
           // legacy search removed in Task 2; ⌘F currently a no-op until palette wires it in Task 6
@@ -923,7 +956,7 @@ export default function App() {
       }
       window.addEventListener('keydown', handler)
       return () => window.removeEventListener('keydown', handler)
-    }, [undo, redo, addNode, duplicateNode, deleteNode])
+    }, [undo, redo, addNode, duplicateNode, deleteNode, saveVersion])
 
   useEffect(() => {
     const handler = (e) => {
@@ -1128,6 +1161,16 @@ export default function App() {
         onClose={() => setInsightsOpen(false)}
         nodes={nodes}
         onJump={jumpToScene}
+      />
+
+      <HistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        items={historyItems}
+        isLoggedIn={!!user}
+        busy={historyBusy}
+        onSaveVersion={saveVersion}
+        onRestore={restoreVersion}
       />
 
       <SettingsModal

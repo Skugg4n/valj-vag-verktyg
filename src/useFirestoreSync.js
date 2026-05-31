@@ -135,6 +135,32 @@ export default function useFirestoreSync({ user, projects, setProjects, projectI
     [user, getProjectsCol]
   )
 
+  // Save a manual, labelled version snapshot immediately (⌘S / "Spara version").
+  const saveHistorySnapshot = useCallback(
+    async (projId, projectData, label) => {
+      if (!user) return false
+      const col = getProjectsCol()
+      if (!col) return false
+      try {
+        const projectDoc = doc(col, projId)
+        const historyCol = collection(projectDoc, 'history')
+        await addDoc(historyCol, {
+          projectName: projectData.projectName || '',
+          nextNodeId: projectData.nextNodeId || 1,
+          nodes: projectData.nodes || [],
+          label: label || 'Sparad version',
+          savedAt: serverTimestamp(),
+        })
+        lastHistorySave.current = Date.now()
+        return true
+      } catch (err) {
+        console.error('Failed to save version:', err)
+        return false
+      }
+    },
+    [user, getProjectsCol]
+  )
+
   // Delete a project from Firestore
   const deleteFromFirestore = useCallback(
     async (projId) => {
@@ -175,5 +201,5 @@ export default function useFirestoreSync({ user, projects, setProjects, projectI
     [user, getProjectsCol]
   )
 
-  return { saveToFirestore, deleteFromFirestore, getHistory }
+  return { saveToFirestore, saveHistorySnapshot, deleteFromFirestore, getHistory }
 }
