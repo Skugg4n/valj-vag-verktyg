@@ -86,6 +86,16 @@ describe('analyzeStory — edge cases', () => {
     expect(a.ideaCount).toBe(1)
   })
 
+  it('treats "idea-" prefixed nodes as ideas even without the flag (post-reload)', () => {
+    const mixed = [
+      node('001', 'Scene', 'lone scene'),
+      node('idea-1717', 'Tanke', 'flaggan tappades vid omladdning'), // no isIdea flag
+    ]
+    const a = analyzeStory(mixed)
+    expect(a.sceneCount).toBe(1)
+    expect(a.ideaCount).toBe(1)
+  })
+
   it('flags an empty scene', () => {
     const a = analyzeStory([node('001', 'Tom', '   ')])
     expect(a.empty.map(n => n.id)).toEqual(['001'])

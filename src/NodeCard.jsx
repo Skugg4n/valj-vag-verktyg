@@ -103,6 +103,14 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   const lightBg = isLightColor(bg)
   const textColor = lightBg ? '#111827' : '#f3f4f6'
   const dimColor = lightBg ? '#6b7280' : '#9ca3af'
+  // Idea-ness survives reload via the persisted "idea-" id prefix even if the
+  // data flag is dropped.
+  const isIdeaNode = data.isIdea || (typeof id === 'string' && id.startsWith('idea-'))
+  // Idea notes get a diagonally-striped fill so they read as loose,
+  // outside-the-flow scratch cards (paired with a dashed border in CSS).
+  const cardBg = isIdeaNode
+    ? `repeating-linear-gradient(135deg, ${bg} 0 8px, color-mix(in srgb, ${bg} 80%, #000) 8px 16px)`
+    : bg
 
   return (
     <div
@@ -111,14 +119,14 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
         'redesigned',
         selected ? 'selected' : '',
         resizing ? 'resizing' : '',
-        data.isIdea ? 'idea-node' : '',
+        isIdeaNode ? 'idea-node' : '',
         isActive ? 'is-active' : '',
         matchSet && !matchSet.has(id) ? 'dimmed' : '',
         matchSet && matchSet.has(id) ? 'matched' : '',
       ].filter(Boolean).join(' ')}
       onClick={() => selectNode(id, data)}
       style={{
-        background: bg,
+        background: cardBg,
         color: textColor,
         '--card-bg': bg,
         '--text-dim': dimColor,
@@ -170,13 +178,13 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
                 >
                   📝
                 </button>
-                {data.isIdea && (
+                {isIdeaNode && (
                   <button
                     className="node-notes-btn"
                     onClick={() => window.dispatchEvent(new CustomEvent('promote-idea', { detail: { ideaId: id } }))}
-                    title="Omvandla till nod"
+                    title="Befordra till scen"
                   >
-                    → Nod
+                    → Scen
                   </button>
                 )}
               </span>

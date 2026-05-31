@@ -14,8 +14,12 @@
 
 const REF_RE = /\[#(\d{3})]|#(\d{3})/g
 
+function isIdea(node) {
+  return !!node?.data?.isIdea || String(node?.id).startsWith('idea-')
+}
+
 function isScene(node) {
-  return node && !node.data?.isIdea && node.type !== 'group'
+  return node && !isIdea(node) && node.type !== 'group'
 }
 
 function slim(node) {
@@ -49,7 +53,7 @@ export function outgoing(node, validIds) {
 
 export function analyzeStory(allNodes) {
   const scenes = (allNodes || []).filter(isScene)
-  const ideaCount = (allNodes || []).filter(n => n?.data?.isIdea).length
+  const ideaCount = (allNodes || []).filter(n => n && n.type !== 'group' && isIdea(n)).length
   const ids = new Set(scenes.map(n => n.id))
   const byId = new Map(scenes.map(n => [n.id, n]))
 

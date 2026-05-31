@@ -22,7 +22,7 @@ const idOrder = id => (/^\d+$/.test(id) ? Number(id) : Number.POSITIVE_INFINITY)
 // nodes: ReactFlow nodes from App.jsx. name: project title.
 export function buildReaderHTML(nodes, name) {
   const scenes = (nodes || [])
-    .filter(n => !n.data?.isIdea && n.type !== 'group')
+    .filter(n => !n.data?.isIdea && !String(n.id).startsWith('idea-') && n.type !== 'group')
     .map(n => ({
       id: n.id,
       title: n.data?.title || '',

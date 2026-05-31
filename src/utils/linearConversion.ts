@@ -25,9 +25,12 @@ export function convertNodesToHtml(nodes: Node[]): string {
 }
 
 export function convertNodesToLinearText(nodes: Node[]): string {
-  // Sort by numeric ID for consistent ordering
+  // Sort by numeric ID for consistent ordering. Idea notes and section
+  // containers live outside the narrative, so they never enter the document.
+  // Idea-ness is identified by the data flag OR the persisted "idea-" id
+  // prefix, so notes stay excluded even after a reload drops the flag.
   const sorted = [...nodes]
-    .filter(n => n.type !== 'group')
+    .filter(n => n.type !== 'group' && !n.data?.isIdea && !String(n.id).startsWith('idea-'))
     .sort((a, b) => a.id.localeCompare(b.id))
 
   return sorted

@@ -1030,16 +1030,19 @@ export default function App() {
       if (!idea) return
       pushUndoState()
       const id = String(nextId).padStart(3, '0')
-      setNodes(ns => ns.map(n => {
-        if (n.id !== ideaId) return n
-        return {
-          ...n,
-          id,
-          data: { ...n.data, isIdea: false, title: n.data.title?.replace('💡 ', '') || '' },
-        }
-      }))
+      setNodes(ns => {
+        const updated = ns.map(n => {
+          if (n.id !== ideaId) return n
+          return {
+            ...n,
+            id,
+            data: { ...n.data, isIdea: false, title: (n.data.title || '').replace('💡 ', '').trim() },
+          }
+        })
+        setEdges(scanEdges(updated))
+        return updated
+      })
       setNextId(prev => prev + 1)
-      setEdges(scanEdges(nodes))
     }
     window.addEventListener('promote-idea', handler)
     return () => window.removeEventListener('promote-idea', handler)

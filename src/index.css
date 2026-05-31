@@ -906,8 +906,8 @@ textarea:focus {
 
 .node-card.idea-node {
   border-style: dashed;
+  border-width: 1.5px;
   border-color: var(--accent);
-  opacity: 0.85;
 }
 .node-card.idea-node .node-preview {
   font-style: italic;
