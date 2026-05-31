@@ -3,7 +3,7 @@ import {
   Network, Columns2, FileText, BookOpen,
   Plus, FilePlus, LayoutGrid,
   RotateCcw, RotateCw, Upload, Download,
-  History, Settings, HelpCircle, Layers, Lightbulb,
+  History, Settings, HelpCircle, Layers, Lightbulb, BarChart3,
 } from 'lucide-react'
 
 export default function CommandPalette({ open, onClose, actions, extraSection }) {
@@ -122,7 +122,8 @@ function buildSections(a) {
     {
       title: 'Visa',
       items: [
-        { id: 'history',  label: 'Visa historik...', icon: <History />,    run: a.showHistory },
+        { id: 'insights', label: 'Insikter & analys...', icon: <BarChart3 />, run: a.showInsights },
+        { id: 'history',  label: 'Versionshistorik...', icon: <History />,    run: a.showHistory },
         { id: 'settings', label: 'Inställningar...', icon: <Settings />,   run: a.showSettings },
         { id: 'help',     label: 'Hjälp',            icon: <HelpCircle />, run: a.openHelp },
       ],

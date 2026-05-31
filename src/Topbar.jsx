@@ -7,16 +7,19 @@ export default function Topbar({
   onCmdK,
   onShare,
   userMenuSlot,
+  projectMenuSlot,
 }) {
   return (
     <header className="topbar">
-      <input
-        className="project-name"
-        value={projectName}
-        onChange={e => setProjectName(e.target.value)}
-        placeholder="Projektnamn"
-        aria-label="Projektnamn"
-      />
+      {projectMenuSlot ?? (
+        <input
+          className="project-name"
+          value={projectName}
+          onChange={e => setProjectName(e.target.value)}
+          placeholder="Projektnamn"
+          aria-label="Projektnamn"
+        />
+      )}
       <span className={`pill ${isSaving ? 'saving' : ''}`} aria-live="polite">
         <span className="dot" aria-hidden="true" />
         {isSaving ? 'sparar…' : 'sparad'}

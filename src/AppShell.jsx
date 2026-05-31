@@ -12,11 +12,13 @@ export default function AppShell({
   renderSplit,
   renderText,
   renderRead,
+  onShowInsights,
   onShowHistory,
   onOpenPalette,
   onShowSettings,
   onShare,
   userMenuSlot,
+  projectMenuSlot,
 }) {
   const [mode, setModeRaw] = useState(() => {
     const m = loadLS('mode', 'split')
@@ -83,6 +85,7 @@ export default function AppShell({
       <SidebarNav
         mode={mode}
         setMode={setMode}
+        onShowInsights={onShowInsights}
         onShowHistory={onShowHistory}
         onShowSettings={onShowSettings}
       />
@@ -94,6 +97,7 @@ export default function AppShell({
           onCmdK={onOpenPalette}
           onShare={onShare}
           userMenuSlot={userMenuSlot}
+          projectMenuSlot={projectMenuSlot}
         />
         <div className="workspace">{workspace}</div>
       </div>

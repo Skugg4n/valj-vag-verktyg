@@ -21,6 +21,7 @@ import { useAiSettings } from './useAi.js'
 import NewProjectModal from './NewProjectModal.jsx'
 import CommandPalette from './CommandPalette.jsx'
 import SettingsModal from './SettingsModal.jsx'
+import InsightsModal from './InsightsModal.jsx'
 import UserMenu from './UserMenu.jsx'
 import { FolderOpen } from 'lucide-react'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
@@ -98,6 +99,7 @@ export default function App() {
   const [debugMode, setDebugMode] = useState(isDebug())
   const [cmdOpen, setCmdOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [insightsOpen, setInsightsOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
@@ -945,6 +947,13 @@ export default function App() {
     return () => window.removeEventListener('promote-idea', handler)
   }, [nodes, nextId, pushUndoState])
 
+  // Jump to a scene from Insikter: select it and reveal it in graph + text.
+  const jumpToScene = useCallback((id) => {
+    const node = nodes.find(n => n.id === id)
+    if (node) selectNode(id, node.data)
+    window.dispatchEvent(new CustomEvent('vv-set-mode', { detail: 'split' }))
+  }, [nodes, selectNode])
+
   const projectSwitchItems = useMemo(() => (
     Object.values(projects)
       .sort((a, b) => (b.updated || 0) - (a.updated || 0))
@@ -1069,6 +1078,7 @@ export default function App() {
             }}
           />
         )}
+        onShowInsights={() => setInsightsOpen(true)}
         onShowHistory={showHistory}
         onOpenPalette={() => setCmdOpen(true)}
         onShowSettings={() => setSettingsOpen(true)}
@@ -1105,11 +1115,19 @@ export default function App() {
           importProject: () => importRef.current?.click(),
           exportProject,
           exportMarkdown,
+          showInsights: () => setInsightsOpen(true),
           showHistory,
           showSettings: () => setSettingsOpen(true),
           openHelp,
         }}
         extraSection={{ title: 'Projekt', items: projectSwitchItems }}
+      />
+
+      <InsightsModal
+        open={insightsOpen}
+        onClose={() => setInsightsOpen(false)}
+        nodes={nodes}
+        onJump={jumpToScene}
       />
 
       <SettingsModal
