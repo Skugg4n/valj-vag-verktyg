@@ -105,7 +105,6 @@ function buildSections(a) {
         { id: 'new-node',    label: 'Ny nod',          icon: <Plus />,       shortcut: '⌘N', run: a.addNode },
         { id: 'new-project', label: 'Nytt projekt...', icon: <FilePlus />,                  run: a.newProject },
         { id: 'auto-layout', label: 'Auto-layout',     icon: <LayoutGrid />,                run: a.autoLayout },
-        { id: 'add-section', label: 'Sektion',         icon: <Layers />,                    run: a.addSection },
         { id: 'add-idea',    label: 'Idé',             icon: <Lightbulb />,                 run: a.addIdea },
       ],
     },

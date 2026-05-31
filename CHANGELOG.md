@@ -1,3 +1,24 @@
+## v0.9.4 — Audit fixes, round 2 — 2026-05-31
+
+### Fixed
+- **Undo no longer steps one character at a time** — typing in a scene
+  now coalesces into a single undo step per edit burst.
+- **Delete is consistent and clean** — Backspace and Delete both route
+  through one handler (ReactFlow's built-in delete is disabled); deleting
+  a scene now strips its `[#NNN]` references from other scenes so no
+  dangling links remain.
+- Selecting nodes/edges no longer fills the undo stack with no-op entries.
+- **Firestore: a deliberately-emptied project now persists** (deletions
+  stick) without clobbering a real project during initial load.
+- Document status bar reflects real save state ("● Sparar…" / "● Sparad")
+  and drops the stray "· skiss" label.
+- Reader chapter number follows the reading path, not numeric id order.
+
+### Changed
+- "Sektion" creation is disabled for now — the section nodes were
+  half-built (overlapped and blocked other nodes). The label rendering
+  stays for when the feature is finished.
+
 ## v0.9.3 — Audit fixes — 2026-05-31
 
 ### Fixed

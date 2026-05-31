@@ -83,14 +83,10 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
     )
   }
 
-  // Build chapter number from numeric node ids only
-  const orderedIds = Array.from(nodeMap.keys())
-    .filter(id => /^\d{3}$/.test(id))
-    .sort()
-  const chapterIdx = orderedIds.indexOf(currentId)
-  const chapterLabel = chapterIdx >= 0
-    ? `KAPITEL ${String(chapterIdx + 1).padStart(2, '0')}${editorMode ? ` · #${currentId}` : ''}`
-    : (editorMode ? `· #${currentId}` : '')
+  // Chapter number follows the reader's PATH (history depth), not numeric id
+  // order — in a branching story the id order isn't the reading order.
+  const chapterLabel =
+    `KAPITEL ${String(history.length + 1).padStart(2, '0')}${editorMode ? ` · #${currentId}` : ''}`
 
   // Body paragraphs (split on double newlines)
   const paragraphs = body.split(/\n{2,}/).filter(Boolean)

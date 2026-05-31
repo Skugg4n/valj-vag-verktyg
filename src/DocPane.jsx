@@ -26,6 +26,7 @@ export default function DocPane({
   full = false,
   focusMode = false,
   setFocusMode,
+  isSaving = false,
 }) {
   const [outlineHidden, setOutlineHidden] = useState(false)
   const scrollRef = useRef(null)
@@ -183,10 +184,9 @@ export default function DocPane({
           <span className="sep">·</span>
           <span>{wordCount} ord</span>
           <span className="sep">·</span>
-          {/* TODO(Task 6): wire isSaving from useFirestoreSync */}
-          <span className="saved">● Sparad</span>
+          <span className="saved">{isSaving ? '● Sparar…' : '● Sparad'}</span>
           <span style={{ flex: 1 }} />
-          <span>v{__APP_VERSION__} · skiss</span>
+          <span>v{__APP_VERSION__}</span>
         </div>
       )}
 

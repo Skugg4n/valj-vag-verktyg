@@ -59,6 +59,7 @@ export default function GraphPane({
           onReconnectStart={onReconnectStart}
           onReconnectEnd={onReconnectEnd}
           edgesUpdatable
+          deleteKeyCode={null}
           onNodeDragStop={onNodeDragStop}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
@@ -112,7 +113,13 @@ function GraphToolbar({ onAddNode, onAutoLayout, onAddSection, onAddIdea }) {
       <button className="btn ghost icon" onClick={onAutoLayout} title="Auto-layout" aria-label="Auto-layout">
         <LayoutGrid />
       </button>
-      <button className="btn ghost icon" onClick={onAddSection} title="Sektion" aria-label="Sektion">
+      <button
+        className="btn ghost icon"
+        onClick={onAddSection}
+        disabled
+        title="Sektioner – kommer snart"
+        aria-label="Sektioner (kommer snart)"
+      >
         <Layers />
       </button>
       <button className="btn ghost icon" onClick={onAddIdea} title="Idé" aria-label="Idé">

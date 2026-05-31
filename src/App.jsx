@@ -119,6 +119,14 @@ export default function App() {
   const undoStack = useRef([])
   const redoStack = useRef([])
   const resizingRef = useRef(false)
+  // Coalesce undo snapshots for continuous typing: only snapshot at the start
+  // of an edit burst (new node, or after a pause), so one Ctrl+Z reverts a
+  // whole typed passage rather than a single character.
+  const textEditRef = useRef({ id: null, t: 0 })
+  // True once the current project has held content this session — lets us save
+  // a deliberately-emptied project to Firestore without clobbering a real
+  // project with the transient empty state during initial load.
+  const hadContentRef = useRef(false)
   useEffect(() => {
     debugLog('activeNodeId', activeNodeId)
   }, [activeNodeId])
@@ -189,9 +197,16 @@ export default function App() {
     projectId,
   })
 
-  // Always save to Firestore when logged in (no autoSave requirement)
+  // Track whether the active project has had content (reset when switching).
+  useEffect(() => { hadContentRef.current = false }, [projectId])
+  useEffect(() => { if (nodes.length > 0) hadContentRef.current = true }, [nodes])
+
+  // Always save to Firestore when logged in (no autoSave requirement).
   useEffect(() => {
-    if (!user || !projectId || nodes.length === 0) return
+    if (!user || !projectId) return
+    // Skip the transient empty state during initial load, but DO persist a
+    // project the user deliberately emptied (so deletions stick).
+    if (nodes.length === 0 && !hadContentRef.current) return
     setIsSaving(true)
     const data = {
       projectName,
@@ -278,16 +293,16 @@ export default function App() {
 
   const onNodesChange = useCallback(
     changes => {
-      // Only push undo for non-drag changes (select, remove, etc.)
-      const dominated = changes.every(c => c.type === 'position' || c.type === 'dimensions')
-      if (!dominated) pushUndoState()
+      // Only snapshot undo for structural removals; selection / drag / resize
+      // shouldn't fill the undo stack with no-op entries.
+      if (changes.some(c => c.type === 'remove')) pushUndoState()
       setNodes(ns => applyNodeChanges(changes, ns))
     },
     [pushUndoState]
   )
   const onEdgesChange = useCallback(
     changes => {
-      pushUndoState()
+      if (changes.some(c => c.type === 'remove')) pushUndoState()
       setEdges(es => applyEdgeChanges(changes, es))
     },
     [pushUndoState]
@@ -527,11 +542,18 @@ export default function App() {
   }
 
   const deleteNode = () => {
-    pushUndoState()
     if (!currentId) return
-    if (!confirm(`Delete node #${currentId} ?`)) return
+    if (!confirm(`Ta bort scen #${currentId}?`)) return
+    pushUndoState()
+    const delId = currentId
     setNodes(ns => {
-      const updated = ns.filter(n => n.id !== currentId)
+      const updated = ns
+        .filter(n => n.id !== delId)
+        .map(n =>
+          n.data?.text && n.data.text.includes(`[#${delId}]`)
+            ? { ...n, data: { ...n.data, text: n.data.text.replace(new RegExp(`\\s*\\[#${delId}\\]`, 'g'), '') } }
+            : n
+        )
       setEdges(scanEdges(updated))
       return updated
     })
@@ -608,7 +630,12 @@ export default function App() {
 
   const updateNodeText = useCallback(
     (id, value) => {
-      pushUndoState()
+      // Snapshot once per edit burst (different node or >700ms since last key)
+      // instead of on every keystroke.
+      const now = Date.now()
+      const last = textEditRef.current
+      if (last.id !== id || now - last.t > 700) pushUndoState()
+      textEditRef.current = { id, t: now }
       let created = []
       setNodes(ns => {
         let updated = ns.map(n =>
@@ -1030,7 +1057,13 @@ export default function App() {
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
           e.preventDefault()
           // legacy search removed in Task 2; ⌘F currently a no-op until palette wires it in Task 6
-        } else if (e.key === 'Delete' && !e.target.closest('input, textarea, [contenteditable]')) {
+        } else if (
+          (e.key === 'Delete' || e.key === 'Backspace') &&
+          !e.target.closest('input, textarea, [contenteditable]')
+        ) {
+          // ReactFlow's built-in delete is disabled (deleteKeyCode={null}) so
+          // both keys route through deleteNode(), which cleans up refs/edges.
+          if (!currentId) return
           e.preventDefault()
           deleteNode()
         }
@@ -1199,6 +1232,7 @@ export default function App() {
             full={true}
             focusMode={focusMode}
             setFocusMode={setFocusMode}
+            isSaving={isSaving}
           />
         )}
         renderRead={() => (
