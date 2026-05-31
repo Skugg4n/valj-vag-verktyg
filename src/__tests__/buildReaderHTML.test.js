@@ -46,4 +46,12 @@ describe('buildReaderHTML', () => {
     const evil = buildReaderHTML([node('001', 'A', 'x')], '<script>boom')
     expect(evil).toContain('<title>&lt;script>boom</title>')
   })
+
+  it('escapes </script> inside scene text so the embedded script cannot break out', () => {
+    const html = buildReaderHTML([node('001', 'A', 'evil </script> payload')], 'Test')
+    // The raw closing tag must not appear inside the embedded data...
+    expect(html).not.toContain('evil </script> payload')
+    // ...it is encoded as < so the JS parser still reads it back.
+    expect(html).toContain('\\u003c/script>')
+  })
 })

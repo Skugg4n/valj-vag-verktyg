@@ -32,7 +32,10 @@ export function buildReaderHTML(nodes, name) {
     .sort((a, b) => idOrder(a.id) - idOrder(b.id))
 
   const title = name || 'Berättelse'
-  const data = JSON.stringify({ title, nodes: scenes })
+  // Escape "<" so a "</script>" inside any title/text can't break out of the
+  // embedded <script> tag. < is read back as "<" by the JS parser, so the
+  // story data round-trips intact.
+  const data = JSON.stringify({ title, nodes: scenes }).replace(/</g, '\\u003c')
 
   return `<!doctype html>
 <html lang="sv">

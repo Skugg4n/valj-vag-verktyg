@@ -1,4 +1,4 @@
-import { Network, Columns2, FileText, BookOpen, Layers, History, Settings } from 'lucide-react'
+import { Network, Columns2, FileText, BookOpen, BarChart3, History, Settings } from 'lucide-react'
 
 const MODES = [
   { id: 'skiss', label: 'Skiss', icon: Network },
@@ -26,7 +26,7 @@ export default function SidebarNav({ mode, setMode, onShowInsights, onShowHistor
       ))}
       <div className="spacer" />
       <button className="sb-btn" title="Insikter & analys" aria-label="Insikter & analys" onClick={onShowInsights}>
-        <Layers />
+        <BarChart3 />
       </button>
       <button className="sb-btn" title="Historik" aria-label="Historik" onClick={onShowHistory}>
         <History />

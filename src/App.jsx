@@ -1185,7 +1185,7 @@ export default function App() {
         )}
         renderRead={() => (
           <ReadPane
-            nodes={nodes}
+            nodes={nodes.filter(n => !n.data?.isIdea && !String(n.id).startsWith('idea-'))}
             startId={currentId || undefined}
             activeNodeId={activeNodeId}
             onSelectNode={(id) => {

@@ -34,7 +34,7 @@ export default function HistoryModal({
         </div>
         <div className="modal-body">
           <button
-            className="btn solid"
+            className="btn primary"
             style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}
             onClick={onSaveVersion}
             disabled={!isLoggedIn || busy}

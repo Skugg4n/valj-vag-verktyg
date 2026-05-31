@@ -108,6 +108,13 @@ describe('analyzeStory — edge cases', () => {
     expect(a.orphans.map(n => n.id)).toEqual(['002'])
   })
 
+  it('does not repeat a node in the longest path of a cyclic story', () => {
+    // 001 → 002 → 001 (loop). Longest simple path is [001, 002], not [001,002,001].
+    const a = analyzeStory([node('001', 'A', 'gå [#002]'), node('002', 'B', 'tillbaka [#001]')])
+    expect(a.hasCycle).toBe(true)
+    expect(a.longest.map(n => n.id)).toEqual(['001', '002'])
+  })
+
   it('handles an empty story without throwing', () => {
     const a = analyzeStory([])
     expect(a.sceneCount).toBe(0)

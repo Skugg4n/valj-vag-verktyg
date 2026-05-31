@@ -95,7 +95,7 @@ export function analyzeStory(allNodes) {
     const memo = {}
     const onStack = new Set()
     const dfs = id => {
-      if (onStack.has(id)) return [id] // cycle — stop here
+      if (onStack.has(id)) return [] // cycle — stop without re-listing the node
       if (memo[id]) return memo[id]
       onStack.add(id)
       let best = []
