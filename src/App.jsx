@@ -10,6 +10,7 @@ import getLayoutedElements from './dagreLayout'
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
+import SectionNode from './SectionNode.jsx'
 import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
 import { convertNodesToLinearText } from './utils/linearConversion.ts'
@@ -67,7 +68,7 @@ function scanEdges(nodes) {
 }
 
 export default function App() {
-  const nodeTypes = useMemo(() => ({ card: NodeCard }), [])
+  const nodeTypes = useMemo(() => ({ card: NodeCard, group: SectionNode }), [])
   const defaultEdgeOptions = useMemo(
     () => ({ markerEnd: { type: MarkerType.ArrowClosed }, reconnectable: true }),
     []
@@ -104,6 +105,10 @@ export default function App() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
+  // Bumped whenever the whole document is replaced (project switch / import /
+  // duplicate / restore / new) to force the keyed DocPane to remount and load
+  // the new prose. Initial load uses DocPane's own setContent effect.
+  const [docReloadKey, setDocReloadKey] = useState(0)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyItems, setHistoryItems] = useState([])
   const [historyBusy, setHistoryBusy] = useState(false)
@@ -675,6 +680,10 @@ export default function App() {
     }))
     setNodes(loaded)
     setEdges(scanEdges(loaded))
+    // Set linear text synchronously (not via the deferred init effect) and bump
+    // the doc key so the keyed DocPane remounts with THIS project's prose.
+    setLinearText(convertNodesToLinearText(loaded))
+    setDocReloadKey(k => k + 1)
     setNextId(p.data.nextNodeId || 1)
     setProjectName(p.data.projectName || '')
     setCurrentId(null)
@@ -708,6 +717,8 @@ export default function App() {
     }))
     setNodes(loaded)
     setEdges(scanEdges(loaded))
+    setLinearText(convertNodesToLinearText(loaded))
+    setDocReloadKey(k => k + 1)
     setNextId(data.nextNodeId || 1)
     setProjectName(data.projectName)
     setCurrentId(null)
@@ -830,6 +841,8 @@ export default function App() {
       }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
+      setLinearText(convertNodesToLinearText(loaded))
+      setDocReloadKey(k => k + 1)
       setNextId(data.nextNodeId || 1)
       setProjectName(data.projectName || '')
       setCurrentId(null)
@@ -945,6 +958,8 @@ export default function App() {
       linearInitialized.current = false
       setNodes(loaded)
       setEdges(scanEdges(loaded))
+      setLinearText(convertNodesToLinearText(loaded))
+      setDocReloadKey(k => k + 1)
       setNextId(version.nextNodeId || 1)
       setProjectName(version.projectName || '')
       setCurrentId(null)
@@ -974,6 +989,7 @@ export default function App() {
   const startNewProject = () => {
     linearInitialized.current = false
     setLinearText('')
+    setDocReloadKey(k => k + 1)
     const id = String(Date.now())
     setNodes([])
     setEdges([])
@@ -1159,6 +1175,7 @@ export default function App() {
             />
             <div style={{ flex: 1 - ratio, minWidth: 0, display: 'flex' }}>
               <DocPane
+                key={docReloadKey}
                 text={linearText}
                 setText={setLinearText}
                 setNodes={setNodes}
@@ -1172,6 +1189,7 @@ export default function App() {
         )}
         renderText={({ focusMode, setFocusMode }) => (
           <DocPane
+            key={docReloadKey}
             text={linearText}
             setText={setLinearText}
             setNodes={setNodes}
@@ -1186,6 +1204,7 @@ export default function App() {
         renderRead={() => (
           <ReadPane
             nodes={nodes.filter(n => !n.data?.isIdea && !String(n.id).startsWith('idea-'))}
+            onShare={() => setExportOpen(true)}
             startId={currentId || undefined}
             activeNodeId={activeNodeId}
             onSelectNode={(id) => {

@@ -102,7 +102,12 @@ export default function useProjectStorage({
     }
     try {
       localStorage.setItem('cyoa-data', JSON.stringify(data))
-      if (autoSave) {
+      // Always persist the active project into the per-project map (not only
+      // when autoSave is on). 'cyoa-data' is a single shared slot, so without
+      // this a logged-out user who edits project A, switches to B, then
+      // reloads loses A's edits. The nodes.length guard avoids clobbering a
+      // stored project with the transient empty state during initial load.
+      if (nodes.length > 0) {
         setProjects(p => {
           const now = Date.now()
           const prev = p[projectId] || { id: projectId, start: projectStart }
@@ -115,7 +120,7 @@ export default function useProjectStorage({
     } catch {
       setError('Failed to save project.')
     }
-  }, [nodes, nextId, projectName, autoSave, projectId, projectStart])
+  }, [nodes, nextId, projectName, projectId, projectStart])
 
   useEffect(() => {
     localStorage.setItem('cyoa-projects', JSON.stringify(projects))

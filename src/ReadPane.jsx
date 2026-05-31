@@ -24,7 +24,7 @@ export function splitChoices(text, nodeMap) {
   return { body, choices }
 }
 
-export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode }) {
+export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, onShare }) {
   const [theme, setTheme] = useState(() => loadLS('read-theme', 'paper'))
   const [editorMode, setEditorMode] = useState(false)
 
@@ -135,7 +135,7 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode })
             aria-pressed={theme === 'dark'}
           >Mörk</button>
         </span>
-        <button className="btn ghost sm" title="Dela">
+        <button className="btn ghost sm" title="Dela" onClick={onShare}>
           <Share2 />
           Dela
         </button>

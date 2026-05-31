@@ -918,6 +918,16 @@ textarea:focus {
   font-style: italic;
 }
 
+/* Sektion (group) node label — the box itself is styled inline on creation. */
+.section-node-label {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  pointer-events: none;
+  font-family: var(--font-ui);
+}
+
 .node-word-count {
   position: absolute;
   bottom: 2px;

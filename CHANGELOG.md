@@ -1,3 +1,16 @@
+## v0.9.3 — Audit fixes — 2026-05-31
+
+### Fixed
+- **Document didn't reload on project switch/import/duplicate/restore** —
+  the doc editor kept showing the previous project's prose (and editing
+  it could overwrite the new project's scenes). The editor now remounts
+  and loads the correct prose on every full-document load.
+- **Logged-out data loss** — local projects are now always persisted
+  per-project (not only when auto-save was on), so editing project A,
+  switching to B, and reloading no longer drops A's edits.
+- Reader "Dela" button now opens the export dialog (was a no-op).
+- "Sektion" nodes show their label again (were rendering as empty boxes).
+
 ## v0.9.2 — Graph→doc scroll sync — 2026-05-31
 
 ### Fixed
