@@ -5,6 +5,7 @@ import {
   setDoc,
   addDoc,
   getDoc,
+  getDocFromServer,
   getDocs,
   deleteDoc,
   onSnapshot,
@@ -37,7 +38,7 @@ export async function getPublished(shareId) {
  */
 const HISTORY_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
 
-export default function useFirestoreSync({ user, projects, setProjects, projectId }) {
+export default function useFirestoreSync({ user, setProjects }) {
   const initialLoadDone = useRef(false)
   const unsubRef = useRef(null)
   const lastHistorySave = useRef(0)
@@ -231,7 +232,13 @@ export default function useFirestoreSync({ user, projects, setProjects, projectI
           },
           { merge: true }
         )
-        return true
+        // Firestore applies offline writes to the local cache and resolves
+        // immediately, so setDoc succeeding does NOT prove the story reached
+        // the server. Confirm with a forced server read — if the database is
+        // unreachable (e.g. not provisioned yet) this throws and we report
+        // failure instead of handing out a dead share link.
+        const check = await getDocFromServer(doc(db, 'published', shareId))
+        return check.exists()
       } catch (err) {
         console.error('Publish failed:', err)
         return false

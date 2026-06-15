@@ -9,10 +9,13 @@ export default function PublicReader({ shareId }) {
 
   useEffect(() => {
     let alive = true
+    // Safety net: if the backend is unreachable the read can hang for ~10s
+    // before Firestore gives up. Don't leave the reader stuck on "Laddar…".
+    const timer = setTimeout(() => { if (alive) setState({ loading: false, story: null }) }, 12000)
     getPublished(shareId).then(story => {
-      if (alive) setState({ loading: false, story })
+      if (alive) { clearTimeout(timer); setState({ loading: false, story }) }
     })
-    return () => { alive = false }
+    return () => { alive = false; clearTimeout(timer) }
   }, [shareId])
 
   if (state.loading) {
