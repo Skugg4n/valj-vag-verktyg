@@ -1,0 +1,23 @@
+/* Light theme for the workshop editor. Scoped to [data-app="workshop"] so the
+   advanced app (dark) is untouched. 60/30/10: calm off-white base, soft
+   tone-plate, single accent. Tone-plates + soft shadows instead of borders. */
+[data-app='workshop'] {
+  --bg: #f7f6f3;          /* ~60% calm off-white base */
+  --bg-soft: #efece6;
+  --panel: #ffffff;
+  --panel-2: #f2efe9;     /* ~30% soft tone-plate */
+  --line: #e7e2d8;
+  --line-strong: #d8d2c4;
+  --card: #ffffff;
+  --ink: #20242c;
+  --ink-soft: #4b515c;
+  --ink-dim: #8a8f99;
+  --accent: #2f6df6;      /* ~10% accent */
+  --accent-soft: #dbe6ff;
+  --good: #1f9d6b;
+  --warn: #c98a16;
+  --danger: #d6483b;
+  --soft-shadow: 0 10px 30px rgba(40, 44, 56, .10), 0 2px 6px rgba(40, 44, 56, .06);
+  color: var(--ink);
+  background: var(--bg);
+}

@@ -4,6 +4,7 @@ import {
   doc,
   setDoc,
   addDoc,
+  getDoc,
   getDocs,
   deleteDoc,
   onSnapshot,
@@ -13,6 +14,18 @@ import {
   limit,
 } from 'firebase/firestore'
 import { db } from './firebase.js'
+
+// Standalone (no auth) read of a published story for the public /spela/:id
+// reader. Rules allow read: if true.
+export async function getPublished(shareId) {
+  try {
+    const snap = await getDoc(doc(db, 'published', shareId))
+    return snap.exists() ? snap.data() : null
+  } catch (err) {
+    console.error('Load published failed:', err)
+    return null
+  }
+}
 
 /**
  * Syncs project data to Firestore when user is logged in.
@@ -201,5 +214,43 @@ export default function useFirestoreSync({ user, projects, setProjects, projectI
     [user, getProjectsCol]
   )
 
-  return { saveToFirestore, saveHistorySnapshot, deleteFromFirestore, getHistory }
+  // Publish (or re-publish) a public copy for the share link.
+  const publishStory = useCallback(
+    async (shareId, story) => {
+      if (!user) return false
+      try {
+        await setDoc(
+          doc(db, 'published', shareId),
+          {
+            title: story.title || '',
+            nodes: story.nodes || [],
+            ownerUid: user.uid,
+            sourceProjectId: story.sourceProjectId || '',
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          },
+          { merge: true }
+        )
+        return true
+      } catch (err) {
+        console.error('Publish failed:', err)
+        return false
+      }
+    },
+    [user]
+  )
+
+  // Remove a published copy ("Sluta dela").
+  const unpublishStory = useCallback(async shareId => {
+    if (!user || !shareId) return false
+    try {
+      await deleteDoc(doc(db, 'published', shareId))
+      return true
+    } catch (err) {
+      console.error('Unpublish failed:', err)
+      return false
+    }
+  }, [user])
+
+  return { saveToFirestore, saveHistorySnapshot, deleteFromFirestore, getHistory, publishStory, unpublishStory }
 }
