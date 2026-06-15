@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { splitBodyAndChoices, joinBodyAndChoices } from './sceneRefs.js'
 
 const COLORS = ['#2f6df6', '#e8554e', '#e8954e', '#e6c34e', '#3fae6b', '#8e6bd6', '#d96bb0', '#7d8696']
@@ -7,6 +7,14 @@ const COLORS = ['#2f6df6', '#e8554e', '#e8954e', '#e6c34e', '#3fae6b', '#8e6bd6'
 // Choices are stored as trailing [#NNN] refs in the scene text (single source).
 export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, onDelete }) {
   const [adding, setAdding] = useState(false)
+  const { body, choiceIds } = splitBodyAndChoices(node?.data?.text || '')
+  // The textarea is driven by a local draft so the stored value's trimming
+  // (joinBodyAndChoices) can't strip spaces mid-typing. Resync when the
+  // selected scene changes.
+  const [draft, setDraft] = useState(body)
+  useEffect(() => {
+    setDraft(splitBodyAndChoices(node?.data?.text || '').body)
+  }, [node?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!node) {
     return (
@@ -16,10 +24,9 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
     )
   }
 
-  const { body, choiceIds } = splitBodyAndChoices(node.data?.text || '')
   const titleOf = id => scenes.find(s => s.id === id)?.title?.trim() || `Scen #${id}`
-  const setBody = v => onPatch({ text: joinBodyAndChoices(v, choiceIds) })
-  const removeChoice = id => onPatch({ text: joinBodyAndChoices(body, choiceIds.filter(x => x !== id)) })
+  const setBody = v => { setDraft(v); onPatch({ text: joinBodyAndChoices(v, choiceIds) }) }
+  const removeChoice = id => onPatch({ text: joinBodyAndChoices(draft, choiceIds.filter(x => x !== id)) })
   const linkable = scenes.filter(s => s.id !== node.id && !choiceIds.includes(s.id))
 
   return (
@@ -35,7 +42,7 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
       <label className="ws-field-label">Vad händer här?</label>
       <textarea
         className="ws-textarea"
-        value={body}
+        value={draft}
         placeholder="Skriv scenens text…"
         onChange={e => setBody(e.target.value)}
       />

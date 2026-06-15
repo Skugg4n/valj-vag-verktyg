@@ -1,3 +1,12 @@
+## v0.10.1 — Workshop: fix spaces in scene text — 2026-06-15
+
+### Fixed
+- **Could not type spaces in the workshop "Vad händer här?" field.** The
+  textarea was controlled by the stored value, which `joinBodyAndChoices`
+  trims on every keystroke — so each space was momentarily trailing and got
+  stripped before the next character. The field is now driven by local draft
+  state (untrimmed while typing); the stored value is still trimmed.
+
 ## v0.10.0 — Workshop lite variant + public share link — 2026-06-15
 
 A separate, light, kid-friendly variant for live workshops, parallel to
