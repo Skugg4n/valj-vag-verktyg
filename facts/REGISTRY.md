@@ -78,9 +78,32 @@
 | AiSuggestionsPanel | src/AiSuggestionsPanel.jsx | AI suggestions panel | → useAi |
 | AiProofreadPanel | src/AiProofreadPanel.jsx | AI proofreading panel | → useAi |
 
+## Workshop Variant (Lite)
+> Separate light variant for live workshops. Reached at `/workshop`; public
+> reader at `/spela/:shareId`. Scenes use `type: 'card'` so stories are
+> shared with the advanced app. See `docs/superpowers/specs/2026-06-15-*`.
+
+| Name | Path | Description | Related |
+|------|------|-------------|---------|
+| WorkshopApp | src/WorkshopApp.jsx | Workshop orchestrator: graph+drag canvas, story menu, autosave, publish/share, playback overlay | → WorkshopNode, WorkshopEditPanel, BookReader |
+| WorkshopNode | src/WorkshopNode.jsx | Light tone-plate scene card for the workshop graph | → WorkshopApp, sceneRefs |
+| WorkshopEditPanel | src/WorkshopEditPanel.jsx | Permanent right pane: name/body/colour/choices, create-and-link | → WorkshopApp, sceneRefs |
+| BookReader | src/BookReader.jsx | Book-spread playback (fit-to-page, drop-cap, A/B choices) | → WorkshopApp, PublicReader, sceneRefs |
+| PublicReader | src/PublicReader.jsx | No-login reader for /spela/:id — loads published copy | → BookReader, useFirestoreSync |
+| sceneRefs | src/sceneRefs.js | Canonical [#NNN] parser (refIds, parseScene, split/joinBodyAndChoices) | → WorkshopNode, WorkshopEditPanel, BookReader |
+| routing | src/routing.js | parseRoute(pathname) → app/workshop/play; shareUrl() | → main |
+| storyExport | src/storyExport.js | isScene(), toPublishedNodes() for publishing | → WorkshopApp |
+| shareId | src/utils/shareId.js | makeShareId() → 7-char base36 | → WorkshopApp |
+| workshopTheme.css | src/workshopTheme.css | Light 60/30/10 tokens scoped to [data-app=workshop] | → WorkshopApp.css |
+| WorkshopApp.css | src/WorkshopApp.css | Workshop editor styling | → WorkshopApp |
+| BookReader.css | src/BookReader.css | Book-spread player styling | → BookReader |
+| book-spread.jpg | src/assets/book-spread.jpg | Self-hosted open-book background image | → BookReader |
+
 ## Tests
 | Name | Path | Description | Related |
 |------|------|-------------|---------|
+| sceneRefs.test | src/__tests__/sceneRefs.test.js | [#NNN] parse/split/join tests | → sceneRefs |
+| routing.test | src/__tests__/routing.test.js | parseRoute / shareUrl tests | → routing |
 | ArrowLink.test | src/__tests__/ArrowLink.test.ts | Arrow link extension tests | → ArrowLink |
 | LinearConversion.test | src/__tests__/LinearConversion.test.ts | Node ↔ linear conversion tests | → linearConversion |
 | LinearParser.test | src/__tests__/LinearParser.test.ts | Linear parser tests | → useLinearParser |
@@ -102,3 +125,4 @@
 |------------|-------------|---------|
 | users/{uid}/projects/{id} | Project data (nodes, name, nextId) | → useFirestoreSync |
 | users/{uid}/projects/{id}/history/{auto} | Auto-snapshots every 5 min | → useFirestoreSync |
+| published/{shareId} | Public read-only story copy (read: any, write: owner) | → PublicReader, useFirestoreSync |

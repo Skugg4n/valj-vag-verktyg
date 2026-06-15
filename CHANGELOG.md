@@ -1,3 +1,31 @@
+## v0.10.0 — Workshop lite variant + public share link — 2026-06-15
+
+A separate, light, kid-friendly variant for live workshops, parallel to
+the advanced app (which is untouched). Reached at `/workshop`.
+
+### Added
+- **Workshop editor** (`/workshop`): clean light theme (60/30/10, soft
+  shadows, tone-plate scene headers, sharp connector lines). Drag-and-drop
+  scene cards on a graph canvas, with a permanent right edit panel
+  (name / body / colour / choices).
+- **Create-and-link choices**: "+ Lägg till val → Skapa ny scen" makes a
+  new scene and links it in one step; or link an existing scene.
+- **Story menu**: new / rename / delete / switch between workshop stories
+  (tracked separately from advanced projects via `cyoa-workshop-ids`).
+- **Book-feel playback** (`Spela upp`): `BookReader` plays the story on a
+  real open-book background image, fit-to-page text, drop-cap, A/B choices,
+  back / restart.
+- **Public share link** (`/spela/:id`): owner publishes a read-only copy to
+  a public Firestore collection; anyone with the link reads it in the book
+  player **without logging in**. "Sluta dela" unpublishes.
+- Continuous Firestore autosave (2s debounce) so nothing is lost.
+- Scene model is unified (`type: 'card'`) so a workshop story opens in the
+  advanced app and vice-versa. One shared `[#NNN]` ref util (`sceneRefs.js`).
+
+### Deploy note
+- Publishing needs the new `published/{shareId}` rule live:
+  run `firebase deploy --only firestore:rules`.
+
 ## v0.9.5 — Undo for all node edits + two-way scroll sync — 2026-05-31
 
 ### Added
