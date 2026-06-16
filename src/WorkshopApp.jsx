@@ -95,7 +95,12 @@ function WorkshopCanvas(props) {
 export default function WorkshopApp() {
   useEffect(() => {
     document.documentElement.setAttribute('data-app', 'workshop')
-    return () => document.documentElement.removeAttribute('data-app')
+    const prevTitle = document.title
+    document.title = 'Ola Belins Berättarverkstad'
+    return () => {
+      document.documentElement.removeAttribute('data-app')
+      document.title = prevTitle
+    }
   }, [])
 
   const nodeTypes = useMemo(() => ({ card: WorkshopNode }), [])
@@ -403,7 +408,7 @@ export default function WorkshopApp() {
     <div className="ws-app" style={{ '--ws-scale': uiScale }}>
       <header className="ws-topbar">
         <div className="ws-brand">
-          Berättelseverkstad <span className="ws-version">v{APP_VERSION}</span>
+          Ola Belins Berättarverkstad <span className="ws-version">v{APP_VERSION}</span>
           <button className="ws-help" onClick={() => setShowInfo(true)} title="Hur funkar det?" aria-label="Hur funkar det?">?</button>
         </div>
         <div className="ws-story">
@@ -499,10 +504,9 @@ export default function WorkshopApp() {
       {showInfo && (
         <div className="ws-modal-backdrop" onClick={dismissInfo}>
           <div className="ws-modal ws-welcome" onClick={e => e.stopPropagation()}>
-            <h2 className="ws-welcome-title">Välkommen till Berättelseverkstaden! ✨</h2>
-            <p>Här bygger du din egen <b>välj-din-väg-berättelse</b>. Varje ruta är en scen — skriv vad som händer och lägg till val som leder vidare.</p>
-            <p>Din berättelse sparas <b>i den här webbläsaren</b>. Använder du samma dator och webbläsare nästa gång finns den kvar.</p>
-            <p className="ws-welcome-dim">Vill du spara den för alltid eller dela den med andra? Logga in uppe till höger.</p>
+            <h2 className="ws-welcome-title">Ola Belins Berättarverkstad ✨</h2>
+            <p>Bygg din egen <b>välj-din-väg-berättelse</b>: varje ruta är en scen, och valen leder vidare till nästa.</p>
+            <p className="ws-welcome-dim">Din berättelse sparas i den här webbläsaren. Logga in uppe till höger för att spara den för gott eller dela den.</p>
             <div className="ws-modal-actions">
               <button className="ws-tb-btn accent" onClick={dismissInfo}>Sätt igång!</button>
             </div>

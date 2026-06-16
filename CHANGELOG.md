@@ -1,3 +1,11 @@
+## v0.13.2 — Workshop: branded as "Ola Belins Berättarverkstad" — 2026-06-16
+
+### Changed
+- **Renamed to "Ola Belins Berättarverkstad"** — the top-bar brand, the welcome
+  modal title, and the browser tab title (while in the workshop).
+- **Shorter welcome copy** (two lines): what it is + that the story lives in this
+  browser / log in to keep or share it.
+
 ## v0.13.1 — Workshop: dedicated subdomain routing — 2026-06-16
 
 ### Added
