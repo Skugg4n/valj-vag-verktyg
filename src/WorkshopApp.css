@@ -22,6 +22,7 @@
   z-index: 10;
 }
 .ws-brand { font-weight: 700; letter-spacing: .02em; color: var(--ink); }
+.ws-version { font-weight: 500; font-size: 11px; color: var(--ink-dim); margin-left: 2px; }
 .ws-flex { flex: 1; }
 .ws-story { position: relative; display: flex; align-items: center; gap: 4px; }
 .ws-name {
@@ -135,12 +136,10 @@
 .ws-node {
   width: 200px;
   height: 140px;            /* fixed so the connection dots stay put */
-  display: flex;
-  flex-direction: column;
   background: var(--card);
   border-radius: 12px;
   box-shadow: var(--soft-shadow);
-  overflow: hidden;
+  overflow: hidden;         /* clip overflowing preview text inside the card */
   font-size: calc(12.5px * var(--ws-scale, 1));
   transition: box-shadow .15s, transform .1s;
 }
@@ -154,7 +153,6 @@
   line-height: 1.25;
 }
 .ws-node-body {
-  flex: 1;
   padding: 8px 12px 12px;
   color: var(--ink-soft);
   line-height: 1.4;
@@ -162,7 +160,6 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .ws-node-empty { color: var(--ink-dim); font-style: italic; }
 

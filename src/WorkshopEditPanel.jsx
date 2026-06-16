@@ -15,6 +15,8 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
   const [draft, setDraft] = useState(body)
   useEffect(() => {
     setDraft(splitBodyAndChoices(node?.data?.text || '').body)
+    setAdding(false) // never show the add-a-choice field on a freshly selected scene
+    setNewName('')
   }, [node?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-grow the body textarea to fit its content (no manual resize needed).

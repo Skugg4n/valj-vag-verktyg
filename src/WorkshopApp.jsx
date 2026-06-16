@@ -18,6 +18,8 @@ const SCALE_KEY = 'cyoa-ws-scale'
 const SCALE_MIN = 0.8
 const SCALE_MAX = 1.8
 
+/* global __APP_VERSION__ */
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '?'
 const SHAREIDS_KEY = 'cyoa-shareids'
 const WORKSHOP_IDS_KEY = 'cyoa-workshop-ids'
 const loadJSON = (k, fb) => { try { return JSON.parse(localStorage.getItem(k)) ?? fb } catch { return fb } }
@@ -42,11 +44,14 @@ function scanEdges(nodes) {
   return edges
 }
 
-// No fixed width/height: ReactFlow measures the rendered card so the
-// connection handles always sit at the card's true vertical centre.
+// Fixed card size so ReactFlow places the connection handles at a stable
+// vertical centre (auto-measuring made them jump). The card clips to match.
+const WS_NODE_W = 200
+const WS_NODE_H = 140
 const newCard = (id, position, color = '#2f6df6', title = 'Ny scen') => ({
   id, type: 'card', position,
   data: { title, text: '', color },
+  width: WS_NODE_W, height: WS_NODE_H,
 })
 const addRef = (text, targetId) => {
   const { body, choiceIds } = splitBodyAndChoices(text || '')
@@ -251,6 +256,7 @@ export default function WorkshopApp() {
     const loaded = (data.nodes || []).map(n => ({
       id: n.id, type: 'card', position: n.position || { x: 0, y: 0 },
       data: { text: n.text || '', title: n.title || '', color: n.color || '#2f6df6' },
+      width: WS_NODE_W, height: WS_NODE_H,
     }))
     setNodes(loaded); setEdges(scanEdges(loaded)); setNextId(data.nextNodeId || 1)
     setProjectName(data.projectName || ''); setSelectedId(null)
@@ -319,7 +325,7 @@ export default function WorkshopApp() {
   return (
     <div className="ws-app" style={{ '--ws-scale': uiScale }}>
       <header className="ws-topbar">
-        <div className="ws-brand">Berättelseverkstad</div>
+        <div className="ws-brand">Berättelseverkstad <span className="ws-version">v{APP_VERSION}</span></div>
         <div className="ws-story">
           <input
             className="ws-name"

@@ -1,3 +1,17 @@
+## v0.11.2 — Workshop: version badge, steady cards, add-field reset — 2026-06-16
+
+### Added
+- **Version number in the top bar** (e.g. "v0.11.2") so it's always clear which
+  build is live — bumped every release.
+
+### Fixed
+- **The add-a-choice field no longer appears on scenes you didn't open.** It now
+  resets when you select another scene (it used to stay open after adding one).
+- **Scene cards have a real fixed size** (set on the node itself, not just CSS),
+  so the connection dots sit still and the preview text clamps to 3 lines with
+  "…" instead of spilling below the card. (Removed a flex rule that was
+  defeating the line clamp.)
+
 ## v0.11.1 — Workshop: fix handles, edges, and node text clipping — 2026-06-16
 
 ### Fixed
