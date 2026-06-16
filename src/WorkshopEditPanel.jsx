@@ -19,12 +19,12 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
   if (!node) {
     return (
       <aside className="ws-panel ws-panel-empty">
-        <p>Klicka på en scen för att redigera den — eller skapa din första scen med <b>+ Ny scen</b>.</p>
+        <p>Klicka på en scen för att redigera den. Eller skapa din första scen med <b>+ Ny scen</b>.</p>
       </aside>
     )
   }
 
-  const titleOf = id => scenes.find(s => s.id === id)?.title?.trim() || `Scen #${id}`
+  const titleOf = id => scenes.find(s => s.id === id)?.title?.trim() || 'Namnlös scen'
   const setBody = v => { setDraft(v); onPatch({ text: joinBodyAndChoices(v, choiceIds) }) }
   const removeChoice = id => onPatch({ text: joinBodyAndChoices(draft, choiceIds.filter(x => x !== id)) })
   const linkable = scenes.filter(s => s.id !== node.id && !choiceIds.includes(s.id))
@@ -62,7 +62,7 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
 
       <label className="ws-field-label">Val härifrån</label>
       <div className="ws-choices">
-        {choiceIds.length === 0 && <div className="ws-choices-empty">Inga val ännu — scenen är ett slut.</div>}
+        {choiceIds.length === 0 && <div className="ws-choices-empty">Inga val än. Det här blir ett slut på berättelsen.</div>}
         {choiceIds.map(id => (
           <div key={id} className="ws-choice-row">
             <span className="ws-choice-label">→ {titleOf(id)}</span>
@@ -86,7 +86,7 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
                 className="ws-add-item"
                 onClick={() => { onAddChoice(s.id); setAdding(false) }}
               >
-                → {s.title?.trim() || `Scen #${s.id}`}
+                → {s.title?.trim() || 'Namnlös scen'}
               </button>
             ))}
             <button className="ws-add-item ws-add-cancel" onClick={() => setAdding(false)}>Avbryt</button>

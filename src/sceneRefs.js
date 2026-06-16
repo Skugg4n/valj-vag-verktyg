@@ -21,7 +21,7 @@ export function refIds(text) {
 // Reader view: prose body (refs stripped + tidied) + ordered choices.
 // getLabel(id) -> string resolves a target scene's display title.
 export function parseScene(text, getLabel = () => '') {
-  const choices = refIds(text).map(id => ({ id, label: getLabel(id) || `Gå till #${id}` }))
+  const choices = refIds(text).map(id => ({ id, label: getLabel(id) || 'Fortsätt' }))
   const body = (text || '')
     .replace(SCENE_REF, '')
     .replace(/[ \t]+([.,!?;:…»)\]])/g, '$1') // drop space left before punctuation by a stripped ref

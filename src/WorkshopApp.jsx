@@ -139,6 +139,14 @@ export default function WorkshopApp() {
     setShareInfo(sid ? { id: sid, url: shareUrl(sid) } : null)
   }, [projectId])
 
+  // Close the story menu when clicking anywhere outside it.
+  useEffect(() => {
+    if (!storyMenu) return
+    const onDown = e => { if (!e.target.closest?.('.ws-story')) setStoryMenu(false) }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [storyMenu])
+
   const selected = nodes.find(n => n.id === selectedId) || null
   const scenes = useMemo(() => nodes.map(n => ({ id: n.id, title: n.data?.title || '' })), [nodes])
   const workshopProjects = useMemo(() => {
@@ -234,10 +242,6 @@ export default function WorkshopApp() {
     commit(() => [newCard(sid, { x: 120, y: 140 }, '#2f6df6', 'Start')])
     setNextId(2); setSelectedId(sid)
   }
-  const renameStory = () => {
-    const name = prompt('Berättelsens namn:', projectName)
-    if (name != null) setProjectName(name.trim())
-  }
   const deleteStory = id => {
     if (!confirm('Radera hela berättelsen? Detta går inte att ångra.')) return
     setStoryMenu(false)
@@ -250,7 +254,7 @@ export default function WorkshopApp() {
 
   // --- Publish ---
   const publish = async () => {
-    if (nodes.length === 0) { alert('Skapa minst en scen först.'); return }
+    if (nodes.length === 0) return
     if (!user) { alert('Logga in (uppe till höger) för att dela berättelsen.'); return }
     setBusy(true)
     try {
@@ -278,7 +282,7 @@ export default function WorkshopApp() {
   return (
     <div className="ws-app">
       <header className="ws-topbar">
-        <div className="ws-brand">Workshop</div>
+        <div className="ws-brand">Berättelseverkstad</div>
         <div className="ws-story">
           <input
             className="ws-name"
@@ -290,8 +294,7 @@ export default function WorkshopApp() {
           {storyMenu && (
             <div className="ws-story-menu">
               <button className="ws-story-item" onClick={newStory}>+ Ny berättelse</button>
-              <button className="ws-story-item" onClick={renameStory}>Byt namn</button>
-              <button className="ws-story-item danger" onClick={() => deleteStory(projectId)}>Radera</button>
+              <button className="ws-story-item danger" onClick={() => deleteStory(projectId)}>Radera berättelsen</button>
               {workshopProjects.length > 0 && <div className="ws-story-sep">Byt berättelse</div>}
               {workshopProjects.map(p => (
                 <button key={p.id} className={`ws-story-item${p.id === projectId ? ' active' : ''}`} onClick={() => switchStory(p.id)}>
@@ -306,12 +309,12 @@ export default function WorkshopApp() {
         <button className="ws-tb-btn" onClick={() => setPlaying(true)} disabled={!nodes.length}>▶ Spela upp</button>
         {shareInfo ? (
           <div className="ws-share">
-            <button className="ws-tb-btn shared" onClick={copyLink} title={shareInfo.url}>✓ Delad — kopiera länk</button>
+            <button className="ws-tb-btn shared" onClick={copyLink} title={shareInfo.url}>✓ Delad, kopiera länk</button>
             <button className="ws-tb-btn" onClick={publish} disabled={busy} title="Uppdatera delad version">↻</button>
             <button className="ws-tb-btn ghost" onClick={stopSharing} disabled={busy}>Sluta dela</button>
           </div>
         ) : (
-          <button className="ws-tb-btn accent" onClick={publish} disabled={busy}>Dela</button>
+          <button className="ws-tb-btn accent" onClick={publish} disabled={busy || !nodes.length} title={!nodes.length ? 'Skapa minst en scen först' : 'Dela en publik länk'}>Dela</button>
         )}
         <UserMenu />
       </header>

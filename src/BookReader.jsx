@@ -70,7 +70,12 @@ export default function BookReader({ title, nodes, onClose }) {
           style={{ backgroundImage: `url(${bookSpread})`, fontSize: `${2.3 * fit}cqw` }}
         >
           {!node ? (
-            <div className="book-empty-page">Inget att läsa ännu.</div>
+            <div className="book-empty-page">
+              <p>Den här sidan saknas.</p>
+              <button className="book-choice" onClick={restart}>
+                <span className="book-choice-n">↺</span>Börja om
+              </button>
+            </div>
           ) : (
             <>
               <h1 className="book-title" style={{ fontSize: `${3.2 * fit}cqw` }}>

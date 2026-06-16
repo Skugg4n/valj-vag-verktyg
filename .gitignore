@@ -4,3 +4,4 @@ node_modules
 .worktrees/
 .DS_Store
 firebase-debug.log
+.vercel

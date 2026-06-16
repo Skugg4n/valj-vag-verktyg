@@ -20,9 +20,9 @@ describe('parseScene', () => {
       { id: '003', label: 'Höger' },
     ])
   })
-  it('falls back to "Gå till #NNN" when no label', () => {
+  it('falls back to "Fortsätt" when no label (never leaks a raw id to readers)', () => {
     const { choices } = parseScene('x [#009]', () => '')
-    expect(choices).toEqual([{ id: '009', label: 'Gå till #009' }])
+    expect(choices).toEqual([{ id: '009', label: 'Fortsätt' }])
   })
   it('drops the space a stripped ref leaves before punctuation', () => {
     const { body } = parseScene('vattnet [#002], och byn [#003].', label)

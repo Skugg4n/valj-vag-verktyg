@@ -37,21 +37,21 @@ export default function ExportModal({
             <span className="export-icon"><FileJson size={18} /></span>
             <span>
               <span className="export-title">JSON-backup</span>
-              <span className="export-desc">Fullständig — noder, positioner, färger. Kan importeras igen.</span>
+              <span className="export-desc">Fullständig: noder, positioner, färger. Kan importeras igen.</span>
             </span>
           </button>
           <button className="export-opt" onClick={run(onExportMarkdown)}>
             <span className="export-icon"><FileText size={18} /></span>
             <span>
               <span className="export-title">Markdown</span>
-              <span className="export-desc">Läsbar text — för publicering eller delning.</span>
+              <span className="export-desc">Läsbar text för publicering eller delning.</span>
             </span>
           </button>
           <button className="export-opt" onClick={run(onExportHTML)}>
             <span className="export-icon"><BookOpen size={18} /></span>
             <span>
               <span className="export-title">Delbar läsversion</span>
-              <span className="export-desc">Fristående HTML — spelbar berättelse som funkar offline. Skicka till vem som helst.</span>
+              <span className="export-desc">Fristående HTML, spelbar berättelse som funkar offline. Skicka till vem som helst.</span>
             </span>
           </button>
         </div>

@@ -1,3 +1,24 @@
+## v0.10.2 — Workshop polish: copy, dead-ends, calmer UI — 2026-06-16
+
+Round of fixes from a specialist review pass (UX, UI consistency, proxy critic).
+
+### Fixed
+- **Reader no longer dead-ends.** If a published story links to a scene that
+  was later removed, the book showed an empty page with no way out. It now
+  shows "Den här sidan saknas." with a "↺ Börja om" button on the page.
+- **No raw scene ids leak to readers.** A choice with no target title used to
+  read "Gå till #009"; it now falls back to "Fortsätt".
+
+### Changed
+- **Removed all em-dashes from user-facing text** (share button, panel hints,
+  export descriptions).
+- **Calmer chrome:** the "Dela" button is disabled (with a hint) when there
+  are no scenes yet, instead of popping a browser alert. Removed the redundant
+  "Byt namn" menu item — the story name is already an inline field — which also
+  removes a `prompt()` popup.
+- The story menu now closes when you click outside it.
+- Brand label "Workshop" → "Berättelseverkstad". Softer end-of-branch copy.
+
 ## v0.10.1 — Workshop: fix spaces in scene text — 2026-06-15
 
 ### Fixed
