@@ -14,7 +14,7 @@ import {
   orderBy,
   limit,
 } from 'firebase/firestore'
-import { db } from './firebase.js'
+import { auth, db } from './firebase.js'
 
 // Standalone (no auth) read of a published story for the public /spela/:id
 // reader. Rules allow read: if true.
@@ -218,14 +218,17 @@ export default function useFirestoreSync({ user, setProjects }) {
   // Publish (or re-publish) a public copy for the share link.
   const publishStory = useCallback(
     async (shareId, story) => {
-      if (!user) return false
+      // Use the live auth user (works right after an anonymous sign-in, before
+      // the React auth state has propagated).
+      const u = auth.currentUser
+      if (!u) return false
       try {
         await setDoc(
           doc(db, 'published', shareId),
           {
             title: story.title || '',
             nodes: story.nodes || [],
-            ownerUid: user.uid,
+            ownerUid: u.uid,
             sourceProjectId: story.sourceProjectId || '',
             updatedAt: serverTimestamp(),
             createdAt: serverTimestamp(),
@@ -244,12 +247,12 @@ export default function useFirestoreSync({ user, setProjects }) {
         return false
       }
     },
-    [user]
+    []
   )
 
   // Remove a published copy ("Sluta dela").
   const unpublishStory = useCallback(async shareId => {
-    if (!user || !shareId) return false
+    if (!auth.currentUser || !shareId) return false
     try {
       await deleteDoc(doc(db, 'published', shareId))
       return true
@@ -257,7 +260,7 @@ export default function useFirestoreSync({ user, setProjects }) {
       console.error('Unpublish failed:', err)
       return false
     }
-  }, [user])
+  }, [])
 
   return { saveToFirestore, saveHistorySnapshot, deleteFromFirestore, getHistory, publishStory, unpublishStory }
 }

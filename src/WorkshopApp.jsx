@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import ReactFlow, { Background, applyNodeChanges, applyEdgeChanges, ReactFlowProvider, useReactFlow, MarkerType } from 'reactflow'
 import 'reactflow/dist/style.css'
+import { signInAnonymously } from 'firebase/auth'
+import { auth } from './firebase.js'
 import { useAuth } from './AuthContext.jsx'
 import useProjectStorage from './useProjectStorage.js'
 import useFirestoreSync from './useFirestoreSync.js'
@@ -156,8 +158,10 @@ export default function WorkshopApp() {
   }, [nodes])
 
   // Firestore autosave when logged in (same shape as the advanced app).
+  // Anonymous users (who only signed in to share) stay on localStorage — no
+  // per-project cloud sync — to keep Firestore usage down.
   useEffect(() => {
-    if (!user || !projectId || nodes.length === 0) return
+    if (!user || user.isAnonymous || !projectId || nodes.length === 0) return
     const data = {
       projectName, nextNodeId: nextId,
       nodes: nodes.map(n => ({
@@ -376,9 +380,19 @@ export default function WorkshopApp() {
   // --- Publish ---
   const publish = async () => {
     if (nodes.length === 0) return
-    if (!user) { setToast('Logga in uppe till höger för att dela berättelsen.'); return }
     setBusy(true)
     try {
+      // Anyone can share — sign in anonymously (a silent browser identity) if
+      // not already logged in, so the publish satisfies the Firestore rules.
+      if (!auth.currentUser) {
+        try {
+          await signInAnonymously(auth)
+        } catch (err) {
+          console.error('Anonymous sign-in failed:', err)
+          setToast('Kunde inte dela just nu. Försök igen, eller logga in uppe till höger.')
+          return
+        }
+      }
       const map = loadJSON(SHAREIDS_KEY, {})
       let sid = map[projectId]
       if (!sid) { sid = makeShareId(); map[projectId] = sid; saveJSON(SHAREIDS_KEY, map) }
@@ -506,11 +520,14 @@ export default function WorkshopApp() {
         <div className="ws-modal-backdrop" onClick={dismissInfo}>
           <div className="ws-modal ws-welcome" onClick={e => e.stopPropagation()}>
             <h2 className="ws-welcome-title">Ola Belins Berättarverkstad ✨</h2>
-            <p>Bygg din egen <b>välj-din-väg-berättelse</b>: varje ruta är en scen, och valen leder vidare till nästa.</p>
-            <p className="ws-welcome-dim">Din berättelse sparas i den här webbläsaren. Logga in uppe till höger för att spara den för gott eller dela den.</p>
+            <p>Bygg din egen <b>välj-väg-berättelse</b>: varje ruta är en scen, och valen leder vidare till nästa.</p>
+            <p className="ws-welcome-dim">Din berättelse sparas i den här webbläsaren. Dela den med en länk när du vill — logga in uppe till höger om du vill spara den för gott.</p>
             <div className="ws-modal-actions">
               <button className="ws-tb-btn accent" onClick={dismissInfo}>Sätt igång!</button>
             </div>
+            <p className="ws-welcome-credit">
+              Av <a href="https://olabelin.se" target="_blank" rel="noopener noreferrer">Ola Belin</a> — författare till den interaktiva boken <i>Racet</i>.
+            </p>
           </div>
         </div>
       )}

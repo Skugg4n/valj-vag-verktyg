@@ -1,3 +1,18 @@
+## v0.14.1 — Workshop: share without login + author credit — 2026-06-16
+
+### Added
+- **Share without logging in.** Clicking "Dela" signs the user in anonymously
+  (a silent browser identity — no dialog) so the publish satisfies the Firestore
+  rules. Anonymous users stay on localStorage for their project (no per-project
+  cloud sync) to keep Firestore usage down; only the published copy is written.
+  Degrades gracefully (a toast) if the Anonymous provider isn't enabled yet.
+  **Requires:** enable "Anonymous" sign-in in the Firebase console.
+- **Author credit** in the welcome modal: "Av Ola Belin — författare till den
+  interaktiva boken Racet", linking to olabelin.se.
+
+### Changed
+- Copy: "välj-väg-berättelse" (not "välj-din-väg") — matches the book name.
+
 ## v0.14.0 — Workshop: responsive mobile editor — 2026-06-16
 
 Editing now works on phones/tablets (kids can build their own stories on mobile).
