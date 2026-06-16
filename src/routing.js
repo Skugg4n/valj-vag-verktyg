@@ -3,9 +3,9 @@
 export function parseRoute(pathname, hostname = '') {
   const play = pathname.match(/^\/spela\/([^/]+)\/?$/)
   if (play) return { name: 'play', shareId: play[1] }
-  // Dedicated workshop subdomain (e.g. verkstad.olabelin.se): everything that
+  // Dedicated workshop subdomain (verkstad. or verkstaden.): everything that
   // isn't a /spela link is the workshop — so the root goes straight there.
-  if (/^verkstad\./i.test(hostname)) return { name: 'workshop' }
+  if (/^verkstad(en)?\./i.test(hostname)) return { name: 'workshop' }
   if (/^\/workshop(\/|$)/.test(pathname)) return { name: 'workshop' }
   return { name: 'app' }
 }

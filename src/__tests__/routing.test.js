@@ -10,6 +10,9 @@ describe('parseRoute', () => {
   it('workshop subdomain → workshop at root', () => {
     expect(parseRoute('/', 'verkstad.olabelin.se')).toEqual({ name: 'workshop' })
   })
+  it('verkstaden subdomain → workshop at root', () => {
+    expect(parseRoute('/', 'verkstaden.olabelin.se')).toEqual({ name: 'workshop' })
+  })
   it('workshop subdomain still serves /spela links', () => {
     expect(parseRoute('/spela/abc123', 'verkstad.olabelin.se')).toEqual({ name: 'play', shareId: 'abc123' })
   })

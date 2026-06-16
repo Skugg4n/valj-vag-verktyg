@@ -1,3 +1,15 @@
+## v0.13.3 — Workshop: verkstaden subdomain + cursor in the body on select — 2026-06-16
+
+### Added
+- **Clicking a scene puts the cursor straight into "Vad händer här?"** so you can
+  start writing immediately (cursor at the end of any existing text).
+
+### Fixed
+- **`verkstaden.*` subdomain now routes to the workshop at its root** (the route
+  match was widened from `verkstad.` to `verkstad(en).`). Needed because the
+  `verkstad` DNS record was stuck in Loopia's replication, so we moved to the
+  fresh `verkstaden.olabelin.se` which replicates cleanly.
+
 ## v0.13.2 — Workshop: branded as "Ola Belins Berättarverkstad" — 2026-06-16
 
 ### Changed

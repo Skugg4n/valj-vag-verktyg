@@ -28,6 +28,20 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
     el.style.height = `${el.scrollHeight}px`
   }, [draft, node?.id])
 
+  // Selecting a scene drops the cursor straight into "Vad händer här?" so you
+  // can start writing immediately (cursor at the end of any existing text).
+  useEffect(() => {
+    if (!node?.id) return
+    const raf = requestAnimationFrame(() => {
+      const el = taRef.current
+      if (!el) return
+      el.focus()
+      const len = el.value.length
+      el.setSelectionRange(len, len)
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [node?.id])
+
   if (!node) {
     return (
       <aside className="ws-panel ws-panel-empty">
