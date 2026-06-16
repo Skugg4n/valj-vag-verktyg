@@ -15,10 +15,7 @@ function isLight(hex) {
 // advanced app can render the same story.
 const WorkshopNode = memo(({ data, selected }) => {
   const color = data?.color || '#e6c34e'
-  const { body, choiceIds } = splitBodyAndChoices(data?.text || '')
-  const isStart = !!data?._isStart
-  const isEnd = choiceIds.length === 0
-  const isEmpty = !body.trim()
+  const { body } = splitBodyAndChoices(data?.text || '')
   // Deterministic truncation with an ellipsis (don't rely on -webkit-line-clamp,
   // which silently breaks here). The card also clips as a backstop.
   const preview = body.length > 90 ? body.slice(0, 90).replace(/\s+\S*$/, '') + '…' : body
@@ -33,16 +30,9 @@ const WorkshopNode = memo(({ data, selected }) => {
         >
           {data?.title?.trim() || 'Namnlös scen'}
         </div>
-        {(isStart || isEnd || isEmpty) && (
-          <div className="ws-node-badges">
-            {isStart && <span className="ws-badge start">★ Start</span>}
-            {isEnd && <span className="ws-badge end">Slut</span>}
-            {isEmpty && <span className="ws-badge warn">Tom</span>}
-          </div>
-        )}
-        <div className="ws-node-body">
-          {body ? preview : <span className="ws-node-empty">Skriv vad som händer…</span>}
-        </div>
+        {/* Empty scenes show no body text — the placeholder made it look like
+            you could type here instead of in the right-hand panel. */}
+        <div className="ws-node-body">{preview}</div>
       </div>
       {/* Target on the left, source on the right. Links can still go both ways:
           drag from one scene's right dot to another scene's left dot, in any

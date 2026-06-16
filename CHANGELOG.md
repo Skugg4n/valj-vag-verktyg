@@ -1,3 +1,14 @@
+## v0.13.4 — Workshop: calmer scene cards — 2026-06-16
+
+### Changed
+- **Smaller, more discreet connection dots** (8px, warm-grey instead of teal;
+  they turn accent on hover). They no longer crowd the card edge.
+- **Removed the Start / Slut / Tom badges** on the cards — too busy, and you can
+  tell anyway.
+- **Empty scenes show no body text at all** (removed the "Skriv vad som händer…"
+  placeholder, which made it look like you could type inside the node instead of
+  in the right-hand panel).
+
 ## v0.13.3 — Workshop: verkstaden subdomain + cursor in the body on select — 2026-06-16
 
 ### Added

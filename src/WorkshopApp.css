@@ -138,11 +138,12 @@
 .ws-canvas .react-flow__edge.selected path,
 .ws-canvas .react-flow__edge:hover path { stroke: var(--accent); }
 .ws-canvas .react-flow__arrowhead { fill: var(--edge); }
+/* Small, discreet connection dots — visible enough to grab, out of the way. */
 .ws-canvas .react-flow__handle {
-  background: var(--panel); border: 2px solid var(--accent);
-  width: 12px; height: 12px;
+  background: var(--panel); border: 1.5px solid var(--line-strong);
+  width: 8px; height: 8px;
 }
-.ws-canvas .react-flow__handle:hover { background: var(--accent); }
+.ws-canvas .react-flow__handle:hover { background: var(--accent); border-color: var(--accent); }
 
 /* ---- Scene node card ---- */
 /* Outer holds the connection handles and must NOT clip (overflow visible),
