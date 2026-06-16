@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import ReactFlow, { Background, applyNodeChanges, ReactFlowProvider, useReactFlow, MarkerType } from 'reactflow'
+import ReactFlow, { Background, applyNodeChanges, applyEdgeChanges, ReactFlowProvider, useReactFlow, MarkerType } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useAuth } from './AuthContext.jsx'
 import useProjectStorage from './useProjectStorage.js'
@@ -72,6 +72,7 @@ function WorkshopCanvas(props) {
       edgeTypes={props.edgeTypes}
       defaultEdgeOptions={props.defaultEdgeOptions}
       onNodesChange={props.onNodesChange}
+      onEdgesChange={props.onEdgesChange}
       onConnect={props.onConnect}
       onReconnect={props.onReconnect}
       onReconnectStart={props.onReconnectStart}
@@ -129,6 +130,9 @@ export default function WorkshopApp() {
   const [toast, setToast] = useState(null)
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3500); return () => clearTimeout(t) }, [toast])
   const askConfirm = (message, onYes, confirmLabel = 'Ja') => setConfirmState({ message, onYes, confirmLabel })
+  // First-visit welcome (explains, simply, that the story lives in this browser).
+  const [showInfo, setShowInfo] = useState(() => { try { return !localStorage.getItem('cyoa-ws-info-seen') } catch { return false } })
+  const dismissInfo = () => { try { localStorage.setItem('cyoa-ws-info-seen', '1') } catch { /* ignore */ } setShowInfo(false) }
 
   const { user } = useAuth()
   const { projects, setProjects, projectId, setProjectId, setProjectStart } = useProjectStorage({
@@ -222,6 +226,12 @@ export default function WorkshopApp() {
   }, [projects])
 
   const onNodesChange = useCallback(changes => setNodes(ns => applyNodeChanges(changes, ns)), [])
+  // Only apply edge SELECTION changes (so the × shows). Edge add/remove is
+  // driven by the [#ref]s, not by ReactFlow, so we ignore those change types.
+  const onEdgesChange = useCallback(changes => {
+    const sel = changes.filter(c => c.type === 'select')
+    if (sel.length) setEdges(es => applyEdgeChanges(sel, es))
+  }, [])
 
   const commit = updater =>
     setNodes(ns => { const updated = updater(ns); setEdges(scanEdges(updated)); return updated })
@@ -392,7 +402,10 @@ export default function WorkshopApp() {
   return (
     <div className="ws-app" style={{ '--ws-scale': uiScale }}>
       <header className="ws-topbar">
-        <div className="ws-brand">Berättelseverkstad <span className="ws-version">v{APP_VERSION}</span></div>
+        <div className="ws-brand">
+          Berättelseverkstad <span className="ws-version">v{APP_VERSION}</span>
+          <button className="ws-help" onClick={() => setShowInfo(true)} title="Hur funkar det?" aria-label="Hur funkar det?">?</button>
+        </div>
         <div className="ws-story">
           <input
             className="ws-name"
@@ -445,7 +458,7 @@ export default function WorkshopApp() {
               <WorkshopCanvas
                 nodes={displayNodes} edges={displayEdges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultEdgeOptions={defaultEdgeOptions}
                 projectId={projectId}
-                onNodesChange={onNodesChange} onConnect={onConnect}
+                onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect}
                 onReconnect={onReconnect} onReconnectStart={onReconnectStart} onReconnectEnd={onReconnectEnd}
                 onNodeClick={(_e, n) => setSelectedId(n.id)}
                 onPaneClick={() => setSelectedId(null)}
@@ -482,6 +495,20 @@ export default function WorkshopApp() {
       )}
 
       {toast && <div className="ws-toast" role="status">{toast}</div>}
+
+      {showInfo && (
+        <div className="ws-modal-backdrop" onClick={dismissInfo}>
+          <div className="ws-modal ws-welcome" onClick={e => e.stopPropagation()}>
+            <h2 className="ws-welcome-title">Välkommen till Berättelseverkstaden! ✨</h2>
+            <p>Här bygger du din egen <b>välj-din-väg-berättelse</b>. Varje ruta är en scen — skriv vad som händer och lägg till val som leder vidare.</p>
+            <p>Din berättelse sparas <b>i den här webbläsaren</b>. Använder du samma dator och webbläsare nästa gång finns den kvar.</p>
+            <p className="ws-welcome-dim">Vill du spara den för alltid eller dela den med andra? Logga in uppe till höger.</p>
+            <div className="ws-modal-actions">
+              <button className="ws-tb-btn accent" onClick={dismissInfo}>Sätt igång!</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

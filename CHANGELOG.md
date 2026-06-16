@@ -1,3 +1,20 @@
+## v0.13.0 — Workshop: welcome modal, working edge-select, tighter rules — 2026-06-16
+
+### Added
+- **First-visit welcome modal** explaining, simply, that the story is saved in
+  this browser (and to log in to keep/share it). A "?" in the top bar reopens it.
+
+### Fixed
+- **Clicking a connection line now actually selects it** (and shows the × to
+  delete). Controlled edges were missing an `onEdgesChange` handler, so the
+  selection never applied — added one (select-only; structure still comes from
+  the `[#ref]`s).
+
+### Security
+- **`published` stories can be opened by link but no longer enumerated.** Split
+  `allow read` into `allow get: if true; allow list: if false;` so nobody can
+  query the whole collection of shared stories.
+
 ## v0.12.1 — Workshop: grab a connection anywhere on the line — 2026-06-16
 
 ### Changed

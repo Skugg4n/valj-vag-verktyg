@@ -6,9 +6,11 @@ service cloud.firestore {
     }
 
     // Public, no-login story copies for the /spela/:id reader. Anyone may
-    // read; only the signed-in owner may create/update/delete their own.
+    // open a story they have the link to (get), but nobody can enumerate them
+    // all (list is denied). Only the signed-in owner may create/update/delete.
     match /published/{shareId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if false;
       allow create: if request.auth != null
                     && request.resource.data.ownerUid == request.auth.uid;
       allow update, delete: if request.auth != null
