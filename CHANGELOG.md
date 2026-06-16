@@ -1,3 +1,18 @@
+## v0.14.0 — Workshop: responsive mobile editor — 2026-06-16
+
+Editing now works on phones/tablets (kids can build their own stories on mobile).
+
+### Added
+- **Mobile layout (≤640px):** the canvas is full-width, and the edit panel
+  becomes a **bottom sheet** that slides up when you tap a scene and closes with
+  a "✕ Klar" button (or by tapping the canvas). The top bar wraps and compresses
+  so all the actions fit; the on-screen text-size control (A−/A+) is hidden on
+  mobile since the device handles sizing.
+- Verified at 390px: top bar fits (no horizontal overflow), canvas is full
+  width, tapping a scene opens the drawer, closing returns to the map.
+
+(The reader at `/spela/:id` was already mobile-friendly.)
+
 ## v0.13.4 — Workshop: calmer scene cards — 2026-06-16
 
 ### Changed

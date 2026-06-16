@@ -405,7 +405,7 @@ export default function WorkshopApp() {
   const copyLink = () => { if (shareInfo) navigator.clipboard?.writeText(shareInfo.url) }
 
   return (
-    <div className="ws-app" style={{ '--ws-scale': uiScale }}>
+    <div className={`ws-app${selected ? ' panel-open' : ''}`} style={{ '--ws-scale': uiScale }}>
       <header className="ws-topbar">
         <div className="ws-brand">
           Ola Belins Berättarverkstad <span className="ws-version">v{APP_VERSION}</span>
@@ -478,6 +478,7 @@ export default function WorkshopApp() {
           onPatch={patch => selectedId && updateScene(selectedId, patch)}
           onAddChoice={onAddChoice}
           onDelete={() => selectedId && askConfirm('Ta bort scenen?', () => doDeleteScene(selectedId), 'Ta bort')}
+          onClose={() => setSelectedId(null)}
         />
       </div>
 

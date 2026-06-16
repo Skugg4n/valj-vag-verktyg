@@ -5,7 +5,7 @@ const COLORS = ['#2f6df6', '#e8554e', '#e8954e', '#e6c34e', '#3fae6b', '#8e6bd6'
 
 // Permanent right pane: edit the selected scene's name, body, colour, choices.
 // Choices are stored as trailing [#NNN] refs in the scene text (single source).
-export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, onDelete }) {
+export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, onDelete, onClose }) {
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
   const { body, choiceIds } = splitBodyAndChoices(node?.data?.text || '')
@@ -62,6 +62,8 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
 
   return (
     <aside className="ws-panel">
+      {/* Mobile-only: close the drawer back to the canvas. */}
+      <button className="ws-panel-close" onClick={onClose} aria-label="Stäng">✕ Klar</button>
       <label className="ws-field-label">Scenens namn</label>
       <input
         className="ws-input"

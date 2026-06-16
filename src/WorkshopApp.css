@@ -197,6 +197,7 @@
 }
 .ws-panel-empty { align-items: center; justify-content: center; text-align: center; color: var(--ink-dim); }
 .ws-panel-empty p { max-width: 240px; line-height: 1.5; }
+.ws-panel-close { display: none; } /* desktop: no close button; mobile shows it */
 .ws-field-label {
   font-size: calc(11px * var(--ws-scale, 1));
   text-transform: uppercase;
@@ -330,4 +331,46 @@
   font-size: calc(13.5px * var(--ws-scale, 1));
   padding: 11px 18px; border-radius: 10px; box-shadow: var(--soft-shadow);
   max-width: 80vw;
+}
+
+/* ============================================================
+   Mobile / small screens: full-width canvas + the edit panel
+   becomes a bottom sheet that slides up when a scene is selected.
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Top bar: identity (brand + name + menu) on row 1, actions wrap below. */
+  .ws-topbar { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+  .ws-version { display: none; }
+  .ws-zoom { display: none; }   /* on-screen text-size control isn't needed on a phone */
+  .ws-flex { display: none; }
+  .ws-brand { flex: 0 0 auto; }
+  .ws-story { flex: 1 1 auto; min-width: 0; }
+  .ws-name { flex: 1; min-width: 0; }
+  .ws-tb-btn { padding: 9px 13px; }   /* a little bigger for fingers */
+
+  /* Canvas fills the screen; the panel leaves the flex flow. */
+  .ws-panel {
+    position: fixed;
+    left: 0; right: 0; bottom: 0; top: auto;
+    width: auto; max-width: none; flex: none;
+    height: 82vh;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -10px 40px rgba(40, 44, 56, .28);
+    transform: translateY(105%);
+    transition: transform .26s ease;
+    z-index: 50;
+    padding-top: 10px;
+  }
+  .ws-app.panel-open .ws-panel { transform: translateY(0); }
+
+  /* The drawer's close handle. */
+  .ws-panel-close {
+    display: block;
+    align-self: stretch;
+    font: inherit; font-size: 14px; font-weight: 600;
+    background: var(--panel-2); color: var(--ink-soft);
+    border: none; border-radius: 10px; padding: 10px; margin-bottom: 4px;
+    cursor: pointer;
+  }
+  .ws-panel-close:hover { background: var(--line); color: var(--ink); }
 }
