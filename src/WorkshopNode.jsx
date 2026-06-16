@@ -19,23 +19,30 @@ const WorkshopNode = memo(({ data, selected }) => {
   const isStart = !!data?._isStart
   const isEnd = choiceIds.length === 0
   const isEmpty = !body.trim()
+  // Deterministic truncation with an ellipsis (don't rely on -webkit-line-clamp,
+  // which silently breaks here). The card also clips as a backstop.
+  const preview = body.length > 90 ? body.slice(0, 90).replace(/\s+\S*$/, '') + '…' : body
   return (
     <div className={`ws-node${selected ? ' selected' : ''}`}>
-      <div
-        className="ws-node-head"
-        style={{ background: color, color: isLight(color) ? '#15191f' : '#fff' }}
-      >
-        {data?.title?.trim() || 'Namnlös scen'}
-      </div>
-      {(isStart || isEnd || isEmpty) && (
-        <div className="ws-node-badges">
-          {isStart && <span className="ws-badge start">★ Start</span>}
-          {isEnd && <span className="ws-badge end">Slut</span>}
-          {isEmpty && <span className="ws-badge warn">Tom</span>}
+      {/* Inner wrapper does the clipping (rounded corners + text overflow).
+          The handles live OUTSIDE it so they're never clipped by overflow. */}
+      <div className="ws-node-inner">
+        <div
+          className="ws-node-head"
+          style={{ background: color, color: isLight(color) ? '#15191f' : '#fff' }}
+        >
+          {data?.title?.trim() || 'Namnlös scen'}
         </div>
-      )}
-      <div className="ws-node-body">
-        {body ? body : <span className="ws-node-empty">Skriv vad som händer…</span>}
+        {(isStart || isEnd || isEmpty) && (
+          <div className="ws-node-badges">
+            {isStart && <span className="ws-badge start">★ Start</span>}
+            {isEnd && <span className="ws-badge end">Slut</span>}
+            {isEmpty && <span className="ws-badge warn">Tom</span>}
+          </div>
+        )}
+        <div className="ws-node-body">
+          {body ? preview : <span className="ws-node-empty">Skriv vad som händer…</span>}
+        </div>
       </div>
       {/* Target on the left, source on the right. Links can still go both ways:
           drag from one scene's right dot to another scene's left dot, in any

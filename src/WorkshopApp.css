@@ -133,19 +133,30 @@
 .ws-canvas .react-flow__handle:hover { background: var(--accent); }
 
 /* ---- Scene node card ---- */
+/* Outer holds the connection handles and must NOT clip (overflow visible),
+   otherwise the side dots get cut off. Fixed size keeps the dots centred. */
 .ws-node {
+  position: relative;
   width: 200px;
-  height: 140px;            /* fixed so the connection dots stay put */
+  height: 140px;
+  font-size: calc(12.5px * var(--ws-scale, 1));
+  transition: transform .1s;
+}
+.ws-node:hover { transform: translateY(-2px); }
+.ws-node.selected { transform: translateY(-3px); }
+/* Inner is the visible card: it clips content (rounded corners + preview text). */
+.ws-node-inner {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
   background: var(--card);
   border-radius: 12px;
   box-shadow: var(--soft-shadow);
-  overflow: hidden;         /* clip overflowing preview text inside the card */
-  font-size: calc(12.5px * var(--ws-scale, 1));
-  transition: box-shadow .15s, transform .1s;
+  overflow: hidden;
+  transition: box-shadow .15s;
 }
-.ws-node:hover { transform: translateY(-2px); }
-/* Selection is shown by lift + deeper shadow, not an outline. */
-.ws-node.selected { box-shadow: var(--lift-shadow); transform: translateY(-3px); }
+/* Selection = lift + deeper shadow, not an outline. */
+.ws-node.selected .ws-node-inner { box-shadow: var(--lift-shadow); }
 .ws-node-head {
   padding: 9px 12px;
   font-weight: 700;
@@ -156,10 +167,7 @@
   padding: 8px 12px 12px;
   color: var(--ink-soft);
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow: hidden; /* backstop; the preview is already truncated with … in JS */
 }
 .ws-node-empty { color: var(--ink-dim); font-style: italic; }
 

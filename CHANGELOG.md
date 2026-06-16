@@ -1,3 +1,17 @@
+## v0.11.3 — Workshop: stop clipping the connection dots (real root cause) — 2026-06-16
+
+### Fixed
+- **The connection dots are no longer clipped.** Root cause found: the card's
+  `overflow: hidden` (needed to clip preview text + round the corners) was also
+  clipping the handles, which sit on the card edges. Restructured the node so an
+  **inner wrapper** does the clipping while the dots live outside it — they can
+  never be cut now, including on hover.
+- **Preview text ends with "…"** via deterministic truncation in code, instead
+  of relying on `-webkit-line-clamp` (which silently failed here because the
+  body's computed `display` wasn't `-webkit-box`).
+- Verified live in a browser this time (handles full + centred, text truncates
+  with "…", card stays a fixed size).
+
 ## v0.11.2 — Workshop: version badge, steady cards, add-field reset — 2026-06-16
 
 ### Added
