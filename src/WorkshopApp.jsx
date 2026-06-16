@@ -37,7 +37,7 @@ function scanEdges(nodes) {
       const target = m[1] || m[2]
       if (nodes.find(nn => nn.id === target)) {
         const id = `${n.id}->${target}`
-        if (!unique.has(id)) { unique.add(id); edges.push({ id, source: n.id, target }) }
+        if (!unique.has(id)) { unique.add(id); edges.push({ id, source: n.id, target, reconnectable: true }) }
       }
     }
   }
@@ -48,7 +48,8 @@ function scanEdges(nodes) {
 // vertical centre (auto-measuring made them jump). The card clips to match.
 const WS_NODE_W = 200
 const WS_NODE_H = 140
-const newCard = (id, position, color = '#2f6df6', title = 'Ny scen') => ({
+const DEFAULT_COLOR = '#e6c34e' // warm yellow — the default for new scenes
+const newCard = (id, position, color = DEFAULT_COLOR, title = 'Ny scen') => ({
   id, type: 'card', position,
   data: { title, text: '', color },
   width: WS_NODE_W, height: WS_NODE_H,
@@ -70,6 +71,9 @@ function WorkshopCanvas(props) {
       defaultEdgeOptions={props.defaultEdgeOptions}
       onNodesChange={props.onNodesChange}
       onConnect={props.onConnect}
+      onReconnect={props.onReconnect}
+      onReconnectStart={props.onReconnectStart}
+      onReconnectEnd={props.onReconnectEnd}
       onNodeClick={props.onNodeClick}
       onPaneClick={props.onPaneClick}
       onNodeDragStop={props.onNodeDragStop}
@@ -178,10 +182,16 @@ export default function WorkshopApp() {
     const ids = nodes.map(n => n.id)
     return ids.filter(id => /^\d{3}$/.test(id)).sort()[0] || ids[0] || null
   }, [nodes])
-  // Display copy with a start flag for the node badge (not persisted).
+  // Display copy: scale the card with the text size (so nothing clips) and
+  // flag the start scene for its badge. Not persisted — view-only.
   const displayNodes = useMemo(
-    () => nodes.map(n => (n.id === startId ? { ...n, data: { ...n.data, _isStart: true } } : n)),
-    [nodes, startId]
+    () => nodes.map(n => ({
+      ...n,
+      width: Math.round(WS_NODE_W * uiScale),
+      height: Math.round(WS_NODE_H * uiScale),
+      data: n.id === startId ? { ...n.data, _isStart: true } : n.data,
+    })),
+    [nodes, startId, uiScale]
   )
   const workshopProjects = useMemo(() => {
     const ids = loadJSON(WORKSHOP_IDS_KEY, [])
@@ -238,6 +248,43 @@ export default function WorkshopApp() {
     })
   }, [])
 
+  // Edge editing: drag an edge end off into empty space to delete it, or onto
+  // another scene to relink it. Edges are derived from [#ref]s in the text, so
+  // we edit the text and re-scan.
+  const reconnectOk = useRef(true)
+  const onReconnectStart = useCallback(() => { reconnectOk.current = false }, [])
+  const onReconnect = useCallback((oldEdge, conn) => {
+    reconnectOk.current = true
+    if (!conn?.source || !conn?.target || conn.source === conn.target) return
+    setNodes(ns => {
+      const updated = ns.map(n => {
+        let text = n.data.text || ''
+        if (n.id === oldEdge.source) {
+          const { body, choiceIds } = splitBodyAndChoices(text)
+          text = joinBodyAndChoices(body, choiceIds.filter(x => x !== oldEdge.target))
+        }
+        if (n.id === conn.source) text = addRef(text, conn.target)
+        return text === (n.data.text || '') ? n : { ...n, data: { ...n.data, text } }
+      })
+      setEdges(scanEdges(updated))
+      return updated
+    })
+  }, [])
+  const onReconnectEnd = useCallback((_evt, edge) => {
+    if (!reconnectOk.current) {
+      setNodes(ns => {
+        const updated = ns.map(n => {
+          if (n.id !== edge.source) return n
+          const { body, choiceIds } = splitBodyAndChoices(n.data.text || '')
+          return { ...n, data: { ...n.data, text: joinBodyAndChoices(body, choiceIds.filter(x => x !== edge.target)) } }
+        })
+        setEdges(scanEdges(updated))
+        return updated
+      })
+    }
+    reconnectOk.current = true
+  }, [])
+
   const doDeleteScene = id => {
     commit(ns =>
       ns.filter(n => n.id !== id).map(n => {
@@ -276,7 +323,7 @@ export default function WorkshopApp() {
     setShareInfo(null)
     // seed a first scene so the canvas isn't empty
     const sid = '001'
-    commit(() => [newCard(sid, { x: 120, y: 140 }, '#2f6df6', 'Start')])
+    commit(() => [newCard(sid, { x: 120, y: 140 }, DEFAULT_COLOR, 'Start')])
     setNextId(2); setSelectedId(sid)
   }
   const deleteStory = id => {
@@ -379,6 +426,7 @@ export default function WorkshopApp() {
                 nodes={displayNodes} edges={edges} nodeTypes={nodeTypes} defaultEdgeOptions={defaultEdgeOptions}
                 projectId={projectId}
                 onNodesChange={onNodesChange} onConnect={onConnect}
+                onReconnect={onReconnect} onReconnectStart={onReconnectStart} onReconnectEnd={onReconnectEnd}
                 onNodeClick={(_e, n) => setSelectedId(n.id)}
                 onPaneClick={() => setSelectedId(null)}
                 onNodeDragStop={() => { /* positions already in state; autosave persists */ }}

@@ -14,7 +14,7 @@ function isLight(hex) {
 // scene's colour, soft shadow, no hard border. type stays 'card' so the
 // advanced app can render the same story.
 const WorkshopNode = memo(({ data, selected }) => {
-  const color = data?.color || '#2f6df6'
+  const color = data?.color || '#e6c34e'
   const { body, choiceIds } = splitBodyAndChoices(data?.text || '')
   const isStart = !!data?._isStart
   const isEnd = choiceIds.length === 0

@@ -1,3 +1,16 @@
+## v0.12.0 — Workshop: scaling cards, yellow default, draggable edges — 2026-06-16
+
+### Added
+- **Drag an edge to edit it.** Grab a connection's end and drop it in empty
+  space to delete it, or onto another scene to relink it. (Edges are derived
+  from the `[#ref]`s, so this rewrites the scene text.)
+
+### Changed
+- **Scene cards scale with the text size.** A− / A+ now grows the whole card
+  proportionally, so bigger text no longer gets clipped — verified at multiple
+  scales (text still truncates with "…", nothing spills).
+- **New scenes default to the warm yellow** instead of the blue.
+
 ## v0.11.3 — Workshop: stop clipping the connection dots (real root cause) — 2026-06-16
 
 ### Fixed

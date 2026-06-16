@@ -137,8 +137,8 @@
    otherwise the side dots get cut off. Fixed size keeps the dots centred. */
 .ws-node {
   position: relative;
-  width: 200px;
-  height: 140px;
+  width: calc(200px * var(--ws-scale, 1));
+  height: calc(140px * var(--ws-scale, 1));
   font-size: calc(12.5px * var(--ws-scale, 1));
   transition: transform .1s;
 }
