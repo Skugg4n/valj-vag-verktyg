@@ -1,3 +1,32 @@
+## v0.11.0 — Workshop: scale control, no popups, new palette, two-way links — 2026-06-16
+
+Big round of on-site usability fixes from live feedback.
+
+### Added
+- **Text size control (A− / A+)** in the top bar — scales all editor text so it
+  reads well on a projector/TV. Choice is remembered.
+- **Type the choice name as you branch.** "+ Lägg till val" is now a single
+  field: type what the choice is called and press Enter to create + link a new
+  scene. Stays open so you can add several in a row. Existing scenes still
+  listed below to link to.
+- **Scene markers in the graph:** a "★ Start" badge on the first scene, "Slut"
+  on scenes with no choices, and "Tom" on scenes with no text yet — so you can
+  see loose ends at a glance.
+- **Two-way links.** Scenes can now link in both directions (e.g. die →
+  return to the previous scene): drag from either side of a node, or use
+  "länka en scen du redan har".
+
+### Changed
+- **New colour system.** Replaced the generic blue with a calmer petrol/teal
+  accent. Selection is shown by lift + shadow instead of an outline (no more
+  outlines). Connection handles are clean rings; lines are a warm grey.
+- **The body text field grows with the text** — no manual resizing.
+- **No browser popups.** Delete / share / login prompts are now calm in-app
+  dialogs and a toast.
+- **Playback without the book image.** The reading view is now a clean light
+  page (keeps the serif type, drop-cap and choices). Also drops the 1.5 MB
+  book image from the bundle.
+
 ## v0.10.2 — Workshop polish: copy, dead-ends, calmer UI — 2026-06-16
 
 Round of fixes from a specialist review pass (UX, UI consistency, proxy critic).

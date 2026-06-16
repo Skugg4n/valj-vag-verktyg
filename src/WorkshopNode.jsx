@@ -15,7 +15,10 @@ function isLight(hex) {
 // advanced app can render the same story.
 const WorkshopNode = memo(({ data, selected }) => {
   const color = data?.color || '#2f6df6'
-  const { body } = splitBodyAndChoices(data?.text || '')
+  const { body, choiceIds } = splitBodyAndChoices(data?.text || '')
+  const isStart = !!data?._isStart
+  const isEnd = choiceIds.length === 0
+  const isEmpty = !body.trim()
   return (
     <div className={`ws-node${selected ? ' selected' : ''}`}>
       <div
@@ -24,11 +27,21 @@ const WorkshopNode = memo(({ data, selected }) => {
       >
         {data?.title?.trim() || 'Namnlös scen'}
       </div>
+      {(isStart || isEnd || isEmpty) && (
+        <div className="ws-node-badges">
+          {isStart && <span className="ws-badge start">★ Start</span>}
+          {isEnd && <span className="ws-badge end">Slut</span>}
+          {isEmpty && <span className="ws-badge warn">Tom</span>}
+        </div>
+      )}
       <div className="ws-node-body">
-        {body ? body.slice(0, 90) : <span className="ws-node-empty">Tom scen…</span>}
+        {body ? body.slice(0, 90) : <span className="ws-node-empty">Skriv vad som händer…</span>}
       </div>
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      {/* Both sides connect in either direction, so scenes can link back
+          (e.g. die → return to the previous scene). The handle you drag FROM
+          is the source; dropping on another scene adds the choice there. */}
+      <Handle id="left" type="source" position={Position.Left} isConnectableStart isConnectableEnd />
+      <Handle id="right" type="source" position={Position.Right} isConnectableStart isConnectableEnd />
     </div>
   )
 })

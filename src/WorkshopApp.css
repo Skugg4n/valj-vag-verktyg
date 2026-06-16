@@ -29,7 +29,7 @@
   border: none;
   border-radius: 8px;
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: calc(14px * var(--ws-scale, 1));
   color: var(--ink);
   min-width: 220px;
   outline: none;
@@ -38,7 +38,7 @@
 
 .ws-tb-btn {
   font: inherit;
-  font-size: 13px;
+  font-size: calc(13px * var(--ws-scale, 1));
   border: none;
   border-radius: 8px;
   padding: 8px 14px;
@@ -51,13 +51,17 @@
 .ws-tb-btn:hover { background: var(--line); }
 .ws-tb-btn:active { transform: translateY(1px); }
 .ws-tb-btn:disabled { opacity: .5; cursor: default; }
-.ws-tb-btn.primary { background: var(--accent-soft); color: #1b3a85; font-weight: 600; }
+.ws-tb-btn.primary { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; }
 .ws-tb-btn.accent { background: var(--accent); color: #fff; font-weight: 600; }
-.ws-tb-btn.accent:hover { filter: brightness(1.05); background: var(--accent); }
+.ws-tb-btn.accent:hover { background: var(--accent-2); }
 .ws-tb-btn.shared { background: var(--good); color: #fff; font-weight: 600; }
 .ws-tb-btn.ghost { background: transparent; color: var(--ink-dim); }
 .ws-tb-btn.ghost:hover { background: var(--panel-2); color: var(--ink); }
+.ws-tb-btn.danger { background: var(--danger); color: #fff; font-weight: 600; }
+.ws-tb-btn.danger:hover { filter: brightness(1.05); }
 .ws-share { display: flex; align-items: center; gap: 4px; }
+.ws-zoom { display: flex; gap: 2px; }
+.ws-zoom-btn { font-weight: 700; padding-left: 10px; padding-right: 10px; }
 
 .ws-story-menu {
   position: absolute;
@@ -74,7 +78,7 @@
 }
 .ws-story-item {
   font: inherit;
-  font-size: 13px;
+  font-size: calc(13px * var(--ws-scale, 1));
   text-align: left;
   background: transparent;
   border: none;
@@ -85,9 +89,9 @@
 }
 .ws-story-item:hover { background: var(--panel-2); color: var(--ink); }
 .ws-story-item.active { color: var(--accent); font-weight: 600; }
-.ws-story-item.danger:hover { background: #fde7e5; color: var(--danger); }
+.ws-story-item.danger:hover { background: var(--danger-soft); color: var(--danger); }
 .ws-story-sep {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--ws-scale, 1));
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--ink-dim);
@@ -117,10 +121,15 @@
 }
 
 /* ReactFlow chrome → calm light */
-.ws-canvas .react-flow__edge path { stroke: #b3ada0; stroke-width: 1.5; }
+.ws-canvas .react-flow__edge path { stroke: var(--edge); stroke-width: 2; }
 .ws-canvas .react-flow__edge.selected path,
 .ws-canvas .react-flow__edge:hover path { stroke: var(--accent); }
-.ws-canvas .react-flow__handle { background: var(--accent); border: 2px solid #fff; width: 9px; height: 9px; }
+.ws-canvas .react-flow__arrowhead { fill: var(--edge); }
+.ws-canvas .react-flow__handle {
+  background: var(--panel); border: 2px solid var(--accent);
+  width: 12px; height: 12px;
+}
+.ws-canvas .react-flow__handle:hover { background: var(--accent); }
 
 /* ---- Scene node card ---- */
 .ws-node {
@@ -129,15 +138,16 @@
   border-radius: 12px;
   box-shadow: var(--soft-shadow);
   overflow: hidden;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--ws-scale, 1));
   transition: box-shadow .15s, transform .1s;
 }
-.ws-node:hover { transform: translateY(-1px); }
-.ws-node.selected { box-shadow: 0 0 0 2px var(--accent), var(--soft-shadow); }
+.ws-node:hover { transform: translateY(-2px); }
+/* Selection is shown by lift + deeper shadow, not an outline. */
+.ws-node.selected { box-shadow: var(--lift-shadow); transform: translateY(-3px); }
 .ws-node-head {
   padding: 9px 12px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: calc(13px * var(--ws-scale, 1));
   line-height: 1.25;
 }
 .ws-node-body {
@@ -166,7 +176,7 @@
 .ws-panel-empty { align-items: center; justify-content: center; text-align: center; color: var(--ink-dim); }
 .ws-panel-empty p { max-width: 240px; line-height: 1.5; }
 .ws-field-label {
-  font-size: 11px;
+  font-size: calc(11px * var(--ws-scale, 1));
   text-transform: uppercase;
   letter-spacing: .06em;
   color: var(--ink-dim);
@@ -181,42 +191,90 @@
   border-radius: 8px;
   padding: 10px 12px;
   font: inherit;
-  font-size: 14px;
+  font-size: calc(14px * var(--ws-scale, 1));
   color: var(--ink);
   outline: none;
 }
 .ws-input:focus, .ws-textarea:focus { box-shadow: 0 0 0 3px var(--accent-soft); }
-.ws-textarea { min-height: 150px; resize: vertical; line-height: 1.5; }
+/* Auto-grows to fit its text (height set in JS); no manual resize handle. */
+.ws-textarea { min-height: 110px; resize: none; overflow: hidden; line-height: 1.5; }
 
 .ws-colors { display: flex; flex-wrap: wrap; gap: 8px; }
 .ws-swatch { width: 26px; height: 26px; border-radius: 7px; border: none; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .ws-swatch.active { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
 
 .ws-choices { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
-.ws-choices-empty { font-size: 12.5px; color: var(--ink-dim); font-style: italic; }
+.ws-choices-empty { font-size: calc(12.5px * var(--ws-scale, 1)); color: var(--ink-dim); font-style: italic; }
 .ws-choice-row {
   display: flex; align-items: center; gap: 8px;
   background: var(--panel-2); border-radius: 8px; padding: 8px 10px;
 }
-.ws-choice-label { flex: 1; font-size: 13px; color: var(--ink); }
-.ws-choice-x { border: none; background: transparent; color: var(--ink-dim); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 5px; }
-.ws-choice-x:hover { color: var(--danger); background: #fde7e5; }
+.ws-choice-label { flex: 1; font-size: calc(13px * var(--ws-scale, 1)); color: var(--ink); }
+.ws-choice-x { border: none; background: transparent; color: var(--ink-dim); cursor: pointer; font-size: calc(13px * var(--ws-scale, 1)); padding: 2px 6px; border-radius: 5px; }
+.ws-choice-x:hover { color: var(--danger); background: var(--danger-soft); }
 .ws-add-choice {
-  font: inherit; font-size: 13px; text-align: left;
+  font: inherit; font-size: calc(13px * var(--ws-scale, 1)); text-align: left;
   background: transparent; border: 1.5px dashed var(--line-strong); color: var(--accent);
   border-radius: 8px; padding: 9px 12px; cursor: pointer; font-weight: 600;
 }
 .ws-add-choice:hover { background: var(--accent-soft); border-color: var(--accent); }
 .ws-add-menu { display: flex; flex-direction: column; gap: 4px; background: var(--panel-2); border-radius: 8px; padding: 6px; }
-.ws-add-item { font: inherit; font-size: 13px; text-align: left; background: transparent; border: none; border-radius: 6px; padding: 8px 10px; color: var(--ink-soft); cursor: pointer; }
+.ws-add-item { font: inherit; font-size: calc(13px * var(--ws-scale, 1)); text-align: left; background: transparent; border: none; border-radius: 6px; padding: 8px 10px; color: var(--ink-soft); cursor: pointer; }
 .ws-add-item:hover { background: var(--panel); color: var(--ink); }
 .ws-add-new { color: var(--accent); font-weight: 600; }
 .ws-add-cancel { color: var(--ink-dim); }
 
 .ws-delete {
   margin-top: 18px;
-  font: inherit; font-size: 13px;
+  font: inherit; font-size: calc(13px * var(--ws-scale, 1));
   background: transparent; border: 1px solid var(--line-strong); color: var(--danger);
   border-radius: 8px; padding: 9px 12px; cursor: pointer;
 }
-.ws-delete:hover { background: #fde7e5; border-color: var(--danger); }
+.ws-delete:hover { background: var(--danger-soft); border-color: var(--danger); }
+
+/* ---- Add-choice: type the name + Enter ---- */
+.ws-add-hint { font-size: calc(12.5px * var(--ws-scale, 1)); color: var(--ink-dim); padding: 2px 2px 4px; }
+.ws-add-row { display: flex; gap: 6px; }
+.ws-add-input { flex: 1; min-width: 0; }
+.ws-add-create {
+  font: inherit; font-size: calc(13px * var(--ws-scale, 1)); font-weight: 600;
+  border: none; border-radius: 8px; padding: 0 14px; cursor: pointer;
+  background: var(--accent); color: #fff; white-space: nowrap;
+}
+.ws-add-create:hover { background: var(--accent-2); }
+.ws-add-sep {
+  font-size: calc(11px * var(--ws-scale, 1)); color: var(--ink-dim);
+  text-align: center; padding: 8px 0 2px;
+}
+
+/* ---- Node badges (start / end / empty) ---- */
+.ws-node-badges { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 12px 0; }
+.ws-badge {
+  font-size: calc(10px * var(--ws-scale, 1)); font-weight: 700;
+  letter-spacing: .02em; padding: 2px 7px; border-radius: 999px; line-height: 1.5;
+}
+.ws-badge.start { background: var(--accent-soft); color: var(--accent-ink); }
+.ws-badge.end { background: var(--panel-2); color: var(--ink-soft); }
+.ws-badge.warn { background: #fbeed0; color: #8a5a08; }
+
+/* ---- In-app confirm dialog (replaces browser confirm/alert) ---- */
+.ws-modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(30, 33, 40, .28);
+  display: flex; align-items: center; justify-content: center;
+}
+.ws-modal {
+  background: var(--panel); border-radius: 14px; box-shadow: var(--lift-shadow);
+  padding: 22px; max-width: 360px; width: calc(100% - 48px);
+}
+.ws-modal-msg { margin: 0 0 18px; font-size: calc(15px * var(--ws-scale, 1)); line-height: 1.45; color: var(--ink); }
+.ws-modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---- Toast ---- */
+.ws-toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+  z-index: 200; background: var(--ink); color: #fff;
+  font-size: calc(13.5px * var(--ws-scale, 1));
+  padding: 11px 18px; border-radius: 10px; box-shadow: var(--soft-shadow);
+  max-width: 80vw;
+}

@@ -1,17 +1,15 @@
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { parseScene } from './sceneRefs.js'
-import bookSpread from './assets/book-spread.jpg'
 import './BookReader.css'
 
-// Book-spread playback. nodes = published scene shape [{ id, title, text, color }].
+// Clean reading view. nodes = published scene shape [{ id, title, text, color }].
 // Used by the public /spela/:id reader and the workshop "Spela upp" preview.
 export default function BookReader({ title, nodes, onClose }) {
   const map = useMemo(() => new Map((nodes || []).map(n => [n.id, n])), [nodes])
   // Start at the lowest 3-digit scene id, else the first node.
   const firstId = useMemo(() => {
     const ids = (nodes || []).map(n => n.id)
-    const numeric = ids.filter(id => /^\d{3}$/.test(id)).sort()
-    return numeric[0] || ids[0] || null
+    return ids.filter(id => /^\d{3}$/.test(id)).sort()[0] || ids[0] || null
   }, [nodes])
 
   const [curId, setCurId] = useState(firstId)
@@ -23,23 +21,6 @@ export default function BookReader({ title, nodes, onClose }) {
     () => parseScene(node?.text || '', id => map.get(id)?.title),
     [node, map]
   )
-
-  // Fit the text to the page: step the font down if it overflows the spread.
-  const spreadRef = useRef(null)
-  const [fit, setFit] = useState(1)
-  useEffect(() => {
-    setFit(1)
-    const el = spreadRef.current
-    if (!el) return
-    let scale = 1
-    const tighten = () => {
-      if (el.scrollHeight <= el.clientHeight + 2 || scale <= 0.6) return
-      scale = Math.max(0.6, scale - 0.06)
-      setFit(scale)
-      requestAnimationFrame(tighten)
-    }
-    requestAnimationFrame(tighten)
-  }, [curId, body, choices.length])
 
   const go = id => { setHistory(h => [...h, curId]); setCurId(id) }
   const back = () =>
@@ -64,11 +45,7 @@ export default function BookReader({ title, nodes, onClose }) {
         {onClose && <button className="book-btn" onClick={onClose}>Stäng ✕</button>}
       </div>
       <div className="book-wrap">
-        <div
-          className="book-spread"
-          ref={spreadRef}
-          style={{ backgroundImage: `url(${bookSpread})`, fontSize: `${2.3 * fit}cqw` }}
-        >
+        <article className="book-page">
           {!node ? (
             <div className="book-empty-page">
               <p>Den här sidan saknas.</p>
@@ -78,9 +55,7 @@ export default function BookReader({ title, nodes, onClose }) {
             </div>
           ) : (
             <>
-              <h1 className="book-title" style={{ fontSize: `${3.2 * fit}cqw` }}>
-                {node.title || 'Namnlös'}
-              </h1>
+              <h1 className="book-title">{node.title || 'Namnlös'}</h1>
               {paras.map((p, i) => (
                 <p key={i} className={i === 0 && dropCap ? 'book-first' : undefined}>{p}</p>
               ))}
@@ -106,7 +81,7 @@ export default function BookReader({ title, nodes, onClose }) {
               </div>
             </>
           )}
-        </div>
+        </article>
       </div>
     </div>
   )

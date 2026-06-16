@@ -12,8 +12,11 @@ import { toPublishedNodes } from './storyExport.js'
 import { splitBodyAndChoices, joinBodyAndChoices } from './sceneRefs.js'
 import { makeShareId } from './utils/shareId.js'
 import { shareUrl } from './routing.js'
-import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from './constants.js'
 import './WorkshopApp.css'
+
+const SCALE_KEY = 'cyoa-ws-scale'
+const SCALE_MIN = 0.8
+const SCALE_MAX = 1.8
 
 const SHAREIDS_KEY = 'cyoa-shareids'
 const WORKSHOP_IDS_KEY = 'cyoa-workshop-ids'
@@ -39,10 +42,11 @@ function scanEdges(nodes) {
   return edges
 }
 
+// No fixed width/height: ReactFlow measures the rendered card so the
+// connection handles always sit at the card's true vertical centre.
 const newCard = (id, position, color = '#2f6df6', title = 'Ny scen') => ({
   id, type: 'card', position,
   data: { title, text: '', color },
-  width: DEFAULT_NODE_WIDTH, height: DEFAULT_NODE_HEIGHT,
 })
 const addRef = (text, targetId) => {
   const { body, choiceIds } = splitBodyAndChoices(text || '')
@@ -84,7 +88,10 @@ export default function WorkshopApp() {
 
   const nodeTypes = useMemo(() => ({ card: WorkshopNode }), [])
   const defaultEdgeOptions = useMemo(
-    () => ({ markerEnd: { type: MarkerType.ArrowClosed }, style: { strokeWidth: 1.5 } }),
+    () => ({
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#b6b0a2', width: 18, height: 18 },
+      style: { strokeWidth: 2, stroke: '#b6b0a2' },
+    }),
     []
   )
 
@@ -98,6 +105,18 @@ export default function WorkshopApp() {
   const [busy, setBusy] = useState(false)
   const [storyMenu, setStoryMenu] = useState(false)
   const [autoSave] = useState(true)
+  // UI text scale, adjustable on-site for projectors/TVs. Persisted.
+  const [uiScale, setUiScale] = useState(() => {
+    const v = parseFloat(localStorage.getItem(SCALE_KEY))
+    return v >= SCALE_MIN && v <= SCALE_MAX ? v : 1
+  })
+  useEffect(() => { try { localStorage.setItem(SCALE_KEY, String(uiScale)) } catch { /* ignore */ } }, [uiScale])
+  const bumpScale = d => setUiScale(s => Math.min(SCALE_MAX, Math.max(SCALE_MIN, Math.round((s + d) * 100) / 100)))
+  // In-app dialogs instead of browser prompt/confirm/alert.
+  const [confirmState, setConfirmState] = useState(null) // { message, confirmLabel, onYes }
+  const [toast, setToast] = useState(null)
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3500); return () => clearTimeout(t) }, [toast])
+  const askConfirm = (message, onYes, confirmLabel = 'Ja') => setConfirmState({ message, onYes, confirmLabel })
 
   const { user } = useAuth()
   const { projects, setProjects, projectId, setProjectId, setProjectStart } = useProjectStorage({
@@ -149,6 +168,16 @@ export default function WorkshopApp() {
 
   const selected = nodes.find(n => n.id === selectedId) || null
   const scenes = useMemo(() => nodes.map(n => ({ id: n.id, title: n.data?.title || '' })), [nodes])
+  // The start scene = lowest 3-digit id (matches BookReader playback).
+  const startId = useMemo(() => {
+    const ids = nodes.map(n => n.id)
+    return ids.filter(id => /^\d{3}$/.test(id)).sort()[0] || ids[0] || null
+  }, [nodes])
+  // Display copy with a start flag for the node badge (not persisted).
+  const displayNodes = useMemo(
+    () => nodes.map(n => (n.id === startId ? { ...n, data: { ...n.data, _isStart: true } } : n)),
+    [nodes, startId]
+  )
   const workshopProjects = useMemo(() => {
     const ids = loadJSON(WORKSHOP_IDS_KEY, [])
     return Object.entries(projects)
@@ -173,18 +202,22 @@ export default function WorkshopApp() {
     setSelectedId(id)
   }
 
-  const onAddChoice = targetId => {
+  const onAddChoice = (targetId, newTitle) => {
     if (!selectedId) return
     if (targetId) {
       commit(ns => ns.map(n => (n.id === selectedId ? { ...n, data: { ...n.data, text: addRef(n.data.text, targetId) } } : n)))
       return
     }
-    // create a new scene to the right and link it
+    // Create a new scene to the right and link it. Stagger it below existing
+    // children so several choices from the same scene don't stack exactly.
     const newId = String(nextId).padStart(3, '0')
     const from = nodes.find(n => n.id === selectedId)
-    const pos = from ? { x: from.position.x + 300, y: from.position.y } : { x: 120, y: 120 }
+    const siblings = from ? splitBodyAndChoices(from.data?.text || '').choiceIds.length : 0
+    const pos = from
+      ? { x: from.position.x + 320, y: from.position.y + siblings * 150 }
+      : { x: 120, y: 120 }
     commit(ns => {
-      let updated = [...ns, newCard(newId, pos)]
+      let updated = [...ns, newCard(newId, pos, undefined, newTitle?.trim() || 'Ny scen')]
       updated = updated.map(n => (n.id === selectedId ? { ...n, data: { ...n.data, text: addRef(n.data.text, newId) } } : n))
       return updated
     })
@@ -200,8 +233,7 @@ export default function WorkshopApp() {
     })
   }, [])
 
-  const deleteScene = id => {
-    if (!confirm('Ta bort den här scenen?')) return
+  const doDeleteScene = id => {
     commit(ns =>
       ns.filter(n => n.id !== id).map(n => {
         const { body, choiceIds } = splitBodyAndChoices(n.data?.text || '')
@@ -219,7 +251,6 @@ export default function WorkshopApp() {
     const loaded = (data.nodes || []).map(n => ({
       id: n.id, type: 'card', position: n.position || { x: 0, y: 0 },
       data: { text: n.text || '', title: n.title || '', color: n.color || '#2f6df6' },
-      width: n.width ?? DEFAULT_NODE_WIDTH, height: n.height ?? DEFAULT_NODE_HEIGHT,
     }))
     setNodes(loaded); setEdges(scanEdges(loaded)); setNextId(data.nextNodeId || 1)
     setProjectName(data.projectName || ''); setSelectedId(null)
@@ -243,8 +274,10 @@ export default function WorkshopApp() {
     setNextId(2); setSelectedId(sid)
   }
   const deleteStory = id => {
-    if (!confirm('Radera hela berättelsen? Detta går inte att ångra.')) return
     setStoryMenu(false)
+    askConfirm('Radera hela berättelsen? Det går inte att ångra.', () => doDeleteStory(id), 'Radera')
+  }
+  const doDeleteStory = id => {
     deleteFromFirestore(id)
     setProjects(p => { const n = { ...p }; delete n[id]; return n })
     saveJSON(WORKSHOP_IDS_KEY, loadJSON(WORKSHOP_IDS_KEY, []).filter(x => x !== id))
@@ -255,7 +288,7 @@ export default function WorkshopApp() {
   // --- Publish ---
   const publish = async () => {
     if (nodes.length === 0) return
-    if (!user) { alert('Logga in (uppe till höger) för att dela berättelsen.'); return }
+    if (!user) { setToast('Logga in uppe till höger för att dela berättelsen.'); return }
     setBusy(true)
     try {
       const map = loadJSON(SHAREIDS_KEY, {})
@@ -264,23 +297,27 @@ export default function WorkshopApp() {
       const ok = await publishStory(sid, {
         title: projectName || 'Berättelse', nodes: toPublishedNodes(nodes), sourceProjectId: projectId,
       })
-      if (ok) setShareInfo({ id: sid, url: shareUrl(sid) })
-      else alert('Kunde inte publicera. Försök igen.')
+      if (ok) { setShareInfo({ id: sid, url: shareUrl(sid) }); setToast('Berättelsen är delad. Länken är kopierad.'); navigator.clipboard?.writeText(shareUrl(sid)) }
+      else setToast('Kunde inte publicera just nu. Försök igen.')
     } finally { setBusy(false) }
   }
-  const stopSharing = async () => {
-    if (!shareInfo || !confirm('Sluta dela den publika länken?')) return
+  const stopSharing = () => {
+    if (!shareInfo) return
+    askConfirm('Sluta dela den publika länken? Den slutar då fungera.', doStopSharing, 'Sluta dela')
+  }
+  const doStopSharing = async () => {
     setBusy(true)
     try {
       await unpublishStory(shareInfo.id)
       const map = loadJSON(SHAREIDS_KEY, {}); delete map[projectId]; saveJSON(SHAREIDS_KEY, map)
       setShareInfo(null)
+      setToast('Delningen är avslutad.')
     } finally { setBusy(false) }
   }
   const copyLink = () => { if (shareInfo) navigator.clipboard?.writeText(shareInfo.url) }
 
   return (
-    <div className="ws-app">
+    <div className="ws-app" style={{ '--ws-scale': uiScale }}>
       <header className="ws-topbar">
         <div className="ws-brand">Berättelseverkstad</div>
         <div className="ws-story">
@@ -305,6 +342,10 @@ export default function WorkshopApp() {
           )}
         </div>
         <span className="ws-flex" />
+        <div className="ws-zoom" title="Textstorlek på skärmen">
+          <button className="ws-tb-btn ghost ws-zoom-btn" onClick={() => bumpScale(-0.1)} disabled={uiScale <= SCALE_MIN} aria-label="Mindre text">A−</button>
+          <button className="ws-tb-btn ghost ws-zoom-btn" onClick={() => bumpScale(0.1)} disabled={uiScale >= SCALE_MAX} aria-label="Större text">A+</button>
+        </div>
         <button className="ws-tb-btn primary" onClick={addScene}>+ Ny scen</button>
         <button className="ws-tb-btn" onClick={() => setPlaying(true)} disabled={!nodes.length}>▶ Spela upp</button>
         {shareInfo ? (
@@ -329,7 +370,7 @@ export default function WorkshopApp() {
           ) : (
             <ReactFlowProvider>
               <WorkshopCanvas
-                nodes={nodes} edges={edges} nodeTypes={nodeTypes} defaultEdgeOptions={defaultEdgeOptions}
+                nodes={displayNodes} edges={edges} nodeTypes={nodeTypes} defaultEdgeOptions={defaultEdgeOptions}
                 projectId={projectId}
                 onNodesChange={onNodesChange} onConnect={onConnect}
                 onNodeClick={(_e, n) => setSelectedId(n.id)}
@@ -344,13 +385,29 @@ export default function WorkshopApp() {
           scenes={scenes}
           onPatch={patch => selectedId && updateScene(selectedId, patch)}
           onAddChoice={onAddChoice}
-          onDelete={() => selectedId && deleteScene(selectedId)}
+          onDelete={() => selectedId && askConfirm('Ta bort scenen?', () => doDeleteScene(selectedId), 'Ta bort')}
         />
       </div>
 
       {playing && (
         <BookReader title={projectName} nodes={toPublishedNodes(nodes)} onClose={() => setPlaying(false)} />
       )}
+
+      {confirmState && (
+        <div className="ws-modal-backdrop" onClick={() => setConfirmState(null)}>
+          <div className="ws-modal" onClick={e => e.stopPropagation()}>
+            <p className="ws-modal-msg">{confirmState.message}</p>
+            <div className="ws-modal-actions">
+              <button className="ws-tb-btn ghost" onClick={() => setConfirmState(null)}>Avbryt</button>
+              <button className="ws-tb-btn danger" onClick={() => { confirmState.onYes(); setConfirmState(null) }}>
+                {confirmState.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <div className="ws-toast" role="status">{toast}</div>}
     </div>
   )
 }

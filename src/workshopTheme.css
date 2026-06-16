@@ -12,12 +12,17 @@
   --ink: #20242c;
   --ink-soft: #4b515c;
   --ink-dim: #8a8f99;
-  --accent: #2f6df6;      /* ~10% accent */
-  --accent-soft: #dbe6ff;
+  --accent: #15727a;      /* ~10% accent — warm petrol/teal, considered (not generic blue) */
+  --accent-2: #0e5b62;    /* darker accent for hover/press */
+  --accent-soft: #dcebec; /* pale teal tone-plate for soft fills */
+  --accent-ink: #0b474c;  /* readable accent text on soft fills */
   --good: #1f9d6b;
   --warn: #c98a16;
   --danger: #d6483b;
+  --danger-soft: #f6e2df;
+  --edge: #b6b0a2;        /* calm warm-grey connection lines */
   --soft-shadow: 0 10px 30px rgba(40, 44, 56, .10), 0 2px 6px rgba(40, 44, 56, .06);
+  --lift-shadow: 0 18px 44px rgba(40, 44, 56, .20), 0 4px 12px rgba(40, 44, 56, .12);
   color: var(--ink);
   background: var(--bg);
 }

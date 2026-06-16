@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { splitBodyAndChoices, joinBodyAndChoices } from './sceneRefs.js'
 
 const COLORS = ['#2f6df6', '#e8554e', '#e8954e', '#e6c34e', '#3fae6b', '#8e6bd6', '#d96bb0', '#7d8696']
@@ -7,6 +7,7 @@ const COLORS = ['#2f6df6', '#e8554e', '#e8954e', '#e6c34e', '#3fae6b', '#8e6bd6'
 // Choices are stored as trailing [#NNN] refs in the scene text (single source).
 export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, onDelete }) {
   const [adding, setAdding] = useState(false)
+  const [newName, setNewName] = useState('')
   const { body, choiceIds } = splitBodyAndChoices(node?.data?.text || '')
   // The textarea is driven by a local draft so the stored value's trimming
   // (joinBodyAndChoices) can't strip spaces mid-typing. Resync when the
@@ -15,6 +16,15 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
   useEffect(() => {
     setDraft(splitBodyAndChoices(node?.data?.text || '').body)
   }, [node?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-grow the body textarea to fit its content (no manual resize needed).
+  const taRef = useRef(null)
+  useEffect(() => {
+    const el = taRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [draft, node?.id])
 
   if (!node) {
     return (
@@ -29,6 +39,11 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
   const removeChoice = id => onPatch({ text: joinBodyAndChoices(draft, choiceIds.filter(x => x !== id)) })
   const linkable = scenes.filter(s => s.id !== node.id && !choiceIds.includes(s.id))
 
+  // Create + link a new scene named after the choice, in one step. Stays open
+  // and clears so several choices can be added in a row.
+  const createNew = () => { onAddChoice(null, newName); setNewName('') }
+  const openAdd = () => { setNewName(''); setAdding(true) }
+
   return (
     <aside className="ws-panel">
       <label className="ws-field-label">Scenens namn</label>
@@ -41,6 +56,7 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
 
       <label className="ws-field-label">Vad händer här?</label>
       <textarea
+        ref={taRef}
         className="ws-textarea"
         value={draft}
         placeholder="Skriv scenens text…"
@@ -62,7 +78,9 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
 
       <label className="ws-field-label">Val härifrån</label>
       <div className="ws-choices">
-        {choiceIds.length === 0 && <div className="ws-choices-empty">Inga val än. Det här blir ett slut på berättelsen.</div>}
+        {choiceIds.length === 0 && !adding && (
+          <div className="ws-choices-empty">Inga val än. Det här blir ett slut på berättelsen.</div>
+        )}
         {choiceIds.map(id => (
           <div key={id} className="ws-choice-row">
             <span className="ws-choice-label">→ {titleOf(id)}</span>
@@ -71,15 +89,25 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
         ))}
 
         {!adding ? (
-          <button className="ws-add-choice" onClick={() => setAdding(true)}>+ Lägg till val</button>
+          <button className="ws-add-choice" onClick={openAdd}>+ Lägg till val</button>
         ) : (
           <div className="ws-add-menu">
-            <button
-              className="ws-add-item ws-add-new"
-              onClick={() => { onAddChoice(null); setAdding(false) }}
-            >
-              ➕ Skapa ny scen
-            </button>
+            <span className="ws-add-hint">Vad ska valet heta?</span>
+            <div className="ws-add-row">
+              <input
+                className="ws-input ws-add-input"
+                autoFocus
+                value={newName}
+                placeholder="t.ex. Kasta sten"
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { e.preventDefault(); createNew() }
+                  if (e.key === 'Escape') setAdding(false)
+                }}
+              />
+              <button className="ws-add-create" onClick={createNew}>Skapa</button>
+            </div>
+            {linkable.length > 0 && <span className="ws-add-sep">eller länka en scen du redan har</span>}
             {linkable.map(s => (
               <button
                 key={s.id}
@@ -89,7 +117,7 @@ export default function WorkshopEditPanel({ node, scenes, onPatch, onAddChoice, 
                 → {s.title?.trim() || 'Namnlös scen'}
               </button>
             ))}
-            <button className="ws-add-item ws-add-cancel" onClick={() => setAdding(false)}>Avbryt</button>
+            <button className="ws-add-item ws-add-cancel" onClick={() => setAdding(false)}>Klar</button>
           </div>
         )}
       </div>
