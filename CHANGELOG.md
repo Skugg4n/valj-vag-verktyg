@@ -1,3 +1,11 @@
+## v0.12.1 — Workshop: grab a connection anywhere on the line — 2026-06-16
+
+### Changed
+- **Click anywhere on a connection line to select it** (wide hit area). The
+  selected line highlights and a **×** appears at its middle — click it to
+  remove the link. Much easier than aiming for the small endpoint.
+  (Endpoint-dragging to delete/reconnect still works too.)
+
 ## v0.12.0 — Workshop: scaling cards, yellow default, draggable edges — 2026-06-16
 
 ### Added

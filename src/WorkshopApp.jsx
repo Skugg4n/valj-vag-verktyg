@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext.jsx'
 import useProjectStorage from './useProjectStorage.js'
 import useFirestoreSync from './useFirestoreSync.js'
 import WorkshopNode from './WorkshopNode.jsx'
+import WorkshopEdge from './WorkshopEdge.jsx'
 import WorkshopEditPanel from './WorkshopEditPanel.jsx'
 import BookReader from './BookReader.jsx'
 import UserMenu from './UserMenu.jsx'
@@ -68,6 +69,7 @@ function WorkshopCanvas(props) {
       nodes={props.nodes}
       edges={props.edges}
       nodeTypes={props.nodeTypes}
+      edgeTypes={props.edgeTypes}
       defaultEdgeOptions={props.defaultEdgeOptions}
       onNodesChange={props.onNodesChange}
       onConnect={props.onConnect}
@@ -96,6 +98,7 @@ export default function WorkshopApp() {
   }, [])
 
   const nodeTypes = useMemo(() => ({ card: WorkshopNode }), [])
+  const edgeTypes = useMemo(() => ({ ws: WorkshopEdge }), [])
   const defaultEdgeOptions = useMemo(
     () => ({
       markerEnd: { type: MarkerType.ArrowClosed, color: '#9a937f', width: 18, height: 18 },
@@ -192,6 +195,23 @@ export default function WorkshopApp() {
       data: n.id === startId ? { ...n.data, _isStart: true } : n.data,
     })),
     [nodes, startId, uiScale]
+  )
+  // Remove a link by stripping the [#target] ref from the source scene.
+  const deleteEdgeByIds = useCallback((source, target) => {
+    setNodes(ns => {
+      const updated = ns.map(n => {
+        if (n.id !== source) return n
+        const { body, choiceIds } = splitBodyAndChoices(n.data.text || '')
+        return { ...n, data: { ...n.data, text: joinBodyAndChoices(body, choiceIds.filter(x => x !== target)) } }
+      })
+      setEdges(scanEdges(updated))
+      return updated
+    })
+  }, [])
+  // Custom edge type + per-edge delete handler (× button when selected).
+  const displayEdges = useMemo(
+    () => edges.map(e => ({ ...e, type: 'ws', data: { onDelete: () => deleteEdgeByIds(e.source, e.target) } })),
+    [edges, deleteEdgeByIds]
   )
   const workshopProjects = useMemo(() => {
     const ids = loadJSON(WORKSHOP_IDS_KEY, [])
@@ -423,7 +443,7 @@ export default function WorkshopApp() {
           ) : (
             <ReactFlowProvider>
               <WorkshopCanvas
-                nodes={displayNodes} edges={edges} nodeTypes={nodeTypes} defaultEdgeOptions={defaultEdgeOptions}
+                nodes={displayNodes} edges={displayEdges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} defaultEdgeOptions={defaultEdgeOptions}
                 projectId={projectId}
                 onNodesChange={onNodesChange} onConnect={onConnect}
                 onReconnect={onReconnect} onReconnectStart={onReconnectStart} onReconnectEnd={onReconnectEnd}

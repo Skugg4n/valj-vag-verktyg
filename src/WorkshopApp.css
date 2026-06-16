@@ -266,6 +266,30 @@
 .ws-badge.end { background: var(--panel-2); color: var(--ink-soft); }
 .ws-badge.warn { background: #fbeed0; color: #8a5a08; }
 
+/* ---- Edge delete button (× at the middle of a selected connection) ---- */
+.ws-edge-del {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--panel);
+  background: var(--danger);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--soft-shadow);
+  pointer-events: all;
+}
+.ws-edge-del:hover { filter: brightness(1.1); box-shadow: var(--lift-shadow); }
+
+/* Make connection lines easy to grab and obvious when selected. */
+.ws-canvas .react-flow__edge { cursor: pointer; }
+.ws-canvas .react-flow__edge.selected path.react-flow__edge-path { stroke-width: 3; }
+
 /* ---- In-app confirm dialog (replaces browser confirm/alert) ---- */
 .ws-modal-backdrop {
   position: fixed; inset: 0; z-index: 200;
