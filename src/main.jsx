@@ -37,7 +37,7 @@ class ErrorBoundary extends Component {
   }
 }
 
-const route = parseRoute(window.location.pathname)
+const route = parseRoute(window.location.pathname, window.location.hostname)
 const fallback = <div style={{ padding: 24, fontFamily: 'sans-serif' }}>Laddar…</div>
 
 function Root() {

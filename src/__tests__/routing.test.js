@@ -7,6 +7,15 @@ describe('parseRoute', () => {
   it('routes /spela/:id', () => { expect(parseRoute('/spela/abc123')).toEqual({ name: 'play', shareId: 'abc123' }) })
   it('ignores a trailing slash on /spela/:id', () => { expect(parseRoute('/spela/abc123/')).toEqual({ name: 'play', shareId: 'abc123' }) })
   it('unknown path → app', () => { expect(parseRoute('/whatever')).toEqual({ name: 'app' }) })
+  it('workshop subdomain → workshop at root', () => {
+    expect(parseRoute('/', 'verkstad.olabelin.se')).toEqual({ name: 'workshop' })
+  })
+  it('workshop subdomain still serves /spela links', () => {
+    expect(parseRoute('/spela/abc123', 'verkstad.olabelin.se')).toEqual({ name: 'play', shareId: 'abc123' })
+  })
+  it('main host root → app (unchanged)', () => {
+    expect(parseRoute('/', 'valj-vag-verktyg.vercel.app')).toEqual({ name: 'app' })
+  })
 })
 
 describe('shareUrl', () => {

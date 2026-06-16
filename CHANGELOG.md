@@ -1,3 +1,11 @@
+## v0.13.1 — Workshop: dedicated subdomain routing — 2026-06-16
+
+### Added
+- ** subdomain serves the workshop at its root.** When the app is
+  loaded from a host starting with  (e.g. verkstad.olabelin.se), 
+  goes straight to the workshop instead of the advanced app.  share
+  links still work on that host too.
+
 ## v0.13.0 — Workshop: welcome modal, working edge-select, tighter rules — 2026-06-16
 
 ### Added
