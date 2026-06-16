@@ -35,13 +35,13 @@ const WorkshopNode = memo(({ data, selected }) => {
         </div>
       )}
       <div className="ws-node-body">
-        {body ? body.slice(0, 90) : <span className="ws-node-empty">Skriv vad som händer…</span>}
+        {body ? body : <span className="ws-node-empty">Skriv vad som händer…</span>}
       </div>
-      {/* Both sides connect in either direction, so scenes can link back
-          (e.g. die → return to the previous scene). The handle you drag FROM
-          is the source; dropping on another scene adds the choice there. */}
-      <Handle id="left" type="source" position={Position.Left} isConnectableStart isConnectableEnd />
-      <Handle id="right" type="source" position={Position.Right} isConnectableStart isConnectableEnd />
+      {/* Target on the left, source on the right. Links can still go both ways:
+          drag from one scene's right dot to another scene's left dot, in any
+          direction (e.g. die → back to the previous scene). */}
+      <Handle type="target" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
     </div>
   )
 })

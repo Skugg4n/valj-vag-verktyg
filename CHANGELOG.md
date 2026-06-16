@@ -1,3 +1,18 @@
+## v0.11.1 — Workshop: fix handles, edges, and node text clipping — 2026-06-16
+
+### Fixed
+- **Connection lines are back and you can drag-connect again.** v0.11.0 made
+  both node handles "source" type, which left edges with no target to attach
+  to (so lines vanished and dragging did nothing). Restored a target (left) +
+  source (right) handle. Links still go both ways: drag from one scene's right
+  dot to another scene's left dot, in any direction.
+- **The connection dots no longer jump around.** Scene cards now have a fixed
+  height, so the dots stay centred instead of moving as the card is measured.
+- **Node text ends cleanly with "…".** Removed the character cap that fought
+  the 3-line clamp; the preview now truncates with an ellipsis inside the card
+  instead of spilling a half-line below it.
+- Connection lines are a touch darker so they read clearly on the canvas.
+
 ## v0.11.0 — Workshop: scale control, no popups, new palette, two-way links — 2026-06-16
 
 Big round of on-site usability fixes from live feedback.

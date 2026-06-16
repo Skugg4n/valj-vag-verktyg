@@ -134,6 +134,9 @@
 /* ---- Scene node card ---- */
 .ws-node {
   width: 200px;
+  height: 140px;            /* fixed so the connection dots stay put */
+  display: flex;
+  flex-direction: column;
   background: var(--card);
   border-radius: 12px;
   box-shadow: var(--soft-shadow);
@@ -151,14 +154,15 @@
   line-height: 1.25;
 }
 .ws-node-body {
-  padding: 10px 12px;
+  flex: 1;
+  padding: 8px 12px 12px;
   color: var(--ink-soft);
   line-height: 1.4;
-  min-height: 34px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ws-node-empty { color: var(--ink-dim); font-style: italic; }
 

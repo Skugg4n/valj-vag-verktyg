@@ -89,8 +89,8 @@ export default function WorkshopApp() {
   const nodeTypes = useMemo(() => ({ card: WorkshopNode }), [])
   const defaultEdgeOptions = useMemo(
     () => ({
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#b6b0a2', width: 18, height: 18 },
-      style: { strokeWidth: 2, stroke: '#b6b0a2' },
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#9a937f', width: 18, height: 18 },
+      style: { strokeWidth: 2, stroke: '#9a937f' },
     }),
     []
   )
