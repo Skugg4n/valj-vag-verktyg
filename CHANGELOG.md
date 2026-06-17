@@ -1,3 +1,17 @@
+## v0.14.2 — Workshop: brand re-skin (warm cream + teal + Fredoka) — 2026-06-17
+
+### Changed
+- **Workshop re-skin** to match olabelin.se + Racet/Välj Väg: warm cream canvas,
+  white cards with more air, teal accent, Fredoka in the brand, Hanken Grotesk in
+  the UI. Pure design-token + font + padding changes scoped to
+  `[data-app='workshop']` — function unchanged, advanced (dark) mode untouched.
+- Calmer, warmer scene-colour palette in the workshop colour picker.
+
+### Fixed
+- `index.html`: added Fredoka + Hanken Grotesk but **kept Inter** in the font
+  link — the advanced mode and main app still depend on Inter, so dropping it
+  would have silently changed their typography on non-Apple systems.
+
 ## v0.14.1 — Workshop: share without login + author credit — 2026-06-16
 
 ### Added
