@@ -1,3 +1,32 @@
+## v0.15.0 — Admin dashboard + pseudonymous analytics — 2026-06-18
+
+### Added
+- **Pseudonymous event logging.** A `track()` helper records visits, reads,
+  reader choices, story builds, and shares to an `events` collection — keyed to
+  the anonymous Firebase uid only (browser/OS/device/lang/referrer context; no
+  IP, no names, no PII). Cheap aggregate counters: `published/{id}.views` and
+  per-day `stats/{date}`.
+- **Reader tracking.** `PublicReader` signs readers in anonymously so they are
+  countable, and logs `read_open` / `read_choice` / `read_complete` + view
+  counts.
+- **/admin dashboard** (dark, gated to the admin uid): KPI cards, a 14-day
+  trend chart, shared-stories table with moderation (delete), reader insights
+  (most-read, popular choices, device/browser breakdown), and a raw event log.
+  Discreet "Admin" link in the user menu for the admin account.
+- `firestore.rules`: `events` (create-by-self, admin-read), `stats`, and
+  `published` (public read, counter-only updates by non-owners, admin
+  list/delete).
+
+### Changed
+- `UserMenu` now treats anonymous identities as signed-out for display (the
+  workshop signs visitors in anonymously on load for analytics).
+
+### Notes
+- Scope-limited on purpose: per-keystroke `scene_edit` is **not** logged (avoids
+  write-spam on the free Spark plan); coarse build events are. Full Auth user
+  listing is out of scope (needs a server/Blaze) — counts come from events.
+- Going live requires deploying `firestore.rules` (additive, validated).
+
 ## v0.14.2 — Workshop: brand re-skin (warm cream + teal + Fredoka) — 2026-06-17
 
 ### Changed
