@@ -1,0 +1,68 @@
+/* Admin dashboard — dark, internal. Uses the advanced app's theme tokens. */
+.ad-root {
+  min-height: 100vh;
+  background: var(--bg, #0d1117);
+  color: var(--ink, #e8ecf2);
+  font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
+}
+.ad-header {
+  display: flex; align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line, #232a35);
+  background: var(--bg-soft, #11161e);
+  position: sticky; top: 0; z-index: 2;
+}
+.ad-title { font-weight: 700; font-size: 15px; letter-spacing: .01em; }
+.ad-main { max-width: 1100px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+.ad-dim { color: var(--ink-dim, #7d8696); }
+.ad-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; }
+
+.ad-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.ad-kpi {
+  background: var(--panel, #161b22);
+  border: 1px solid var(--line, #232a35);
+  border-radius: 12px; padding: 16px 18px;
+}
+.ad-kpi-val { font-size: 28px; font-weight: 700; line-height: 1; }
+.ad-kpi-label { margin-top: 6px; font-size: 13px; color: var(--ink-soft, #b6bdc9); }
+.ad-kpi-sub { margin-top: 2px; font-size: 11px; color: var(--ink-dim, #7d8696); }
+
+.ad-card {
+  background: var(--panel, #161b22);
+  border: 1px solid var(--line, #232a35);
+  border-radius: 12px; padding: 16px 18px;
+}
+.ad-card-h { font-weight: 600; font-size: 14px; margin-bottom: 12px; }
+.ad-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+
+.ad-legend { display: flex; gap: 16px; font-size: 12px; color: var(--ink-soft, #b6bdc9); margin-bottom: 8px; }
+.ad-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+.ad-dot.v, .ad-bar.v { background: #3b82f6; }
+.ad-dot.r, .ad-bar.r { background: #22c55e; }
+.ad-bars { display: flex; align-items: flex-end; gap: 6px; overflow-x: auto; padding-top: 8px; }
+.ad-bargroup { display: flex; align-items: flex-end; gap: 2px; position: relative; flex: 0 0 auto; }
+.ad-bar { width: 10px; border-radius: 3px 3px 0 0; min-height: 2px; }
+.ad-bar-x { position: absolute; bottom: -18px; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--ink-dim, #7d8696); }
+
+.ad-table-wrap { overflow: auto; }
+.ad-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ad-table th { text-align: left; color: var(--ink-dim, #7d8696); font-weight: 500; padding: 6px 10px; border-bottom: 1px solid var(--line, #232a35); position: sticky; top: 0; background: var(--panel, #161b22); }
+.ad-table td { padding: 7px 10px; border-bottom: 1px solid var(--line, #1d232c); }
+.ad-actions { display: flex; gap: 10px; white-space: nowrap; }
+.ad-link { color: #3b82f6; text-decoration: none; }
+.ad-link:hover { text-decoration: underline; }
+.ad-del { background: none; border: 1px solid #5b2330; color: #f08a8a; border-radius: 7px; padding: 3px 10px; cursor: pointer; font-size: 12px; }
+.ad-del:hover { background: #2a141a; }
+
+.ad-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ad-list li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+.ad-list li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ad-list li b { color: var(--ink, #e8ecf2); }
+
+.ad-login { max-width: 360px; text-align: center; }
+.ad-btn {
+  margin-top: 10px; background: #3b82f6; color: #fff; border: none;
+  border-radius: 9px; padding: 9px 16px; font-weight: 600; cursor: pointer;
+}
+.ad-btn:hover { background: #2f6ad6; }

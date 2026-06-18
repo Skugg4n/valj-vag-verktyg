@@ -3,6 +3,7 @@ import ReactFlow, { Background, applyNodeChanges, applyEdgeChanges, ReactFlowPro
 import 'reactflow/dist/style.css'
 import { signInAnonymously } from 'firebase/auth'
 import { auth } from './firebase.js'
+import { ensureAnonAuth, track } from './track.js'
 import { useAuth } from './AuthContext.jsx'
 import useProjectStorage from './useProjectStorage.js'
 import useFirestoreSync from './useFirestoreSync.js'
@@ -103,6 +104,12 @@ export default function WorkshopApp() {
       document.documentElement.removeAttribute('data-app')
       document.title = prevTitle
     }
+  }, [])
+
+  // Pseudonymous analytics: count the visit. Signs in anonymously so the event
+  // satisfies the rules; returning visitors reuse their persisted anon id.
+  useEffect(() => {
+    ensureAnonAuth().then(() => track('app_open', {}, 'workshop'))
   }, [])
 
   const nodeTypes = useMemo(() => ({ card: WorkshopNode }), [])
@@ -254,6 +261,7 @@ export default function WorkshopApp() {
     commit(ns => [...ns, newCard(id, { x: base.x + 40, y: base.y + 160 })])
     setNextId(n => n + 1)
     setSelectedId(id)
+    track('scene_create', { sceneId: id }, 'workshop')
   }
 
   const onAddChoice = (targetId, newTitle) => {
@@ -364,6 +372,7 @@ export default function WorkshopApp() {
     const sid = '001'
     commit(() => [newCard(sid, { x: 120, y: 140 }, DEFAULT_COLOR, 'Start')])
     setNextId(2); setSelectedId(sid)
+    track('project_create', {}, 'workshop')
   }
   const deleteStory = id => {
     setStoryMenu(false)
@@ -381,6 +390,7 @@ export default function WorkshopApp() {
   const publish = async () => {
     if (nodes.length === 0) return
     setBusy(true)
+    track('share_click', {}, 'workshop')
     try {
       // Anyone can share — sign in anonymously (a silent browser identity) if
       // not already logged in, so the publish satisfies the Firestore rules.
@@ -399,7 +409,7 @@ export default function WorkshopApp() {
       const ok = await publishStory(sid, {
         title: projectName || 'Berättelse', nodes: toPublishedNodes(nodes), sourceProjectId: projectId,
       })
-      if (ok) { setShareInfo({ id: sid, url: shareUrl(sid) }); setToast('Berättelsen är delad. Länken är kopierad.'); navigator.clipboard?.writeText(shareUrl(sid)) }
+      if (ok) { setShareInfo({ id: sid, url: shareUrl(sid) }); setToast('Berättelsen är delad. Länken är kopierad.'); navigator.clipboard?.writeText(shareUrl(sid)); track('publish', { storyId: sid, sceneCount: nodes.length }, 'workshop') }
       else setToast('Kunde inte publicera just nu. Försök igen.')
     } finally { setBusy(false) }
   }
@@ -411,6 +421,7 @@ export default function WorkshopApp() {
     setBusy(true)
     try {
       await unpublishStory(shareInfo.id)
+      track('unpublish', { storyId: shareInfo.id }, 'workshop')
       const map = loadJSON(SHAREIDS_KEY, {}); delete map[projectId]; saveJSON(SHAREIDS_KEY, map)
       setShareInfo(null)
       setToast('Delningen är avslutad.')

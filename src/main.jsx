@@ -8,6 +8,7 @@ import { parseRoute } from './routing.js'
 const App = lazy(() => import('./App.jsx'))
 const WorkshopApp = lazy(() => import('./WorkshopApp.jsx'))
 const PublicReader = lazy(() => import('./PublicReader.jsx'))
+const AdminApp = lazy(() => import('./AdminApp.jsx'))
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -54,6 +55,15 @@ function Root() {
       <AuthProvider>
         <Suspense fallback={fallback}>
           <WorkshopApp />
+        </Suspense>
+      </AuthProvider>
+    )
+  }
+  if (route.name === 'admin') {
+    return (
+      <AuthProvider>
+        <Suspense fallback={fallback}>
+          <AdminApp />
         </Suspense>
       </AuthProvider>
     )

@@ -1,17 +1,20 @@
 import { useAuth } from './AuthContext.jsx'
-import { LogIn, LogOut, Cloud, CloudOff } from 'lucide-react'
+import { LogIn, LogOut, Cloud, CloudOff, BarChart3 } from 'lucide-react'
+import { isAdminUid } from './adminConfig.js'
 
 export default function UserMenu() {
   const { user, loading, loginWithGoogle, logout } = useAuth()
 
   if (loading) return null
 
-  if (!user) {
+  // Anonymous (silent) identities are an implementation detail used for
+  // sharing/analytics — show them the sign-in affordance, not a "synced" state.
+  if (!user || user.isAnonymous) {
     return (
       <button
         className="btn ghost"
         onClick={loginWithGoogle}
-        title="Sign in with Google to sync projects"
+        title="Logga in med Google för att spara i molnet"
         style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
       >
         <LogIn className="h-4 w-4" />
@@ -22,6 +25,16 @@ export default function UserMenu() {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      {isAdminUid(user.uid) && (
+        <a
+          className="btn ghost"
+          href="/admin"
+          title="Admin"
+          style={{ display: 'flex', alignItems: 'center', padding: '4px 6px' }}
+        >
+          <BarChart3 className="h-4 w-4" />
+        </a>
+      )}
       <Cloud className="h-4 w-4" style={{ color: '#22c55e' }} title="Syncing to cloud" />
       <img
         src={user.photoURL}
