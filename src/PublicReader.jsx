@@ -40,5 +40,14 @@ export default function PublicReader({ shareId }) {
       </div>
     )
   }
-  return <BookReader title={state.story.title} nodes={state.story.nodes || []} />
+  return (
+    <BookReader
+      title={state.story.title}
+      nodes={state.story.nodes || []}
+      onChoice={(from, to, toTitle) =>
+        track('read_choice', { storyId: shareId, fromScene: from, toScene: to, toTitle }, 'reader')}
+      onEnd={sceneId =>
+        track('read_complete', { storyId: shareId, endSceneId: sceneId }, 'reader')}
+    />
+  )
 }
