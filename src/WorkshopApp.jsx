@@ -532,12 +532,12 @@ export default function WorkshopApp() {
           <div className="ws-modal ws-welcome" onClick={e => e.stopPropagation()}>
             <h2 className="ws-welcome-title">Ola Belins Berättarverkstad ✨</h2>
             <p>Bygg din egen <b>välj-väg-berättelse</b>: varje ruta är en scen, och valen leder vidare till nästa.</p>
-            <p className="ws-welcome-dim">Din berättelse sparas i den här webbläsaren. Dela den med en länk när du vill — logga in uppe till höger om du vill spara den för gott.</p>
+            <p className="ws-welcome-dim">Din berättelse sparas i den här webbläsaren. Dela den med en länk när du vill. Logga in uppe till höger om du vill spara den för gott.</p>
             <div className="ws-modal-actions">
               <button className="ws-tb-btn accent" onClick={dismissInfo}>Sätt igång!</button>
             </div>
             <p className="ws-welcome-credit">
-              Av <a href="https://olabelin.se" target="_blank" rel="noopener noreferrer">Ola Belin</a> — författare till den interaktiva boken <i>Racet</i>.
+              Av <a href="https://olabelin.se" target="_blank" rel="noopener noreferrer">Ola Belin</a>, författare till den interaktiva boken <i>Racet</i>.
             </p>
           </div>
         </div>

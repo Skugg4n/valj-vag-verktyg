@@ -12,8 +12,8 @@ const TREND_DAYS = 14
 // --- small pure helpers ---
 const sumStat = (stats, type) => stats.reduce((acc, s) => acc + (Number(s[type]) || 0), 0)
 const tsToDate = v => (v?.toDate?.() instanceof Date ? v.toDate() : null)
-const fmtDate = d => (d ? d.toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : '—')
-const short = uid => (uid ? uid.slice(0, 6) : '—')
+const fmtDate = d => (d ? d.toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : '·')
+const short = uid => (uid ? uid.slice(0, 6) : '·')
 const countBy = (arr, fn) => {
   const m = {}
   for (const x of arr) { const k = fn(x); if (k != null) m[k] = (m[k] || 0) + 1 }
@@ -24,7 +24,7 @@ function Shell({ children }) {
   return (
     <div className="ad-root">
       <header className="ad-header">
-        <span className="ad-title">Välj Väg — Admin</span>
+        <span className="ad-title">Välj Väg · Admin</span>
       </header>
       <main className="ad-main">{children}</main>
     </div>
@@ -41,13 +41,13 @@ function Kpi({ label, value, sub }) {
   )
 }
 
-// Hand-rolled SVG bars — no chart dependency. Two series per day (visits/reads).
+// Hand-rolled SVG bars · no chart dependency. Two series per day (visits/reads).
 function Trends({ days }) {
   const max = Math.max(1, ...days.map(d => Math.max(d.visits, d.reads)))
   const W = 28
   return (
     <div className="ad-card">
-      <div className="ad-card-h">Trender — senaste {days.length} dagarna</div>
+      <div className="ad-card-h">Trender · senaste {days.length} dagarna</div>
       <div className="ad-legend">
         <span><i className="ad-dot v" /> Besök</span>
         <span><i className="ad-dot r" /> Läsningar</span>
@@ -144,7 +144,7 @@ function EventLog({ events }) {
                 <td className="ad-mono">{short(e.anonId)}</td>
                 <td className="ad-dim">{e.view}</td>
                 <td className="ad-dim">{e.deviceType}/{e.browser}</td>
-                <td className="ad-dim">{e.payload && Object.keys(e.payload).length ? JSON.stringify(e.payload) : '—'}</td>
+                <td className="ad-dim">{e.payload && Object.keys(e.payload).length ? JSON.stringify(e.payload) : '·'}</td>
               </tr>
             ))}
           </tbody>
@@ -199,7 +199,7 @@ export default function AdminApp() {
   useEffect(() => {
     document.documentElement.setAttribute('data-app', 'admin')
     const prev = document.title
-    document.title = 'Admin — Välj Väg'
+    document.title = 'Admin · Välj Väg'
     return () => { document.documentElement.removeAttribute('data-app'); document.title = prev }
   }, [])
 
