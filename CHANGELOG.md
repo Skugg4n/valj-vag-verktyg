@@ -1,3 +1,13 @@
+## v0.15.2: Fix sign-in on the verkstaden domain (2026-06-19)
+
+### Fixed
+- Sign-in failed on verkstaden.olabelin.se with auth/unauthorized-domain. The
+  root cause: the domain was not in Firebase Auth's authorized domains. Added
+  verkstaden.olabelin.se and verkstad.olabelin.se.
+- Reverted to signInWithPopup. signInWithRedirect cannot complete on a custom
+  domain whose auth handler is on a different origin (the credential cannot be
+  read back across domains), which bounced mobile users back to the login gate.
+
 ## v0.15.1: Fix mobile Google sign-in (2026-06-19)
 
 ### Fixed
