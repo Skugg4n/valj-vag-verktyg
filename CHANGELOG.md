@@ -1,3 +1,10 @@
+## v0.15.1: Fix mobile Google sign-in (2026-06-19)
+
+### Fixed
+- Google sign-in on mobile (the popup opened, then vanished without completing).
+  Mobile now uses a full-page redirect (signInWithRedirect); desktop keeps the
+  popup with a redirect fallback when it is blocked or dismissed.
+
 ## v0.15.0 — Admin dashboard + pseudonymous analytics — 2026-06-18
 
 ### Added
