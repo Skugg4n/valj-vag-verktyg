@@ -38,10 +38,13 @@ export async function getPublished(shareId) {
  */
 const HISTORY_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
 
-export default function useFirestoreSync({ user, setProjects }) {
+export default function useFirestoreSync({ user, setProjects, projectId }) {
   const initialLoadDone = useRef(false)
   const unsubRef = useRef(null)
   const lastHistorySave = useRef(0)
+  // Track the open story so cloud echoes never overwrite in-progress edits.
+  const activeIdRef = useRef(projectId)
+  activeIdRef.current = projectId
 
   // Collection ref for the user's projects
   const getProjectsCol = useCallback(() => {
@@ -97,10 +100,12 @@ export default function useFirestoreSync({ user, setProjects }) {
         })
         initialLoadDone.current = true
       } else {
-        // Subsequent updates: just use Firestore as source of truth
+        // Subsequent cloud updates: refresh other projects, but never clobber
+        // the story the user currently has open and is editing.
         setProjects((prev) => {
           const merged = { ...prev }
           for (const [id, fp] of Object.entries(firestoreProjects)) {
+            if (id === activeIdRef.current) continue
             merged[id] = fp
           }
           return merged
@@ -117,9 +122,9 @@ export default function useFirestoreSync({ user, setProjects }) {
   // Save current project to Firestore whenever projects change
   const saveToFirestore = useCallback(
     async (projId, projectData) => {
-      if (!user) return
+      if (!user) return false
       const col = getProjectsCol()
-      if (!col) return
+      if (!col) return false
 
       try {
         const projectDoc = doc(col, projId)
@@ -143,8 +148,10 @@ export default function useFirestoreSync({ user, setProjects }) {
             savedAt: serverTimestamp(),
           })
         }
+        return true
       } catch (err) {
         console.error('Firestore save failed:', err)
+        return false
       }
     },
     [user, getProjectsCol]

@@ -13,7 +13,7 @@ export default function UserMenu() {
     return (
       <button
         className="btn ghost"
-        onClick={loginWithGoogle}
+        onClick={() => loginWithGoogle().catch((err) => { console.error(err); if (err?.message) window.alert(err.message) })}
         title="Logga in med Google för att spara i molnet"
         style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
       >

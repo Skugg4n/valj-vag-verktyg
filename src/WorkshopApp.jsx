@@ -16,6 +16,7 @@ import { toPublishedNodes } from './storyExport.js'
 import { splitBodyAndChoices, joinBodyAndChoices } from './sceneRefs.js'
 import { makeShareId } from './utils/shareId.js'
 import { shareUrl } from './routing.js'
+import { saveStatusLabel } from './saveStatus.js'
 import './WorkshopApp.css'
 
 const SCALE_KEY = 'cyoa-ws-scale'
@@ -95,6 +96,21 @@ function WorkshopCanvas(props) {
   )
 }
 
+// Honest, always-visible save status. Anonymous = this device only; signed in
+// with Google = saved to the account and available on every device.
+function SaveStatus({ user, cloudState }) {
+  const isAnonymous = !user || user.isAnonymous
+  const { text, error } = saveStatusLabel({ isAnonymous, cloudState })
+  return (
+    <span
+      className={`ws-save${error ? ' err' : ''}`}
+      title={isAnonymous ? 'Logga in med Google för att nå berättelsen på alla dina enheter' : undefined}
+    >
+      {text}
+    </span>
+  )
+}
+
 export default function WorkshopApp() {
   useEffect(() => {
     document.documentElement.setAttribute('data-app', 'workshop')
@@ -130,6 +146,7 @@ export default function WorkshopApp() {
   const [playing, setPlaying] = useState(false)
   const [shareInfo, setShareInfo] = useState(null) // { id, url }
   const [busy, setBusy] = useState(false)
+  const [cloudState, setCloudState] = useState('idle') // 'idle' | 'saving' | 'saved' | 'error'
   const [storyMenu, setStoryMenu] = useState(false)
   const [autoSave] = useState(true)
   // UI text scale, adjustable on-site for projectors/TVs. Persisted.
@@ -170,6 +187,7 @@ export default function WorkshopApp() {
   // same-browser safety net; a Google login makes it truly cross-device.
   useEffect(() => {
     if (!user || !projectId || nodes.length === 0) return
+    setCloudState('saving')
     const data = {
       projectName, nextNodeId: nextId,
       nodes: nodes.map(n => ({
@@ -178,8 +196,12 @@ export default function WorkshopApp() {
         type: n.type || 'card', width: n.width, height: n.height,
       })),
     }
-    const t = setTimeout(() => saveToFirestore(projectId, data), 2000)
-    return () => clearTimeout(t)
+    let alive = true
+    const t = setTimeout(async () => {
+      const ok = await saveToFirestore(projectId, data)
+      if (alive) setCloudState(ok ? 'saved' : 'error')
+    }, 2000)
+    return () => { alive = false; clearTimeout(t) }
   }, [user, nodes, nextId, projectName, projectId, saveToFirestore])
 
   // Mark current project as a workshop story; load its share link.
@@ -362,6 +384,7 @@ export default function WorkshopApp() {
     const p = projects[id]; if (!p) return
     setStoryMenu(false)
     loadProject(id, p.data); setProjectId(id); setProjectStart(p.start || Date.now())
+    setCloudState('idle')
   }
   const newStory = () => {
     setStoryMenu(false)
@@ -375,6 +398,7 @@ export default function WorkshopApp() {
     const sid = '001'
     commit(() => [newCard(sid, { x: 120, y: 140 }, DEFAULT_COLOR, 'Start')])
     setNextId(2); setSelectedId(sid)
+    setCloudState('idle')
     track('project_create', {}, 'workshop')
   }
   const deleteStory = id => {
@@ -460,6 +484,7 @@ export default function WorkshopApp() {
             </div>
           )}
         </div>
+        <SaveStatus user={user} cloudState={cloudState} />
         <span className="ws-flex" />
         <div className="ws-zoom" title="Textstorlek på skärmen">
           <button className="ws-tb-btn ghost ws-zoom-btn" onClick={() => bumpScale(-0.1)} disabled={uiScale <= SCALE_MIN} aria-label="Mindre text">A−</button>
@@ -535,7 +560,7 @@ export default function WorkshopApp() {
           <div className="ws-modal ws-welcome" onClick={e => e.stopPropagation()}>
             <h2 className="ws-welcome-title">Ola Belins Berättarverkstad ✨</h2>
             <p>Bygg din egen <b>välj-väg-berättelse</b>: varje ruta är en scen, och valen leder vidare till nästa.</p>
-            <p className="ws-welcome-dim">Din berättelse sparas i den här webbläsaren. Dela den med en länk när du vill. Logga in uppe till höger om du vill spara den för gott.</p>
+            <p className="ws-welcome-dim">Utan inloggning sparas berättelsen bara på <b>den här enheten</b>. Logga in med Google uppe till höger, så sparas den på ditt konto och finns på alla dina enheter.</p>
             <div className="ws-modal-actions">
               <button className="ws-tb-btn accent" onClick={dismissInfo}>Sätt igång!</button>
             </div>

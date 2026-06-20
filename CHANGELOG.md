@@ -1,3 +1,19 @@
+## v0.17.0: Stories are never lost — account linking + honest save status (2026-06-20)
+
+### Fixed
+- Logging in with Google no longer throws away anonymous work. The anonymous
+  session is now *linked* (upgraded) to Google, keeping the same identity and all
+  its data. If the Google account already exists, the in-progress work is copied
+  into it, and any copy failure is reported to the user instead of lost silently.
+- The cloud listener no longer overwrites the story you currently have open.
+
+### Added
+- An always-visible save status in the workshop topbar: "Sparat på den här
+  enheten" (without login) vs "Sparar…" / "Sparat i ditt konto" / "Kunde inte
+  spara" (logged in). A failed cloud backup is surfaced honestly, never a false
+  "saved". Backed by unit tests (saveStatus, migrateProjects).
+- Clearer welcome text: without login the story is saved only on this device.
+
 ## v0.16.0: Workshop stories sync to your account (2026-06-20)
 
 ### Changed
