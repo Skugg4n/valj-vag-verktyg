@@ -1,5 +1,3 @@
-/* eslint-env jest */
-/* global describe, it, expect */
 import { renderHook } from '@testing-library/react'
 import { jest } from '@jest/globals'
 import useProjectStorage from '../useProjectStorage.js'

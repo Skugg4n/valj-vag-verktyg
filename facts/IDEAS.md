@@ -21,6 +21,11 @@ placement; image storage choice; whether to update VISION.md (currently says
 "inte en publiceringsplattform").
 
 ## Smaller follow-ups
-- [ ] Admin dashboard: a "Uppdatera" button + optional auto-refresh (it only
-      loads once on mount).
-- [ ] Admin: option to exclude the admin's own reads from the stats.
+- [x] Admin dashboard: an "Uppdatera" button (done v0.18.0). Optional
+      auto-refresh still open.
+- [x] Admin: exclude the admin's own reads from the stats (done v0.18.0).
+- [ ] Lint hygiene: set up typescript-eslint so `.ts`/`.tsx` files are linted
+      (today they error on parse with the JS-only flat config, e.g.
+      LinearConversion.test.ts). The `.js`/`.jsx` gate is clean.
+- [ ] Remove the dead `projects` prop passed to useFirestoreSync in App.jsx and
+      WorkshopApp.jsx (the hook ignores it).
