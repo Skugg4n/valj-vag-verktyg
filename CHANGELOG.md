@@ -1,3 +1,16 @@
+## v0.18.0: Workshop list cleanup + admin polish (2026-06-20)
+
+### Changed
+- The workshop story list no longer shows advanced-app projects. Stories are
+  tagged by which app created them (workshop vs advanced). The list shows
+  workshop and untagged stories and hides only those explicitly from the
+  advanced app, so a real workshop story is never accidentally hidden across
+  devices. Covered by unit tests (workshopList).
+
+### Added
+- Admin dashboard: an "Uppdatera" button to reload stats without a full reload.
+- The admin's own reads of share links are no longer counted in the stats.
+
 ## v0.17.0: Stories are never lost — account linking + honest save status (2026-06-20)
 
 ### Fixed

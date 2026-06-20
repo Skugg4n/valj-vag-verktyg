@@ -13,6 +13,15 @@
   position: sticky; top: 0; z-index: 2;
 }
 .ad-title { font-weight: 700; font-size: 15px; letter-spacing: .01em; }
+.ad-refresh {
+  margin-left: auto;
+  background: var(--panel, #161b22);
+  border: 1px solid var(--line, #232a35);
+  color: var(--ink-soft, #b6bdc9);
+  border-radius: 8px; padding: 5px 12px; font-size: 13px; cursor: pointer;
+}
+.ad-refresh:hover { color: var(--ink, #e8ecf2); border-color: #3b82f6; }
+.ad-refresh:disabled { opacity: .6; cursor: default; }
 .ad-main { max-width: 1100px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
 .ad-dim { color: var(--ink-dim, #7d8696); }

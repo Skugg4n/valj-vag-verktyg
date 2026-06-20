@@ -20,11 +20,16 @@ const countBy = (arr, fn) => {
   return Object.entries(m).sort((a, b) => b[1] - a[1])
 }
 
-function Shell({ children }) {
+function Shell({ children, onRefresh, refreshing }) {
   return (
     <div className="ad-root">
       <header className="ad-header">
         <span className="ad-title">Välj Väg · Admin</span>
+        {onRefresh && (
+          <button className="ad-refresh" onClick={onRefresh} disabled={refreshing}>
+            {refreshing ? 'Uppdaterar…' : '↻ Uppdatera'}
+          </button>
+        )}
       </header>
       <main className="ad-main">{children}</main>
     </div>
@@ -154,7 +159,7 @@ function EventLog({ events }) {
   )
 }
 
-function Dashboard({ stories, stats, events, onDelete }) {
+function Dashboard({ stories, stats, events, onDelete, onRefresh, refreshing }) {
   const today = new Date()
   const days = useMemo(() => {
     const byDate = Object.fromEntries(stats.map(s => [s.date, s]))
@@ -174,7 +179,7 @@ function Dashboard({ stories, stats, events, onDelete }) {
   const totalViews = stories.reduce((a, s) => a + (Number(s.views) || 0), 0)
 
   return (
-    <Shell>
+    <Shell onRefresh={onRefresh} refreshing={refreshing}>
       <div className="ad-kpis">
         <Kpi label="Besök (totalt)" value={sumStat(stats, 'app_open')} sub={`${last7.reduce((a, d) => a + d.visits, 0)} senaste 7 dgr`} />
         <Kpi label="Läsningar" value={sumStat(stats, 'read_open')} sub={`${last7.reduce((a, d) => a + d.reads, 0)} senaste 7 dgr`} />
@@ -195,6 +200,7 @@ export default function AdminApp() {
   const { user, loading, loginWithGoogle } = useAuth()
   const admin = isAdminUid(user?.uid)
   const [data, setData] = useState({ loading: true })
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-app', 'admin')
@@ -223,6 +229,11 @@ export default function AdminApp() {
 
   useEffect(() => { if (admin) load() }, [admin, load])
 
+  const refresh = async () => {
+    setRefreshing(true)
+    try { await load() } finally { setRefreshing(false) }
+  }
+
   const onDelete = async story => {
     if (!window.confirm(`Radera "${story.title || 'utan titel'}"? Den publika länken slutar fungera.`)) return
     try {
@@ -248,5 +259,5 @@ export default function AdminApp() {
   if (data.loading) return <Shell><p className="ad-dim">Hämtar statistik…</p></Shell>
   if (data.error) return <Shell><div className="ad-card"><p className="ad-dim">Kunde inte ladda: {data.error}</p></div></Shell>
 
-  return <Dashboard stories={data.stories} stats={data.stats} events={data.events} onDelete={onDelete} />
+  return <Dashboard stories={data.stories} stats={data.stats} events={data.events} onDelete={onDelete} onRefresh={refresh} refreshing={refreshing} />
 }

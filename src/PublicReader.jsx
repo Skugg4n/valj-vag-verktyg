@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { getPublished } from './useFirestoreSync.js'
 import { ensureAnonAuth, track, bumpView, markViewedThisSession } from './track.js'
+import { isAdminUid } from './adminConfig.js'
 import BookReader from './BookReader.jsx'
 import './BookReader.css'
 
 // Public, no-login reader for /spela/:shareId — loads the published copy.
 export default function PublicReader({ shareId }) {
   const [state, setState] = useState({ loading: true, story: null })
+  // Skip analytics for the admin's own reads so they do not inflate the stats.
+  const [skipTrack, setSkipTrack] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -19,9 +22,13 @@ export default function PublicReader({ shareId }) {
       setState({ loading: false, story })
       // Count the read only for stories that actually exist (not dead links).
       if (story) {
-        await ensureAnonAuth()
-        track('read_open', { storyId: shareId }, 'reader')
-        bumpView(shareId, markViewedThisSession(shareId))
+        const u = await ensureAnonAuth()
+        const admin = isAdminUid(u?.uid)
+        setSkipTrack(admin)
+        if (!admin) {
+          track('read_open', { storyId: shareId }, 'reader')
+          bumpView(shareId, markViewedThisSession(shareId))
+        }
       }
     })
     return () => { alive = false; clearTimeout(timer) }
@@ -44,10 +51,12 @@ export default function PublicReader({ shareId }) {
     <BookReader
       title={state.story.title}
       nodes={state.story.nodes || []}
-      onChoice={(from, to, toTitle) =>
-        track('read_choice', { storyId: shareId, fromScene: from, toScene: to, toTitle }, 'reader')}
-      onEnd={sceneId =>
-        track('read_complete', { storyId: shareId, endSceneId: sceneId }, 'reader')}
+      onChoice={(from, to, toTitle) => {
+        if (!skipTrack) track('read_choice', { storyId: shareId, fromScene: from, toScene: to, toTitle }, 'reader')
+      }}
+      onEnd={sceneId => {
+        if (!skipTrack) track('read_complete', { storyId: shareId, endSceneId: sceneId }, 'reader')
+      }}
     />
   )
 }

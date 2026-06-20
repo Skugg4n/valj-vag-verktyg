@@ -17,6 +17,7 @@ import { splitBodyAndChoices, joinBodyAndChoices } from './sceneRefs.js'
 import { makeShareId } from './utils/shareId.js'
 import { shareUrl } from './routing.js'
 import { saveStatusLabel } from './saveStatus.js'
+import { showInWorkshopList } from './workshopList.js'
 import './WorkshopApp.css'
 
 const SCALE_KEY = 'cyoa-ws-scale'
@@ -189,7 +190,7 @@ export default function WorkshopApp() {
     if (!user || !projectId || nodes.length === 0) return
     setCloudState('saving')
     const data = {
-      projectName, nextNodeId: nextId,
+      projectName, nextNodeId: nextId, app: 'workshop',
       nodes: nodes.map(n => ({
         id: n.id, text: n.data.text || '', title: n.data.title || '',
         color: n.data.color || '#2f6df6', position: n.position,
@@ -258,10 +259,10 @@ export default function WorkshopApp() {
   )
   const workshopProjects = useMemo(() => {
     const ids = loadJSON(WORKSHOP_IDS_KEY, [])
-    // The account is the source of truth: any cloud-synced story shows up (on
-    // any device when logged in), plus this browser's local workshop stories.
+    // Show local workshop stories + any cloud story that is not explicitly an
+    // advanced-app project, so a workshop story is never hidden across devices.
     return Object.entries(projects)
-      .filter(([id, p]) => ids.includes(id) || p.cloud)
+      .filter(([id, p]) => showInWorkshopList(id, p, ids))
       .map(([id, p]) => ({ id, name: p.data?.projectName || '', updated: p.updated || 0 }))
       .sort((a, b) => (b.updated || 0) - (a.updated || 0))
   }, [projects])

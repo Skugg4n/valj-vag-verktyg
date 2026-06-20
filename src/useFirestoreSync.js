@@ -75,6 +75,7 @@ export default function useFirestoreSync({ user, setProjects, projectId }) {
         firestoreProjects[docSnap.id] = {
           id: docSnap.id,
           cloud: true,
+          app: data.app || null,
           start: data.createdAt?.toMillis?.() || Date.now(),
           updated: data.updatedAt?.toMillis?.() || Date.now(),
           data: {
@@ -132,6 +133,7 @@ export default function useFirestoreSync({ user, setProjects, projectId }) {
           projectName: projectData.projectName || '',
           nextNodeId: projectData.nextNodeId || 1,
           nodes: projectData.nodes || [],
+          ...(projectData.app ? { app: projectData.app } : {}),
           updatedAt: serverTimestamp(),
           createdAt: serverTimestamp(),
         }, { merge: true })
