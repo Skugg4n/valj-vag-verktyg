@@ -1,3 +1,12 @@
+## v0.16.0: Workshop stories sync to your account (2026-06-20)
+
+### Changed
+- Workshop stories now save to the cloud for any signed-in identity, including
+  anonymous (a same-browser safety net), not just logged-in Google users.
+- The story list shows every cloud-synced story (flagged on load), so your
+  stories appear on any device when you are logged in with Google, instead of
+  being limited to the browser's local list.
+
 ## v0.15.2: Fix sign-in on the verkstaden domain (2026-06-19)
 
 ### Fixed

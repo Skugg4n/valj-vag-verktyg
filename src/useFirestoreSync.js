@@ -71,6 +71,7 @@ export default function useFirestoreSync({ user, setProjects }) {
         const data = docSnap.data()
         firestoreProjects[docSnap.id] = {
           id: docSnap.id,
+          cloud: true,
           start: data.createdAt?.toMillis?.() || Date.now(),
           updated: data.updatedAt?.toMillis?.() || Date.now(),
           data: {

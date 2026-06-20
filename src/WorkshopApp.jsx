@@ -164,11 +164,12 @@ export default function WorkshopApp() {
     setEdges(scanEdges(nodes))
   }, [nodes])
 
-  // Firestore autosave when logged in (same shape as the advanced app).
-  // Anonymous users (who only signed in to share) stay on localStorage — no
-  // per-project cloud sync — to keep Firestore usage down.
+  // Firestore autosave for any signed-in identity (incl. anonymous), so every
+  // workshop story is backed up to the account and appears on any device when
+  // logged in. Anonymous identities are per-browser, so their cloud copy is a
+  // same-browser safety net; a Google login makes it truly cross-device.
   useEffect(() => {
-    if (!user || user.isAnonymous || !projectId || nodes.length === 0) return
+    if (!user || !projectId || nodes.length === 0) return
     const data = {
       projectName, nextNodeId: nextId,
       nodes: nodes.map(n => ({
@@ -235,8 +236,10 @@ export default function WorkshopApp() {
   )
   const workshopProjects = useMemo(() => {
     const ids = loadJSON(WORKSHOP_IDS_KEY, [])
+    // The account is the source of truth: any cloud-synced story shows up (on
+    // any device when logged in), plus this browser's local workshop stories.
     return Object.entries(projects)
-      .filter(([id]) => ids.includes(id))
+      .filter(([id, p]) => ids.includes(id) || p.cloud)
       .map(([id, p]) => ({ id, name: p.data?.projectName || '', updated: p.updated || 0 }))
       .sort((a, b) => (b.updated || 0) - (a.updated || 0))
   }, [projects])
