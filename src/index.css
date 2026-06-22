@@ -1281,7 +1281,7 @@ textarea:focus {
 .node-card.redesigned .node-id {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: var(--ink-dim);
+  color: var(--text-dim);
   margin-bottom: 4px;
 }
 .node-card.redesigned .node-title {
@@ -1289,11 +1289,11 @@ textarea:focus {
   font-size: 13px;
   margin-bottom: 4px;
   line-height: 1.25;
-  color: var(--ink);
+  color: inherit;
 }
 .node-card.redesigned .node-preview {
   font-size: 11.5px;
-  color: var(--ink-soft);
+  color: var(--text-dim);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 3;

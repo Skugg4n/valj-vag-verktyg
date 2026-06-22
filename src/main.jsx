@@ -18,18 +18,21 @@ class ErrorBoundary extends Component {
   static getDerivedStateFromError(error) {
     return { hasError: true, error }
   }
+  componentDidCatch(error, info) {
+    console.error('App crashed:', error, info?.componentStack)
+  }
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif', background: '#fff', color: '#111', minHeight: '100vh' }}>
           <h1>Något gick fel</h1>
           <p>Appen kraschade. Prova att ladda om sidan.</p>
           <button onClick={() => window.location.reload()} style={{ padding: '8px 16px', marginTop: '1rem' }}>
             Ladda om
           </button>
-          <details style={{ marginTop: '1rem', color: '#666' }}>
+          <details style={{ marginTop: '1rem', color: '#666' }} open>
             <summary>Teknisk info</summary>
-            <pre>{String(this.state.error)}</pre>
+            <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{String(this.state.error?.stack || this.state.error)}</pre>
           </details>
         </div>
       )

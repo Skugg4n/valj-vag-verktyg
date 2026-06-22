@@ -1,3 +1,15 @@
+## v0.18.1: Readable node text on light cards + visible crash screen (2026-06-22)
+
+### Fixed
+- Node cards with a light fill (e.g. a yellow workshop story opened in the
+  advanced editor) showed light text on a light background, unreadable. The card
+  id/title/body now follow the contrast-aware colour the card already computes
+  (dark text on light cards, light text on dark cards). CSS-only, in the advanced
+  editor's node styling.
+- The crash screen was dark text with no background, so on a dark page it looked
+  like a blank black screen. It now has a white background and prints the error,
+  so a failure shows what went wrong instead of a black page.
+
 ## v0.18.0: Workshop list cleanup + admin polish (2026-06-20)
 
 ### Changed
