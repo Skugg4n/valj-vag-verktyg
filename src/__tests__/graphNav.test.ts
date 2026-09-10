@@ -1,4 +1,4 @@
-import { pickNodeInDirection, nodeCenter } from '../utils/graphNav.ts'
+import { pickNodeInDirection, nodeCenter, freePosition } from '../utils/graphNav.ts'
 
 const n = (id: string, x: number, y: number) => ({
   id, position: { x, y }, width: 200, height: 100, data: {},
@@ -25,5 +25,24 @@ describe('pickNodeInDirection', () => {
   })
   test('nodeCenter uses width/height', () => {
     expect(nodeCenter(n('001', 10, 20))).toEqual({ x: 110, y: 70 })
+  })
+})
+
+describe('freePosition', () => {
+  test('returns the candidate untouched when nothing is near', () => {
+    expect(freePosition({ x: 300, y: 0 }, [n('001', 0, 0)])).toEqual({ x: 300, y: 0 })
+  })
+  test('moves down past a node sitting on the candidate', () => {
+    expect(freePosition({ x: 300, y: 0 }, [n('001', 0, 0), n('004', 300, 0)])).toEqual({ x: 300, y: 150 })
+  })
+  test('keeps moving down past a stack of occupied slots', () => {
+    const nodes = [n('004', 300, 0), n('005', 300, 150), n('006', 300, 300)]
+    expect(freePosition({ x: 300, y: 0 }, nodes)).toEqual({ x: 300, y: 450 })
+  })
+  test('a node more than 40 px away in x does not block', () => {
+    expect(freePosition({ x: 300, y: 0 }, [n('004', 341, 0)])).toEqual({ x: 300, y: 0 })
+  })
+  test('within the 40 px tolerance counts as occupied', () => {
+    expect(freePosition({ x: 300, y: 0 }, [n('004', 339, 39) ])).toEqual({ x: 300, y: 150 })
   })
 })

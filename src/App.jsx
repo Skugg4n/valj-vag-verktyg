@@ -13,7 +13,7 @@ import NodeCard from './NodeCard.jsx'
 import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
 import { docToNodes, chooseNextSceneId, sceneIdsInDoc } from './utils/docSync.ts'
-import { pickNodeInDirection, nodeCenter } from './utils/graphNav.ts'
+import { pickNodeInDirection, nodeCenter, freePosition } from './utils/graphNav.ts'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -695,9 +695,12 @@ export default function App() {
         const base = fromNow || from
         const count = base ? (spawnCounts[fromId] || 0) : 0
         const offset = count === 0 ? 0 : Math.ceil(count / 2) * 150 * (count % 2 === 0 ? 1 : -1)
-        const position = base
-          ? { x: base.position.x + 300, y: base.position.y + offset }
-          : viewportCenterPosition()
+        const position = freePosition(
+          base
+            ? { x: base.position.x + 300, y: base.position.y + offset }
+            : viewportCenterPosition(),
+          updated
+        )
         updated = [...updated, {
           id: pick.id,
           type: 'card',

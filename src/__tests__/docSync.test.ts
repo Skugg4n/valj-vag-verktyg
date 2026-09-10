@@ -65,6 +65,19 @@ describe('docToNodes', () => {
     expect(r.nextId).toBe(5)
   })
 
+  test('a second missing reference from the same parent does not land on an existing child', () => {
+    const prevN = [
+      node('003', 'Tre', 'x [#004] [#006]', { position: { x: 0, y: 0 } }),
+      node('004', 'Fyra', '', { position: { x: 300, y: 0 } }),
+    ]
+    const r = docToNodes('## [003] Tre\n\nx [004] [006]\n\n## [004] Fyra', prevN, {
+      nextId: 7, baselineIds: new Set(['003', '004']),
+    })
+    const six = r.nodes.find(n => n.id === '006')
+    expect(six).toBeTruthy()
+    expect(six!.position).not.toEqual({ x: 300, y: 0 })
+  })
+
   test('heading without number gets the next free id', () => {
     const r = docToNodes('## [001] Ett\n\nStart\n\n## Ny scen\n\nText', [node('001')], { nextId: 2, baselineIds: new Set(['001']) })
     expect(r.nodes.map(n => n.id)).toEqual(['001', '002'])

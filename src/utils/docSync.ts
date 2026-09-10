@@ -1,5 +1,6 @@
 import type { Node } from 'reactflow'
 import { DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT } from '../constants.js'
+import { freePosition } from './graphNav.ts'
 
 /** A scene reference as it may appear in the document: [004], [#004], \[004\]. */
 const DOC_REF_G = /\\?\[#?(\d{3})\\?\]/g
@@ -163,8 +164,11 @@ export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodes
   let changed = false
   const positionNextTo = (parentId: string | undefined, index: number) => {
     const p = parentId ? prevMap.get(parentId) || result.find(n => n.id === parentId) : undefined
-    if (p) return { x: p.position.x + 300, y: p.position.y + index * 150 }
-    return opts.fallbackPosition ?? { x: 0, y: 0 }
+    const candidate = p
+      ? { x: p.position.x + 300, y: p.position.y + index * 150 }
+      : opts.fallbackPosition ?? { x: 0, y: 0 }
+    // Never drop a new scene on top of one that is already there.
+    return freePosition(candidate, [...prevNodes, ...result])
   }
 
   for (const [id, b] of built) {

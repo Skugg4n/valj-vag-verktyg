@@ -36,3 +36,33 @@ export function pickNodeInDirection(nodes: Node[], fromId: string, dir: Directio
   }
   return best
 }
+
+/** Vertical step used when a candidate position is already taken. */
+const FREE_STEP = 150
+/** How close two positions may be before they count as the same slot. */
+const OCCUPIED_TOLERANCE = 40
+
+/**
+ * Nudge a candidate position downwards until no existing node sits on it.
+ * Without this, a scene created from the graph can land exactly on a scene an
+ * earlier document reference already placed to the right of the same parent.
+ */
+export function freePosition(
+  candidate: { x: number; y: number },
+  nodes: Node[]
+): { x: number; y: number } {
+  let { x, y } = candidate
+  const taken = (px: number, py: number) =>
+    nodes.some(
+      n =>
+        n.position &&
+        Math.abs(n.position.x - px) < OCCUPIED_TOLERANCE &&
+        Math.abs(n.position.y - py) < OCCUPIED_TOLERANCE
+    )
+  let guard = 0
+  while (taken(x, y) && guard < 200) {
+    y += FREE_STEP
+    guard += 1
+  }
+  return { x, y }
+}
