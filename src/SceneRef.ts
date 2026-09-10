@@ -43,7 +43,12 @@ const SceneRef = Node.create({
         handler: ({ state, range, match }) => {
           // Headings keep "[003] Titel" as plain text.
           if (state.selection.$from.parent.type.name === 'heading') return null
-          state.tr.replaceWith(range.from, range.to, this.type.create({ id: match[1] }))
+          // If "[" auto-inserted a closing bracket, it sits right after the
+          // typed "]"; swallow it so the pill isn't followed by a stray "]".
+          const doc = state.tr.doc
+          const after = doc.textBetween(range.to, Math.min(range.to + 1, doc.content.size), '\0', '\0')
+          const to = after === ']' ? range.to + 1 : range.to
+          state.tr.replaceWith(range.from, to, this.type.create({ id: match[1] }))
         },
       }),
     ]

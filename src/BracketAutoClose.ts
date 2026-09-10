@@ -39,25 +39,6 @@ const BracketAutoClose = Extension.create({
             return false
           },
         },
-        // SceneRef's own InputRule sits ahead of this plugin in tiptap's
-        // plugin order (the combined inputRules plugin is always first), so
-        // it fires before our ']' branch above when it matches. It only
-        // consumes up to the just-typed ']', leaving the bracket that we
-        // auto-inserted for "[" dangling right after the new pill. Clean
-        // that orphan up here.
-        appendTransaction(transactions, _oldState, newState) {
-          if (!transactions.some(tr => tr.docChanged)) return null
-          let result: any = null
-          newState.doc.descendants((node, pos) => {
-            if (result || node.type.name !== 'sceneRef') return
-            const after = pos + node.nodeSize
-            const nextChar = newState.doc.textBetween(after, Math.min(after + 1, newState.doc.content.size))
-            if (nextChar === ']') {
-              result = newState.tr.delete(after, after + 1)
-            }
-          })
-          return result
-        },
       }),
     ]
   },

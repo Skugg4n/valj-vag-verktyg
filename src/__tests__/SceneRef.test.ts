@@ -53,6 +53,19 @@ describe('BracketAutoClose', () => {
     editor.view.someProp('handleTextInput', f => f(editor.view, pos, pos, ']'))
     expect(editor.getHTML()).toContain('data-scene-id="004"')
     expect(editor.storage.markdown.getMarkdown()).toBe('[004]')
+    // getText() renders atom nodes as empty, so assert on HTML instead:
+    // no stray "]" should follow the pill.
+    expect(editor.getHTML()).not.toContain('</a>]')
+  })
+
+  test('a literal ] after a pill in loaded content survives unrelated edits', () => {
+    const editor = makeEditor('Se [004]] snart')
+    editor.commands.focus('end')
+    editor.view.dispatch(editor.state.tr.insertText(' x', editor.state.selection.from))
+    // getText() renders the pill as empty, so assert on HTML instead: the
+    // literal "]" right after the pill (from the loaded content) must survive.
+    expect(editor.getHTML()).toContain('>[004]</a>] snart x')
+    expect(editor.getHTML()).toContain('data-scene-id="004"')
   })
 
   test('typing ] when the next char is ] just skips over it', () => {
