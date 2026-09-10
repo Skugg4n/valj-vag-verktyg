@@ -524,8 +524,18 @@ export default function App() {
 
   const addNode = () => {
     pushUndoState()
-    const id = String(nextId).padStart(3, '0')
+    // The id is chosen inside the updater from the freshest node list, so a
+    // scene created moments earlier (doc flush, another mutation) cannot get
+    // its number handed out a second time.
     setNodes(ns => {
+      let num = nextIdRef.current
+      let id = String(num).padStart(3, '0')
+      while (ns.some(n => n.id === id)) {
+        num += 1
+        id = String(num).padStart(3, '0')
+      }
+      nextIdRef.current = num + 1
+      setNextId(num + 1)
       let position = { x: 0, y: 0 }
       let updatedNodes = ns
       if (currentId) {
@@ -542,6 +552,11 @@ export default function App() {
           updatedNodes = ns.map(n =>
             n.id === currentId ? { ...n, data: { ...n.data, text: `${text}${sep}${link}` } } : n
           )
+          setSpawnCounts(c => ({ ...c, [currentId]: (c[currentId] || 0) + 1 }))
+          setText(t => {
+            const s = t.trim() ? ' ' : ''
+            return `${t}${s}${link}`
+          })
         }
       } else {
         position = viewportCenterPosition()
@@ -558,16 +573,9 @@ export default function App() {
         },
       ]
       setEdges(scanEdges(updated))
+      nodesRef.current = updated
       return updated
     })
-    setNextId(n => n + 1)
-    if (currentId) {
-      setSpawnCounts(c => ({ ...c, [currentId]: (c[currentId] || 0) + 1 }))
-      setText(t => {
-        const sep = t.trim() ? ' ' : ''
-        return `${t}${sep}[#${id}]`
-      })
-    }
   }
 
   const deleteNode = () => {
@@ -698,17 +706,18 @@ export default function App() {
           width: DEFAULT_NODE_WIDTH,
           height: DEFAULT_NODE_HEIGHT,
         }]
+        // Bookkeeping belongs with the creation: doing it outside the updater
+        // advanced nextId and the spawn counter even when the guard above
+        // skipped creating anything.
+        const num = Number(pick.id)
+        if (num >= nextIdRef.current) { nextIdRef.current = num + 1; setNextId(num + 1) }
+        if (base) setSpawnCounts(c => ({ ...c, [fromId]: (c[fromId] || 0) + 1 }))
       }
       updated = updated.map(n => ({ ...n, selected: n.id === pick.id }))
       setEdges(scanEdges(updated))
       nodesRef.current = updated
       return updated
     })
-    if (!pick.exists) {
-      const num = Number(pick.id)
-      if (num >= nextIdRef.current) { nextIdRef.current = num + 1; setNextId(num + 1) }
-      if (from) setSpawnCounts(c => ({ ...c, [fromId]: (c[fromId] || 0) + 1 }))
-    }
     setCurrentId(pick.id)
     setActiveNodeId(pick.id)
     setText('')
