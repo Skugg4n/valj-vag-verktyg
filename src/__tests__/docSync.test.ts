@@ -85,6 +85,15 @@ describe('docToNodes', () => {
     expect(r.nextId).toBe(3)
   })
 
+  test('a numberless heading never steals an id used later in the document', () => {
+    const r = docToNodes('## Ny\n\nx\n\n## [002] B', [node('001')], { nextId: 2, baselineIds: new Set(['001']) })
+    const ids = r.nodes.map(n => n.id).sort()
+    expect(ids).toContain('003')
+    expect(ids).not.toContain('002x')
+    const ny = r.nodes.find(n => n.data.title === 'Ny')
+    expect(ny!.id).toBe('003')
+  })
+
   test('deleting a heading merges its text upward; node survives only if referenced', () => {
     const referenced = docToNodes('## [001] Ett\n\nStart [002]\n\nSlut', prev, { nextId: 3, baselineIds: base })
     expect(referenced.nodes.map(n => n.id)).toEqual(['001', '002'])

@@ -645,6 +645,9 @@ export default function App() {
 
   // Select a scene in graph + doc, mark it selected in ReactFlow and pan to it
   // if it is off-screen.
+  // Stable identity so GraphPane's effects don't re-run on every render.
+  const handleTitleFocused = useCallback(() => setFocusTitleId(null), [])
+
   const focusScene = useCallback((id, { focusTitle = false } = {}) => {
     setNodes(ns => ns.map(n => ({ ...n, selected: n.id === id })))
     const node = nodes.find(n => n.id === id)
@@ -1251,7 +1254,7 @@ export default function App() {
             onAddIdea={addIdea}
             viewportRef={viewportRef}
             focusTitleId={focusTitleId}
-            onTitleFocused={() => setFocusTitleId(null)}
+            onTitleFocused={handleTitleFocused}
           />
         )}
         renderSplit={({ ratio, setRatio }) => (
@@ -1281,7 +1284,7 @@ export default function App() {
                 onAddIdea={addIdea}
                 viewportRef={viewportRef}
                 focusTitleId={focusTitleId}
-                onTitleFocused={() => setFocusTitleId(null)}
+                onTitleFocused={handleTitleFocused}
               />
             </div>
             <div

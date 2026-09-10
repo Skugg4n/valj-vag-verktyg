@@ -134,10 +134,20 @@ export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodes
       ? sceneIdsInDoc(opts.baselineMarkdown)
       : new Set(prevNodes.filter(isScene).map(n => n.id)))
   let nextNum = opts.nextId
-  for (const n of prevNodes) {
-    const num = Number(n.id)
+  const raiseAbove = (id: string) => {
+    const num = Number(id)
     if (Number.isFinite(num) && num >= nextNum) nextNum = num + 1
   }
+  for (const n of prevNodes) raiseAbove(n.id)
+  // Pre-scan: a heading without a number must start above every id the
+  // document already uses, further down as well as in the graph, or two
+  // scenes end up fighting over the same number.
+  for (const line of markdown.replace(/\r\n?/g, '\n').split('\n')) {
+    const m = line.match(HEADING)
+    const hid = m?.[1] || m?.[2]
+    if (hid) raiseAbove(hid)
+  }
+  for (const m of markdown.matchAll(DOC_REF_G)) raiseAbove(m[1])
 
   // 1-2. Split into scenes and build title/text per scene, refs as [#NNN].
   const built = splitScenes(markdown, () => {
