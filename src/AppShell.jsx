@@ -8,6 +8,7 @@ const MODES = ['skiss', 'split', 'text', 'read']
 export default function AppShell({
   projectName, setProjectName,
   isSaving,
+  lastSavedAt,
   renderSkiss,
   renderSplit,
   renderText,
@@ -94,6 +95,7 @@ export default function AppShell({
           projectName={projectName}
           setProjectName={setProjectName}
           isSaving={isSaving}
+          lastSavedAt={lastSavedAt}
           onCmdK={onOpenPalette}
           onShare={onShare}
           userMenuSlot={userMenuSlot}

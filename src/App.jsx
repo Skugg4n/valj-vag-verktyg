@@ -116,6 +116,7 @@ export default function App() {
   const [historyBusy, setHistoryBusy] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [lastSavedAt, setLastSavedAt] = useState(null)
   const importRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
@@ -210,6 +211,7 @@ export default function App() {
     const timer = setTimeout(async () => {
       try {
         await saveToFirestore(projectId, data)
+        if (!cancelled) setLastSavedAt(Date.now())
       } finally {
         if (!cancelled) setIsSaving(false)
       }
@@ -219,6 +221,13 @@ export default function App() {
       clearTimeout(timer)
     }
   }, [user, nodes, nextId, projectName, projectId, saveToFirestore])
+
+  // Logged-out users are saved synchronously to localStorage by useProjectStorage.
+  useEffect(() => {
+    if (user) return
+    if (nodes.length === 0 && !hadContentRef.current) return
+    setLastSavedAt(Date.now())
+  }, [user, nodes])
 
   useEffect(() => {
     if (storageError) alert(storageError)
@@ -1196,6 +1205,7 @@ export default function App() {
         projectName={projectName}
         setProjectName={setProjectName}
         isSaving={isSaving}
+        lastSavedAt={lastSavedAt}
         renderSkiss={() => (
           <GraphPane
             nodes={nodes}
