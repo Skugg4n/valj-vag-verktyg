@@ -193,10 +193,9 @@ export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodes
     if (Number.isFinite(num) && num >= nextNum) nextNum = num + 1
   }
 
-  const ideas = prevNodes.filter(n => !isScene(n) && n.type !== 'group')
-  if (prevNodes.some(n => n.type === 'group')) changed = true
+  const passthrough = prevNodes.filter(n => !isScene(n))
   return {
-    nodes: changed ? [...result, ...ideas] : prevNodes,
+    nodes: changed ? [...result, ...passthrough] : prevNodes,
     nextId: nextNum,
     createdIds,
     changed,

@@ -101,6 +101,16 @@ describe('docToNodes', () => {
     expect(r.changed).toBe(false)
     expect(r.nodes).toBe(prev)
   })
+
+  test('group nodes pass through untouched and do not mark the result as changed', () => {
+    const group = { id: 'section-1', type: 'group', position: { x: 0, y: 0 }, data: { label: 'S' } } as any
+    const withGroup = [...prev, group]
+    const r = docToNodes(nodesToDoc(withGroup), withGroup, { nextId: 3, baselineIds: base })
+    expect(r.changed).toBe(false)
+    expect(r.nodes).toBe(withGroup)
+    const edited = docToNodes('## [001] Nytt\n\nStart [002]\n\n## [002] Två\n\nSlut', withGroup, { nextId: 3, baselineIds: base })
+    expect(edited.nodes.map(n => n.id)).toEqual(['001', '002', 'section-1'])
+  })
 })
 
 describe('normalizeDoc / sceneIdsInDoc', () => {
