@@ -23,6 +23,21 @@ describe('pickNodeInDirection', () => {
   test('unknown from id gives null', () => {
     expect(pickNodeInDirection(nodes, '999', 'right')).toBeNull()
   })
+  test('equal scores tie-break to the first node in array order', () => {
+    // Both are 300 to the right and 100 across, so the scores are identical.
+    const set = [n('001', 0, 0), n('007', 300, 100), n('008', 300, -100)]
+    expect(pickNodeInDirection(set, '001', 'right')).toBe('007')
+  })
+  test('a node exactly on the axis (across = 0) is picked', () => {
+    const set = [n('001', 0, 0), n('002', 300, 0), n('003', 280, 200)]
+    expect(pickNodeInDirection(set, '001', 'right')).toBe('002')
+  })
+  test('a node exactly level with the origin (along = 0) is excluded', () => {
+    // Same centre y, same centre x -> along is 0 in every direction.
+    const set = [n('001', 0, 0), n('002', 0, 0)]
+    expect(pickNodeInDirection(set, '001', 'right')).toBeNull()
+    expect(pickNodeInDirection(set, '001', 'down')).toBeNull()
+  })
   test('nodeCenter uses width/height', () => {
     expect(nodeCenter(n('001', 10, 20))).toEqual({ x: 110, y: 70 })
   })

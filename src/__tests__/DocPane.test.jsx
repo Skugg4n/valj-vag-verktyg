@@ -1,7 +1,7 @@
 import { render, screen, act, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import DocPane from '../DocPane.jsx'
-import { sceneIdsInDoc } from '../utils/docSync.ts'
+import { sceneIdsInDoc, nodesToDoc, normalizeDoc } from '../utils/docSync.ts'
 
 beforeAll(() => {
   global.IntersectionObserver = class {
@@ -111,6 +111,41 @@ describe('DocPane', () => {
     act(() => { editor.emit('blur', { editor, event: new FocusEvent('blur'), transaction: editor.state.tr }) })
     expect(onDocChange).toHaveBeenCalledTimes(1)
     expect(onDocChange.mock.calls[0][0]).toContain('Lorem blurtext')
+    jest.useRealTimers()
+  })
+
+  it('stays linear when graph changes and doc edits alternate (spec test #5)', async () => {
+    const onDocChange = jest.fn()
+    let nodes = [node('001', 'T0', 'Lorem')]
+    const props = () => ({ ...baseProps, onDocChange, nodes })
+    const { container, rerender } = render(<DocPane {...props()} />)
+    const pm = container.querySelector('.ProseMirror')
+    await waitFor(() => expect(pm.__tiptapEditor).toBeTruthy())
+    const editor = pm.__tiptapEditor
+
+    jest.useFakeTimers()
+    for (let i = 1; i <= 10; i += 1) {
+      // Graph side: a new title arrives from the nodes.
+      nodes = [node('001', `T${i}`, 'Lorem')]
+      act(() => { rerender(<DocPane {...props()} />) })
+      // Doc side: the user types.
+      act(() => {
+        editor.view.dispatch(editor.state.tr.insertText('x', editor.state.doc.content.size - 1))
+      })
+      act(() => { jest.advanceTimersByTime(350) })
+    }
+    // One call per doc edit burst, never a cascade.
+    expect(onDocChange.mock.calls.length).toBeLessThanOrEqual(10)
+    expect(onDocChange.mock.calls.length).toBeGreaterThan(0)
+
+    // A final graph write wins: the editor ends up showing exactly the nodes.
+    const lastNodes = [node('001', 'Slutlig', 'Lorem')]
+    nodes = lastNodes
+    act(() => { rerender(<DocPane {...props()} />) })
+    act(() => { jest.advanceTimersByTime(350) })
+    act(() => { rerender(<DocPane {...props()} />) })
+    expect(normalizeDoc(editor.storage.markdown.getMarkdown()))
+      .toBe(normalizeDoc(nodesToDoc(lastNodes)))
     jest.useRealTimers()
   })
 
