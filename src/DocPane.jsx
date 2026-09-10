@@ -114,15 +114,10 @@ export default function DocPane({
         'Mod-ArrowUp': ({ editor }) => {
           const hs = headingPositions(editor.state.doc)
           const pos = editor.state.selection.from
-          // Intent: the previous heading is the last one whose end lies
-          // before the cursor. `h.end < pos - 1` (rather than `h.end < pos`)
-          // is kept deliberately: when the cursor already sits at a
-          // heading's own end (pos === h.end), `h.end < pos` would still be
-          // false for that heading (correctly skipping it), but the `- 1`
-          // margin additionally treats a cursor one character before a
-          // heading's end as "still in that heading" for cmd+up purposes,
-          // matching the cmd+down margin below. Cursor in body -> own
-          // heading; cursor in heading -> previous heading.
+          // The previous heading is the last one whose end lies before the
+          // cursor. The `- 1` margin treats a cursor one character before a
+          // heading's end as still inside that heading. Cursor in body ->
+          // own heading; cursor in heading -> previous heading.
           const prev = [...hs].reverse().find(h => h.end < pos - 1)
           if (!prev) return true
           editor.chain().focus().setTextSelection(prev.end).run()
