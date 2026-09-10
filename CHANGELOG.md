@@ -1,3 +1,14 @@
+## v0.15.1 — Synkfixar efter slutgranskning — 2026-09-10
+
+### Fixed
+- **Ingen förlorad text vid lägesbyte.** Ett påbörjat stycke som ännu inte
+  hunnit sparas levereras nu när dokumentrutan lämnas eller stängs.
+- **Grafändring under skrivande skrivs inte över.** Dokumentet skickar med den
+  version det utgick från, så en scen du inte rört behåller det grafen skrev.
+- **Nya scener hamnar aldrig ovanpå en befintlig nod** utan flyttas nedåt.
+- **Inga dubbletter av scennummer** när en scen skapats strax innan, och en
+  rubrik utan nummer tar aldrig ett nummer som används längre ned i texten.
+
 ## v0.15.0 — Advanced: graf och dokument är samma berättelse — 2026-09-10
 
 ### Changed
