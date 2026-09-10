@@ -54,7 +54,7 @@ function headingPositions(doc) {
 }
 
 export default function DocPane({
-  nodes,
+  nodes = [],
   onDocChange,
   onNewScene,
   activeNodeId, onSelectNode,
@@ -80,6 +80,7 @@ export default function DocPane({
   const debounceRef = useRef(null)
   const pendingRef = useRef(null)          // { md, baselineIds } awaiting debounce
   const pendingCursorRef = useRef(null)    // scene id whose heading should get the cursor
+  const [syncTick, bump] = useState(0)     // bumped to force a re-check after a flush
   const callbacksRef = useRef({ onDocChange, onNewScene, onSelectNode })
   useEffect(() => { callbacksRef.current = { onDocChange, onNewScene, onSelectNode } })
 
@@ -101,7 +102,11 @@ export default function DocPane({
           flushPending()
           const fromId = sceneIdAtSelection(editor.state)
           const id = callbacksRef.current.onNewScene?.(fromId)
-          if (id) pendingCursorRef.current = id
+          if (id) {
+            const h = headingPositions(editor.state.doc).find(h => h.id === id)
+            if (h) editor.chain().focus().setTextSelection(h.end).run()
+            else pendingCursorRef.current = id
+          }
           return true
         },
         'Mod-ArrowUp': ({ editor }) => {
@@ -115,7 +120,7 @@ export default function DocPane({
         'Mod-ArrowDown': ({ editor }) => {
           const hs = headingPositions(editor.state.doc)
           const pos = editor.state.selection.from
-          const next = hs.find(h => h.end > pos)
+          const next = hs.find(h => h.end > pos + 1)
           if (!next) return true
           editor.chain().focus().setTextSelection(next.end).run()
           return true
@@ -170,8 +175,10 @@ export default function DocPane({
       return
     }
     // A pending doc edit must reach the nodes first; the resulting nodes
-    // change re-runs this effect with fresh markdown.
-    if (pendingRef.current) { flushPending(); return }
+    // change re-runs this effect with fresh markdown. If the flush doesn't
+    // change `nodes` (e.g. the parent ignores it), bump syncTick so this
+    // effect re-evaluates on the next render instead of going silent.
+    if (pendingRef.current) { flushPending(); bump(n => n + 1); return }
 
     const { from, to } = editor.state.selection
     const scrollTop = scrollRef.current?.scrollTop ?? 0
@@ -182,17 +189,25 @@ export default function DocPane({
     lastMarkdownRef.current = markdown
     baselineRef.current = markdown
 
-    const targetId = pendingCursorRef.current || headingId
+    const explicitTargetId = pendingCursorRef.current
     pendingCursorRef.current = null
     const max = editor.state.doc.content.size
-    if (targetId) {
-      const h = headingPositions(editor.state.doc).find(h => h.id === targetId)
+    if (explicitTargetId) {
+      // Came from an explicit action (⌘Enter / toolbar "new scene") — it's
+      // fine, expected even, to move focus into the doc for this.
+      const h = headingPositions(editor.state.doc).find(h => h.id === explicitTargetId)
       if (h) editor.chain().focus().setTextSelection(h.end).run()
+    } else if (headingId) {
+      // The cursor merely happened to be in a heading before the rewrite.
+      // Restore the selection there without stealing focus if the user
+      // isn't actually focused on the editor right now.
+      const h = headingPositions(editor.state.doc).find(h => h.id === headingId)
+      if (h && editor.isFocused) editor.commands.setTextSelection(h.end)
     } else if (editor.isFocused) {
       editor.commands.setTextSelection({ from: Math.min(from, max), to: Math.min(to, max) })
     }
     if (scrollRef.current) scrollRef.current.scrollTop = scrollTop
-  }, [editor, markdown, flushPending])
+  }, [editor, markdown, flushPending, syncTick])
 
   useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
 
@@ -302,7 +317,11 @@ export default function DocPane({
     if (!editor) return
     flushPending()
     const id = onNewScene?.(sceneIdAtSelection(editor.state))
-    if (id) pendingCursorRef.current = id
+    if (id) {
+      const h = headingPositions(editor.state.doc).find(h => h.id === id)
+      if (h) editor.chain().focus().setTextSelection(h.end).run()
+      else pendingCursorRef.current = id
+    }
   }
 
   return (

@@ -86,4 +86,25 @@ describe('DocPane', () => {
     container.querySelector('a.node-link[href="#002"]').click()
     expect(onSelectNode).toHaveBeenCalledWith('002')
   })
+
+  it('does not steal focus when nodes change while the editor is unfocused', async () => {
+    const { rerender, container } = render(<DocPane {...baseProps} nodes={[node('001', 'A', 'x')]} />)
+    const pm = container.querySelector('.ProseMirror')
+    await waitFor(() => expect(pm.__tiptapEditor).toBeTruthy())
+    // Place the selection inside the heading so the graph->doc effect's
+    // headingId path (not the pendingCursorRef path) is exercised.
+    act(() => { pm.__tiptapEditor.commands.setTextSelection(2) })
+    const outside = document.createElement('input')
+    document.body.appendChild(outside)
+    outside.focus()
+    rerender(<DocPane {...baseProps} nodes={[node('001', 'A', 'x'), node('002', 'B', '')]} />)
+    await waitFor(() => expect(container.querySelector('.ProseMirror').textContent).toContain('B'))
+    expect(document.activeElement).toBe(outside)
+    outside.remove()
+  })
+
+  it('renders with no nodes prop', () => {
+    render(<DocPane {...baseProps} />)
+    expect(document.querySelector('.doc-pane')).toBeTruthy()
+  })
 })
