@@ -36,8 +36,6 @@ import useFirestoreSync from './useFirestoreSync.js'
 import { useAuth } from './AuthContext.jsx'
 import { setDebug as setDebugFlag, debugLog, isDebug } from './utils/debug.js'
 
-const ROOT_KEY = '__root__'
-
 function estimateNodeHeight(text) {
   const charsPerLine = 32
   const lines = text
@@ -79,6 +77,11 @@ export default function App() {
   const [nextId, setNextId] = useState(1)
   const nextIdRef = useRef(1)
   useEffect(() => { nextIdRef.current = nextId }, [nextId])
+  // Freshest node list, also written synchronously by updaters that create
+  // scenes, so a keystroke that races a pending state flush still decides
+  // from what the flush produced.
+  const nodesRef = useRef(nodes)
+  useEffect(() => { nodesRef.current = nodes }, [nodes])
   const viewportRef = useRef(null)   // ReactFlow instance, set by GraphPane's ViewportBridge
   const [focusTitleId, setFocusTitleId] = useState(null)
   const [currentId, setCurrentId] = useState(null)
@@ -494,11 +497,13 @@ export default function App() {
   const handleDocChange = useCallback((md, baselineIds) => {
     beginEdit('doc')
     const fallbackPosition = viewportCenterPosition()
+    const startNextId = nextIdRef.current
     setNodes(ns => {
-      const r = docToNodes(md, ns, { nextId: nextIdRef.current, baselineIds, fallbackPosition })
+      const r = docToNodes(md, ns, { nextId: startNextId, baselineIds, fallbackPosition })
       if (!r.changed) return ns
       setEdges(scanEdges(r.nodes))
-      if (r.nextId !== nextIdRef.current) { nextIdRef.current = r.nextId; setNextId(r.nextId) }
+      if (r.nextId !== startNextId) { nextIdRef.current = r.nextId; setNextId(r.nextId) }
+      nodesRef.current = r.nodes
       return r.nodes
     })
   }, [beginEdit, viewportCenterPosition])
@@ -548,8 +553,6 @@ export default function App() {
         const sep = t.trim() ? ' ' : ''
         return `${t}${sep}[#${id}]`
       })
-    } else {
-      setSpawnCounts(c => ({ ...c, [ROOT_KEY]: (c[ROOT_KEY] || 0) + 1 }))
     }
   }
 
@@ -653,12 +656,21 @@ export default function App() {
   // cmd+Enter: next scene linked from `fromId` (or a free one), selected, with
   // the title ready for typing. Returns the scene id.
   const createLinkedScene = useCallback((fromId) => {
-    const pick = chooseNextSceneId(nodes, fromId, nextId)
+    // Decide from the freshest node list: a doc edit flushed moments earlier
+    // (⌘Enter right after typing a link) may already have created the scene,
+    // and the render closure would not know about it yet.
+    const fresh = nodesRef.current
+    const maxNum = fresh.reduce((m, n) => {
+      const v = Number(n.id)
+      return Number.isFinite(v) && v >= m ? v + 1 : m
+    }, nextIdRef.current)
+    const pick = chooseNextSceneId(fresh, fromId, maxNum)
     pushUndoState()
-    const from = fromId ? nodes.find(n => n.id === fromId) : null
+    const from = fromId ? fresh.find(n => n.id === fromId) : null
     setNodes(ns => {
       let updated = ns
-      if (from && !pick.referenced) {
+      const fromNow = fromId ? ns.find(n => n.id === fromId) : null
+      if (fromNow && !pick.referenced && !(fromNow.data.text || '').includes(`[#${pick.id}]`)) {
         updated = updated.map(n => {
           if (n.id !== fromId) return n
           const t = n.data.text || ''
@@ -666,11 +678,12 @@ export default function App() {
           return { ...n, data: { ...n.data, text: `${t}${sep}[#${pick.id}]` } }
         })
       }
-      if (!pick.exists) {
-        const count = from ? (spawnCounts[fromId] || 0) : 0
+      if (!pick.exists && !updated.some(n => n.id === pick.id)) {
+        const base = fromNow || from
+        const count = base ? (spawnCounts[fromId] || 0) : 0
         const offset = count === 0 ? 0 : Math.ceil(count / 2) * 150 * (count % 2 === 0 ? 1 : -1)
-        const position = from
-          ? { x: from.position.x + 300, y: from.position.y + offset }
+        const position = base
+          ? { x: base.position.x + 300, y: base.position.y + offset }
           : viewportCenterPosition()
         updated = [...updated, {
           id: pick.id,
@@ -683,6 +696,7 @@ export default function App() {
       }
       updated = updated.map(n => ({ ...n, selected: n.id === pick.id }))
       setEdges(scanEdges(updated))
+      nodesRef.current = updated
       return updated
     })
     if (!pick.exists) {
@@ -696,7 +710,7 @@ export default function App() {
     setTitle('')
     setFocusTitleId(pick.id)
     return pick.id
-  }, [nodes, nextId, spawnCounts, pushUndoState, viewportCenterPosition])
+  }, [spawnCounts, pushUndoState, viewportCenterPosition])
 
   const onPaneClick = e => {
     const t = e.target

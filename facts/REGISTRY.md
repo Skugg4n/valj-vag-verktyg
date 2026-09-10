@@ -14,7 +14,7 @@
 | SidebarNav | src/SidebarNav.jsx | 56px left rail: mode buttons + Insikter/Historik/Inställningar | → AppShell |
 | Topbar | src/Topbar.jsx | Slim 44px bar: project menu slot, save pill, search, share, avatar | → AppShell, ProjectMenu, UserMenu |
 | GraphPane | src/GraphPane.jsx | Skiss/Split graph wrapper: ReactFlow, toolbar, zoom, minimap, scene search | → NodeCard |
-| DocPane | src/DocPane.jsx | Innehåll doc editor (TipTap) with outline, focus mode, status bar | → LinearTextEditor exts |
+| DocPane | src/DocPane.jsx | Innehåll doc editor (TipTap) with outline, focus mode, status bar | → TipTap extensions |
 | ReadPane | src/ReadPane.jsx | Läsa mode: paper/dark, drop-cap, choices, breadcrumb | → App |
 | NodeCard | src/NodeCard.jsx | Graph node card (accent bar, active glow, idea styling, search dim/match) | → GraphPane, constants |
 | CommandPalette | src/CommandPalette.jsx | ⌘K palette (Lägen/Skapa/Verktyg/Visa/Projekt) | → App |
@@ -23,7 +23,6 @@
 | HistoryModal | src/HistoryModal.jsx | Versionshistorik (bild 5): Firestore versions, save (⌘S), restore | → useFirestoreSync |
 | ExportModal | src/ExportModal.jsx | Export: JSON / Markdown / shareable reader HTML | → buildReaderHTML |
 | ProjectMenu | src/ProjectMenu.jsx | Topbar project switcher: list/switch/new/rename/duplicate/delete | → App |
-| LinearTextEditor | src/LinearTextEditor.tsx | TipTap editor wrapper | → DocPane |
 | EditorToolbar | src/EditorToolbar.jsx | Formatting toolbar for editor | → DocPane |
 | EditorBubbleMenu | src/EditorBubbleMenu.jsx | Floating format menu on text selection | → DocPane |
 | NewProjectModal | src/NewProjectModal.jsx | New project dialog | → App |
