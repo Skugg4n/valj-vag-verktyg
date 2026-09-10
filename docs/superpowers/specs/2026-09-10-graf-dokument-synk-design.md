@@ -111,6 +111,16 @@ Ett enda tillstånd: `nodes` i `App.jsx`. Två avledda vyer:
 Ingen `linearInitialized`, ingen `docReloadKey`, ingen `hasLoaded`. Editorn
 monteras en gång och matas alltid via samma väg.
 
+**Implementation (beslut vid planering 2026-09-10):** spärren ligger i `DocPane`,
+som äger editorn, i stället för i `App.jsx`: `lastMarkdownRef` jämförs med
+`normalizeDoc` (som jämnar ut `\[`/`[` och `[#NNN]`/`[NNN]`), och graf → dok
+skrivs alltid med `emitUpdate=false`. Dessutom skickar varje dokumentändring med
+`baselineIds`, scenerna dokumentet visade när redigeringen började, så att
+`docToNodes` bara får ta bort eller tömma scener som faktiskt stod i dokumentet.
+Det stänger kapplöpningen "grafändring medan man skriver": en nod som skapats i
+grafen efter att dokumentet ritades kan aldrig raderas av dokumentets nästa
+uppdatering.
+
 ### 6.3 Kursor och scroll bevaras
 
 När dokumentet skrivs om från grafen medan användaren står i editorn: spara
