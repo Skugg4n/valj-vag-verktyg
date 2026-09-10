@@ -1,8 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, act, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import DocPane from '../DocPane.jsx'
 
-// jsdom does not implement IntersectionObserver — stub it
 beforeAll(() => {
   global.IntersectionObserver = class {
     constructor() {}
@@ -12,96 +11,79 @@ beforeAll(() => {
   }
 })
 
+const node = (id, title = '', text = '') => ({
+  id, type: 'card', position: { x: 0, y: 0 }, width: 220, height: 120,
+  data: { title, text, color: '#1f2937' },
+})
+
+const baseProps = {
+  onDocChange: () => {},
+  onNewScene: () => null,
+  activeNodeId: null,
+  onSelectNode: () => {},
+  full: true,
+  focusMode: false,
+  setFocusMode: () => {},
+}
+
 describe('DocPane', () => {
-  it('renders outline entries from parsed text', () => {
-    const text = '## #001 Första\n\nLorem ipsum.\n\n## #002 Andra\n\nDolor sit.'
-    render(
-      <DocPane
-        text={text}
-        setText={() => {}}
-        setNodes={() => {}}
-        nextId={3}
-        activeNodeId={null}
-        onSelectNode={() => {}}
-        full={true}
-        focusMode={false}
-        setFocusMode={() => {}}
-      />
-    )
-    // Text appears in both outline sidebar and editor content — use getAllByText
+  it('renders outline and headings from nodes', () => {
+    render(<DocPane {...baseProps} nodes={[node('001', 'Första', 'Lorem'), node('002', 'Andra', 'Dolor')]} />)
     expect(screen.getAllByText('Första').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Andra').length).toBeGreaterThan(0)
-    // id-tags in outline sidebar have format "#001" / "#002"
-    expect(screen.getAllByText('#001').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('#002').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('[001]').length).toBeGreaterThan(0)
   })
 
-  it('renders status bar in full mode', () => {
-    render(
-      <DocPane
-        text="## #001 Hej\n\nNågot text."
-        setText={() => {}}
-        setNodes={() => {}}
-        nextId={2}
-        activeNodeId={null}
-        onSelectNode={() => {}}
-        full={true}
-        focusMode={false}
-        setFocusMode={() => {}}
-      />
+  it('shows "(tom)" in the outline for an empty scene', () => {
+    render(<DocPane {...baseProps} nodes={[node('001', 'A', 'x [#002]'), node('002')]} />)
+    expect(screen.getByText('(tom)')).toBeInTheDocument()
+  })
+
+  it('updates the editor when nodes change without calling onDocChange', async () => {
+    const onDocChange = jest.fn()
+    const { rerender, container } = render(
+      <DocPane {...baseProps} onDocChange={onDocChange} nodes={[node('001', 'Första', 'Lorem')]} />
     )
-    expect(screen.getByText(/sektioner/)).toBeInTheDocument()
-    expect(screen.getByText(/Sparad/)).toBeInTheDocument()
+    rerender(<DocPane {...baseProps} onDocChange={onDocChange} nodes={[node('001', 'Första', 'Lorem'), node('002', 'Ny från grafen', '')]} />)
+    await waitFor(() => expect(container.querySelector('.ProseMirror').textContent).toContain('Ny från grafen'))
+    await act(() => new Promise(r => setTimeout(r, 400)))
+    expect(onDocChange).not.toHaveBeenCalled()
+  })
+
+  it('calls onDocChange once (debounced) with baseline ids when the user edits', async () => {
+    const onDocChange = jest.fn()
+    const { container } = render(
+      <DocPane {...baseProps} onDocChange={onDocChange} nodes={[node('001', 'Första', 'Lorem'), node('002', 'Andra', '')]} />
+    )
+    const pm = container.querySelector('.ProseMirror')
+    await waitFor(() => expect(pm.__tiptapEditor).toBeTruthy())
+    const editor = pm.__tiptapEditor
+    // Simulate typing through the ProseMirror view exposed for tests. The
+    // insert point is content.size - 1 (inside the last block); content.size
+    // itself is outside every block and would start a new paragraph.
+    jest.useFakeTimers()
+    act(() => { editor.commands.insertContentAt(editor.state.doc.content.size - 1, 'Mer text') })
+    act(() => { editor.commands.insertContentAt(editor.state.doc.content.size - 1, ' och mer') })
+    act(() => { jest.advanceTimersByTime(350) })
+    expect(onDocChange).toHaveBeenCalledTimes(1)
+    const [md, baseline] = onDocChange.mock.calls[0]
+    expect(md).toContain('Mer text och mer')
+    expect([...baseline]).toEqual(['001', '002'])
+    jest.useRealTimers()
   })
 
   it('does NOT render status bar when full=false', () => {
-    render(
-      <DocPane
-        text="## #001 Hej\n\nNågot text."
-        setText={() => {}}
-        setNodes={() => {}}
-        nextId={2}
-        activeNodeId={null}
-        onSelectNode={() => {}}
-        full={false}
-      />
-    )
+    render(<DocPane {...baseProps} full={false} nodes={[node('001', 'Hej', 'Något')]} />)
     expect(screen.queryByText(/Sparad/)).not.toBeInTheDocument()
   })
 
-  it('calls onSelectNode when a ref-link is clicked', () => {
+  it('calls onSelectNode when a ref pill is clicked', async () => {
     const onSelectNode = jest.fn()
     const { container } = render(
-      <DocPane
-        text="## #001 Hej\n\nLänk till [#002](#002)."
-        setText={() => {}}
-        setNodes={() => {}}
-        nextId={3}
-        activeNodeId={null}
-        onSelectNode={onSelectNode}
-        full={true}
-        focusMode={false}
-        setFocusMode={() => {}}
-      />
+      <DocPane {...baseProps} onSelectNode={onSelectNode} nodes={[node('001', 'Hej', 'Länk till [#002].'), node('002')]} />
     )
-    // The ArrowLink extension renders [#NNN] as <a class="node-link" href="#NNN">.
-    // Find any anchor with class node-link and href starting with #.
-    // (TipTap may not have rendered the link yet; fall back to manually injecting one.)
-    const link = container.querySelector('a.node-link[href^="#"]')
-    if (link) {
-      link.click()
-      expect(onSelectNode).toHaveBeenCalled()
-    } else {
-      // Fallback: synthesize one and dispatch a click on it inside .doc-scroll
-      const scroll = container.querySelector('.doc-scroll')
-      expect(scroll).toBeTruthy()
-      const a = document.createElement('a')
-      a.className = 'node-link'
-      a.href = '#002'
-      a.textContent = '→ #002'
-      scroll.appendChild(a)
-      a.click()
-      expect(onSelectNode).toHaveBeenCalledWith('002')
-    }
+    await waitFor(() => expect(container.querySelector('a.node-link[href="#002"]')).toBeTruthy())
+    container.querySelector('a.node-link[href="#002"]').click()
+    expect(onSelectNode).toHaveBeenCalledWith('002')
   })
 })
