@@ -58,7 +58,7 @@ små hjälpfiler. Ingen av Advanced-editorns vy- eller synkfiler används av Bas
 |---|---|---|---|
 | Skiss | 1 | Grafen i fullbredd | `GraphPane.jsx`, `NodeCard.jsx` |
 | Skiss + Innehåll | 2 | Graf till vänster, dokument till höger | båda |
-| Innehåll | 3 | Dokumentet i fullbredd, med outline | `DocPane.jsx`, `LinearTextEditor.tsx` |
+| Innehåll | 3 | Dokumentet i fullbredd, med outline | `DocPane.jsx` |
 | Läsa | 4 | Läsarvy med val, brödsmulor, papper/mörkt | `ReadPane.jsx` |
 
 Runt dem: sidorail (`SidebarNav`), topplist med projektmeny och sparstatus

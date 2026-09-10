@@ -1,10 +1,5 @@
 # Project Registry
 
-> **Note:** Reflects the v0.9.0 "Variant C" modes-and-layout redesign on
-> branch `feature/redesign-modes-and-layout` (not yet merged to master).
-> Apply on merge. `LinearView`, `Playthrough`, `FloatingMenu` are removed
-> there; the shell/mode/modal components below replace them.
-
 ## Core Components
 | Name | Path | Description | Related |
 |------|------|-------------|---------|
@@ -34,21 +29,22 @@
 | Name | Path | Description | Related |
 |------|------|-------------|---------|
 | CustomLink | src/CustomLink.ts | TipTap link extension | → LinearView |
-| ArrowLink | src/ArrowLink.ts | TipTap node reference link (→ #NNN) | → LinearView |
 | ActiveNodeHighlight | src/ActiveNodeHighlight.ts | Highlights active node in editor | → LinearView |
+| SceneRef | src/SceneRef.ts | TipTap pill for `[NNN]` scene references; serialises `[NNN]` | → DocPane |
+| BracketAutoClose | src/BracketAutoClose.ts | `[` inserts `[]`; `]` completes a `[NNN]` pill or skips over | → DocPane |
 
 ## Hooks
 | Name | Path | Description | Related |
 |------|------|-------------|---------|
 | useProjectStorage | src/useProjectStorage.js | LocalStorage CRUD for projects | → App |
 | useFirestoreSync | src/useFirestoreSync.js | Firestore sync + history (saveHistorySnapshot, getHistory) | → App, firebase, HistoryModal |
-| useLinearParser | src/useLinearParser.ts | Parses linear text → node structure | → App, LinearView |
 | useAi | src/useAi.js | AI integration (inactive) | → AiSettingsModal |
 
 ## Utilities
 | Name | Path | Description | Related |
 |------|------|-------------|---------|
-| linearConversion | src/utils/linearConversion.ts | Converts nodes ↔ linear text (excludes ideas/groups) | → useLinearParser, DocPane |
+| docSync | src/utils/docSync.ts | nodesToDoc / docToNodes (nodes are the source of truth), chooseNextSceneId | → DocPane, App |
+| graphNav | src/utils/graphNav.ts | pickNodeInDirection for cmd+arrow | → App |
 | storyAnalysis | src/storyAnalysis.js | Pure CYOA structural analysis (reachability, dead ends, longest path, loops) | → InsightsModal |
 | buildReaderHTML | src/utils/buildReaderHTML.js | Generates standalone offline-playable reader HTML + downloadFile | → ExportModal |
 | persistence | src/utils/persistence.js | vv-prefixed localStorage load/save | → AppShell, ReadPane |
@@ -103,12 +99,16 @@
 |------|------|-------------|---------|
 | sceneRefs.test | src/__tests__/sceneRefs.test.js | [#NNN] parse/split/join tests | → sceneRefs |
 | routing.test | src/__tests__/routing.test.js | parseRoute / shareUrl tests | → routing |
-| ArrowLink.test | src/__tests__/ArrowLink.test.ts | Arrow link extension tests | → ArrowLink |
-| LinearConversion.test | src/__tests__/LinearConversion.test.ts | Node ↔ linear conversion tests | → linearConversion |
-| LinearParser.test | src/__tests__/LinearParser.test.ts | Linear parser tests | → useLinearParser |
 | NodeClick.test | src/__tests__/NodeClick.test.jsx | Node click behavior tests | → NodeCard |
 | NodeSize.test | src/__tests__/NodeSize.test.jsx | Node sizing tests | → NodeCard |
 | ProjectStorage.test | src/__tests__/ProjectStorage.test.jsx | Storage CRUD tests | → useProjectStorage |
+| docSync.test | src/__tests__/docSync.test.ts | Round trip, existence rule, baseline guard | → docSync |
+| graphNav.test | src/__tests__/graphNav.test.ts | Direction picking | → graphNav |
+| SceneRef.test | src/__tests__/SceneRef.test.ts | Pill parse/serialise, bracket auto-close | → SceneRef |
+| NodeCardFocus.test | src/__tests__/NodeCardFocus.test.jsx | Title focus after cmd+Enter | → NodeCard |
+| GraphPaneBridge.test | src/__tests__/GraphPaneBridge.test.jsx | viewportRef exposure | → GraphPane |
+| Topbar.test | src/__tests__/Topbar.test.jsx | Saved-time pill | → Topbar |
+| createLinkedScene.test | src/__tests__/createLinkedScene.test.js | chooseNextSceneId invariant after a doc flush | → docSync |
 
 ## Config
 | Name | Path | Description | Related |
