@@ -3,6 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { Markdown } from 'tiptap-markdown'
 import SceneRef from '../SceneRef.ts'
 import BracketAutoClose from '../BracketAutoClose.ts'
+import CustomLink from '../CustomLink.ts'
 
 function makeEditor(content: string) {
   return new Editor({ extensions: [StarterKit, Markdown, SceneRef, BracketAutoClose], content })
@@ -77,5 +78,21 @@ describe('BracketAutoClose', () => {
     editor.view.someProp('handleTextInput', f => f(editor.view, pos, pos, ']'))
     expect(editor.getText()).toBe('[ab]')
     expect(editor.state.selection.from).toBe(pos + 1)
+  })
+})
+
+describe('SceneRef together with CustomLink (as in DocPane)', () => {
+  test('a pill stays a sceneRef node, not a link mark, across a markdown round trip', () => {
+    const editor = new Editor({
+      extensions: [StarterKit, Markdown, CustomLink.configure({ openOnClick: false }), SceneRef, BracketAutoClose],
+      content: 'Gå till [004] nu',
+    })
+    const md1 = editor.storage.markdown.getMarkdown()
+    expect(md1).toBe('Gå till [004] nu')
+    // Simulate the graph->doc rewrite: markdown back into the editor.
+    editor.commands.setContent(md1, false)
+    expect(editor.getHTML()).toContain('data-scene-id="004"')
+    expect(editor.getHTML()).not.toContain('](#004)')
+    expect(editor.storage.markdown.getMarkdown()).toBe('Gå till [004] nu')
   })
 })
