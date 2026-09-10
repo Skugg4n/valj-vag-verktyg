@@ -8,7 +8,7 @@ function makeActions(extra = {}) {
     addNode: jest.fn(),
     newProject: jest.fn(),
     autoLayout: jest.fn(),
-    addSection: jest.fn(),
+    newLinkedScene: jest.fn(),
     addIdea: jest.fn(),
     undo: jest.fn(),
     redo: jest.fn(),

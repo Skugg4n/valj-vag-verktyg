@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import ReactFlow, { MiniMap, ReactFlowProvider, useReactFlow } from 'reactflow'
-import { Plus, LayoutGrid, Layers, Lightbulb, Search, X } from 'lucide-react'
+import { Plus, LayoutGrid, Lightbulb, Search, X } from 'lucide-react'
 import NodeEditorContext from './NodeEditorContext.ts'
 
 export function ViewportBridge({ viewportRef }) {
@@ -34,7 +34,6 @@ export default function GraphPane({
   activeNodeId,
   onAddNode,
   onAutoLayout,
-  onAddSection,
   onAddIdea,
   viewportRef,
   focusTitleId,
@@ -90,7 +89,6 @@ export default function GraphPane({
         <GraphToolbar
           onAddNode={onAddNode}
           onAutoLayout={onAutoLayout}
-          onAddSection={onAddSection}
           onAddIdea={onAddIdea}
         />
 
@@ -119,7 +117,7 @@ export default function GraphPane({
   )
 }
 
-function GraphToolbar({ onAddNode, onAutoLayout, onAddSection, onAddIdea }) {
+function GraphToolbar({ onAddNode, onAutoLayout, onAddIdea }) {
   return (
     <div className="graph-toolbar">
       <button className="btn ghost icon" onClick={onAddNode} title="Ny nod" aria-label="Ny nod">
@@ -127,15 +125,6 @@ function GraphToolbar({ onAddNode, onAutoLayout, onAddSection, onAddIdea }) {
       </button>
       <button className="btn ghost icon" onClick={onAutoLayout} title="Auto-layout" aria-label="Auto-layout">
         <LayoutGrid />
-      </button>
-      <button
-        className="btn ghost icon"
-        onClick={onAddSection}
-        disabled
-        title="Sektioner – kommer snart"
-        aria-label="Sektioner (kommer snart)"
-      >
-        <Layers />
       </button>
       <button className="btn ghost icon" onClick={onAddIdea} title="Idé" aria-label="Idé">
         <Lightbulb />

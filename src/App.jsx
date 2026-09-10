@@ -10,7 +10,6 @@ import getLayoutedElements from './dagreLayout'
 import 'reactflow/dist/style.css'
 import './App.css'
 import NodeCard from './NodeCard.jsx'
-import SectionNode from './SectionNode.jsx'
 import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
 import { docToNodes, chooseNextSceneId } from './utils/docSync.ts'
@@ -67,7 +66,7 @@ function scanEdges(nodes) {
 }
 
 export default function App() {
-  const nodeTypes = useMemo(() => ({ card: NodeCard, group: SectionNode }), [])
+  const nodeTypes = useMemo(() => ({ card: NodeCard }), [])
   const defaultEdgeOptions = useMemo(
     () => ({ markerEnd: { type: MarkerType.ArrowClosed }, reconnectable: true }),
     []
@@ -607,17 +606,6 @@ export default function App() {
 
   const onNodeClick = (_e, node) => {
     debugLog('onNodeClick', node.id)
-    // Group nodes: edit label via prompt
-    if (node.type === 'group') {
-      const label = prompt('Section name:', node.data.label || '')
-      if (label !== null) {
-        pushUndoState()
-        setNodes(ns => ns.map(n =>
-          n.id === node.id ? { ...n, data: { ...n.data, label } } : n
-        ))
-      }
-      return
-    }
     selectNode(node.id, node.data)
   }
 
@@ -782,18 +770,20 @@ export default function App() {
   const handleProjectSwitch = id => {
     const p = projects[id]
     if (!p) return
-    const loaded = (p.data.nodes || []).map(n => ({
-      id: n.id,
-      type: 'card',
-      position: n.position || { x: 0, y: 0 },
-      data: {
-        text: n.text || '',
-        title: n.title || '',
-        color: n.color || '#1f2937',
-      },
-      width: n.width ?? DEFAULT_NODE_WIDTH,
-      height: n.height ?? estimateNodeHeight(n.text || ''),
-    }))
+    const loaded = (p.data.nodes || [])
+      .filter(n => n.type !== 'group')
+      .map(n => ({
+        id: n.id,
+        type: 'card',
+        position: n.position || { x: 0, y: 0 },
+        data: {
+          text: n.text || '',
+          title: n.title || '',
+          color: n.color || '#1f2937',
+        },
+        width: n.width ?? DEFAULT_NODE_WIDTH,
+        height: n.height ?? estimateNodeHeight(n.text || ''),
+      }))
     setNodes(loaded)
     setEdges(scanEdges(loaded))
     setNextId(p.data.nextNodeId || 1)
@@ -818,14 +808,16 @@ export default function App() {
       ...p,
       [newId]: { id: newId, start: Date.now(), updated: Date.now(), data },
     }))
-    const loaded = (data.nodes || []).map(n => ({
-      id: n.id,
-      type: n.type || 'card',
-      position: n.position || { x: 0, y: 0 },
-      data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
-      width: n.width ?? DEFAULT_NODE_WIDTH,
-      height: n.height ?? estimateNodeHeight(n.text || ''),
-    }))
+    const loaded = (data.nodes || [])
+      .filter(n => n.type !== 'group')
+      .map(n => ({
+        id: n.id,
+        type: 'card',
+        position: n.position || { x: 0, y: 0 },
+        data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+        width: n.width ?? DEFAULT_NODE_WIDTH,
+        height: n.height ?? estimateNodeHeight(n.text || ''),
+      }))
     setNodes(loaded)
     setEdges(scanEdges(loaded))
     setNextId(data.nextNodeId || 1)
@@ -939,14 +931,16 @@ export default function App() {
     try {
       const json = await file.text()
       const data = JSON.parse(json)
-      const loaded = (data.nodes || []).map(n => ({
-        id: n.id,
-        type: 'card',
-        position: n.position || { x: 0, y: 0 },
-        data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
-        width: n.width ?? DEFAULT_NODE_WIDTH,
-        height: n.height ?? estimateNodeHeight(n.text || ''),
-      }))
+      const loaded = (data.nodes || [])
+        .filter(n => n.type !== 'group')
+        .map(n => ({
+          id: n.id,
+          type: 'card',
+          position: n.position || { x: 0, y: 0 },
+          data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+          width: n.width ?? DEFAULT_NODE_WIDTH,
+          height: n.height ?? estimateNodeHeight(n.text || ''),
+        }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
       setNextId(data.nextNodeId || 1)
@@ -975,31 +969,6 @@ export default function App() {
         width: DEFAULT_NODE_WIDTH,
         height: 80,
       },
-    ])
-  }
-
-  const addSection = () => {
-    pushUndoState()
-    const id = `section-${Date.now()}`
-    setNodes(ns => [
-      {
-        id,
-        type: 'group',
-        position: { x: 0, y: 0 },
-        data: { label: 'New Section' },
-        style: {
-          width: 600,
-          height: 400,
-          background: 'rgba(59, 130, 246, 0.05)',
-          border: '2px dashed rgba(59, 130, 246, 0.3)',
-          borderRadius: '12px',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          color: 'rgba(59, 130, 246, 0.5)',
-          padding: '12px',
-        },
-      },
-      ...ns,
     ])
   }
 
@@ -1052,14 +1021,16 @@ export default function App() {
     setHistoryBusy(true)
     try {
       await saveHistorySnapshot(projectId, buildProjectData(), 'Före återställning')
-      const loaded = (version.nodes || []).map(n => ({
-        id: n.id,
-        type: n.type || 'card',
-        position: n.position || { x: 0, y: 0 },
-        data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
-        width: n.width || DEFAULT_NODE_WIDTH,
-        height: n.height || DEFAULT_NODE_HEIGHT,
-      }))
+      const loaded = (version.nodes || [])
+        .filter(n => n.type !== 'group')
+        .map(n => ({
+          id: n.id,
+          type: 'card',
+          position: n.position || { x: 0, y: 0 },
+          data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+          width: n.width || DEFAULT_NODE_WIDTH,
+          height: n.height || DEFAULT_NODE_HEIGHT,
+        }))
       pushUndoState()
       setNodes(loaded)
       setEdges(scanEdges(loaded))
@@ -1247,7 +1218,6 @@ export default function App() {
             activeNodeId={activeNodeId}
             onAddNode={addNode}
             onAutoLayout={handleAutoLayout}
-            onAddSection={addSection}
             onAddIdea={addIdea}
             viewportRef={viewportRef}
             focusTitleId={focusTitleId}
@@ -1278,7 +1248,6 @@ export default function App() {
                 activeNodeId={activeNodeId}
                 onAddNode={addNode}
                 onAutoLayout={handleAutoLayout}
-                onAddSection={addSection}
                 onAddIdea={addIdea}
                 viewportRef={viewportRef}
                 focusTitleId={focusTitleId}
@@ -1385,7 +1354,6 @@ export default function App() {
           newLinkedScene: () => createLinkedScene(currentId),
           newProject: confirmNewProject,
           autoLayout: handleAutoLayout,
-          addSection,
           addIdea,
           undo, redo,
           importProject: () => importRef.current?.click(),
