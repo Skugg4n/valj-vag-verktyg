@@ -652,7 +652,9 @@ export default function App() {
 
   // cmd+Enter: next scene linked from `fromId` (or a free one), selected, with
   // the title ready for typing. Returns the scene id.
-  const createLinkedScene = useCallback((fromId) => {
+  // focusTitle: move focus to the new card's title input (graph). The document
+  // passes false so the cursor stays in the new heading instead.
+  const createLinkedScene = useCallback((fromId, { focusTitle = true } = {}) => {
     // Decide from the freshest node list: a doc edit flushed moments earlier
     // (⌘Enter right after typing a link) may already have created the scene,
     // and the render closure would not know about it yet.
@@ -705,7 +707,7 @@ export default function App() {
     setActiveNodeId(pick.id)
     setText('')
     setTitle('')
-    setFocusTitleId(pick.id)
+    if (focusTitle) setFocusTitleId(pick.id)
     return pick.id
   }, [spawnCounts, pushUndoState, viewportCenterPosition])
 
@@ -1286,7 +1288,7 @@ export default function App() {
               <DocPane
                 nodes={nodes}
                 onDocChange={handleDocChange}
-                onNewScene={createLinkedScene}
+                onNewScene={(id) => createLinkedScene(id, { focusTitle: false })}
                 activeNodeId={activeNodeId}
                 onSelectNode={handleLinearSelect}
                 full={false}
@@ -1298,7 +1300,7 @@ export default function App() {
           <DocPane
             nodes={nodes}
             onDocChange={handleDocChange}
-            onNewScene={createLinkedScene}
+            onNewScene={(id) => createLinkedScene(id, { focusTitle: false })}
             activeNodeId={activeNodeId}
             onSelectNode={handleLinearSelect}
             full={true}
