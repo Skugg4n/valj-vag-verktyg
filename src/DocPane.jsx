@@ -166,6 +166,8 @@ export default function DocPane({
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(flushPending, DEBOUNCE_MS)
     },
+    // Leaving the editor must not park an edit in the debounce.
+    onBlur: () => flushPending(),
     editorProps: {
       attributes: { class: 'doc-page' },
     },
@@ -221,7 +223,9 @@ export default function DocPane({
     if (scrollRef.current) scrollRef.current.scrollTop = scrollTop
   }, [editor, markdown, flushPending, syncTick])
 
-  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
+  // Unmount (mode switch, project switch) must deliver a pending edit, not
+  // drop it: flushPending clears the timer and calls onDocChange.
+  useEffect(() => () => flushPending(), [flushPending])
 
   // Outline straight from nodes.
   const outlineEntries = useMemo(

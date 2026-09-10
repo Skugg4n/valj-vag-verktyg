@@ -72,6 +72,46 @@ describe('DocPane', () => {
     jest.useRealTimers()
   })
 
+  it('flushes a pending edit when the pane unmounts', async () => {
+    const onDocChange = jest.fn()
+    const { container, unmount } = render(
+      <DocPane {...baseProps} onDocChange={onDocChange} nodes={[node('001', 'Första', 'Lorem')]} />
+    )
+    const pm = container.querySelector('.ProseMirror')
+    await waitFor(() => expect(pm.__tiptapEditor).toBeTruthy())
+    const editor = pm.__tiptapEditor
+    jest.useFakeTimers()
+    act(() => {
+      editor.view.dispatch(editor.state.tr.insertText(' tillagt', editor.state.doc.content.size - 1))
+    })
+    // Unmount well before the 300 ms debounce would have fired.
+    act(() => { jest.advanceTimersByTime(50) })
+    expect(onDocChange).not.toHaveBeenCalled()
+    act(() => { unmount() })
+    expect(onDocChange).toHaveBeenCalledTimes(1)
+    expect(onDocChange.mock.calls[0][0]).toContain('Lorem tillagt')
+    jest.useRealTimers()
+  })
+
+  it('flushes a pending edit on editor blur', async () => {
+    const onDocChange = jest.fn()
+    const { container } = render(
+      <DocPane {...baseProps} onDocChange={onDocChange} nodes={[node('001', 'Första', 'Lorem')]} />
+    )
+    const pm = container.querySelector('.ProseMirror')
+    await waitFor(() => expect(pm.__tiptapEditor).toBeTruthy())
+    const editor = pm.__tiptapEditor
+    jest.useFakeTimers()
+    act(() => {
+      editor.view.dispatch(editor.state.tr.insertText(' blurtext', editor.state.doc.content.size - 1))
+    })
+    expect(onDocChange).not.toHaveBeenCalled()
+    act(() => { editor.emit('blur', { editor, event: new FocusEvent('blur'), transaction: editor.state.tr }) })
+    expect(onDocChange).toHaveBeenCalledTimes(1)
+    expect(onDocChange.mock.calls[0][0]).toContain('Lorem blurtext')
+    jest.useRealTimers()
+  })
+
   it('does NOT render status bar when full=false', () => {
     render(<DocPane {...baseProps} full={false} nodes={[node('001', 'Hej', 'Något')]} />)
     expect(screen.queryByText(/Sparad/)).not.toBeInTheDocument()
