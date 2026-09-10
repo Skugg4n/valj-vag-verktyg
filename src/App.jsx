@@ -13,7 +13,8 @@ import NodeCard from './NodeCard.jsx'
 import SectionNode from './SectionNode.jsx'
 import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
-import { convertNodesToLinearText } from './utils/linearConversion.ts'
+import { docToNodes, chooseNextSceneId } from './utils/docSync.ts'
+import { pickNodeInDirection, nodeCenter } from './utils/graphNav.ts'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -76,11 +77,14 @@ export default function App() {
   const [nodes, setNodes] = useState([])
   const [edges, setEdges] = useState([])
   const [nextId, setNextId] = useState(1)
+  const nextIdRef = useRef(1)
+  useEffect(() => { nextIdRef.current = nextId }, [nextId])
+  const viewportRef = useRef(null)   // ReactFlow instance, set by GraphPane's ViewportBridge
+  const [focusTitleId, setFocusTitleId] = useState(null)
   const [currentId, setCurrentId] = useState(null)
   const [spawnCounts, setSpawnCounts] = useState({})
   const [text, setText] = useState('')
   const [title, setTitle] = useState('')
-  const [linearText, setLinearText] = useState('')
   const [projectName, setProjectName] = useState('')
   const [autoSave, setAutoSave] = useState(() => {
     try {
@@ -105,10 +109,6 @@ export default function App() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
-  // Bumped whenever the whole document is replaced (project switch / import /
-  // duplicate / restore / new) to force the keyed DocPane to remount and load
-  // the new prose. Initial load uses DocPane's own setContent effect.
-  const [docReloadKey, setDocReloadKey] = useState(0)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyItems, setHistoryItems] = useState([])
   const [historyBusy, setHistoryBusy] = useState(false)
@@ -140,17 +140,6 @@ export default function App() {
     document.documentElement.removeAttribute('data-theme')
   }, [])
 
-  // Generate linear text ONCE when nodes first load (empty → non-empty).
-  // After that, LinearView owns the text and syncs back via parser.
-  const linearInitialized = useRef(false)
-
-  useEffect(() => {
-    if (linearInitialized.current) return
-    if (nodes.length === 0) return
-    linearInitialized.current = true
-    setLinearText(convertNodesToLinearText(nodes))
-  }, [nodes])
-
   // Scan edges once when nodes first arrive from storage. The storage hook
   // loads nodes via setNodes directly without computing edges, so a freshly
   // loaded project would otherwise show nodes with no connections until the
@@ -162,13 +151,6 @@ export default function App() {
     if (nodes.length === 0) return
     edgesInitialized.current = true
     setEdges(scanEdges(nodes))
-  }, [nodes])
-
-  // Listen for parser-driven node updates and scan edges
-  useEffect(() => {
-    const handler = () => setEdges(scanEdges(nodes))
-    window.addEventListener('nodes-updated-from-parser', handler)
-    return () => window.removeEventListener('nodes-updated-from-parser', handler)
   }, [nodes])
 
   const { user } = useAuth()
@@ -495,6 +477,32 @@ export default function App() {
     [currentId, pushUndoState]
   )
 
+  // Centre of the visible graph, in flow coordinates, offset so a default-size
+  // node lands centred. Falls back to origin if the graph isn't mounted.
+  const viewportCenterPosition = useCallback(() => {
+    const el = document.getElementById('graph')
+    const rf = viewportRef.current
+    if (!el || !rf) return { x: 0, y: 0 }
+    const r = el.getBoundingClientRect()
+    const p = rf.screenToFlowPosition({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+    return { x: p.x - DEFAULT_NODE_WIDTH / 2, y: p.y - DEFAULT_NODE_HEIGHT / 2 }
+  }, [])
+
+  // Doc -> nodes. Functional update so a graph change that raced the debounce
+  // is merged, not overwritten; baselineIds limits removals to scenes the doc
+  // actually showed.
+  const handleDocChange = useCallback((md, baselineIds) => {
+    beginEdit('doc')
+    const fallbackPosition = viewportCenterPosition()
+    setNodes(ns => {
+      const r = docToNodes(md, ns, { nextId: nextIdRef.current, baselineIds, fallbackPosition })
+      if (!r.changed) return ns
+      setEdges(scanEdges(r.nodes))
+      if (r.nextId !== nextIdRef.current) { nextIdRef.current = r.nextId; setNextId(r.nextId) }
+      return r.nodes
+    })
+  }, [beginEdit, viewportCenterPosition])
+
   const addNode = () => {
     pushUndoState()
     const id = String(nextId).padStart(3, '0')
@@ -517,15 +525,7 @@ export default function App() {
           )
         }
       } else {
-        // Place new node in the visible center of the graph area
-        const graphEl = document.getElementById('graph')
-        if (graphEl) {
-          const rect = graphEl.getBoundingClientRect()
-          position = { x: rect.width / 2 - DEFAULT_NODE_WIDTH / 2, y: rect.height / 2 - DEFAULT_NODE_HEIGHT / 2 }
-        } else {
-          const count = spawnCounts[ROOT_KEY] || 0
-          position = { x: count * 300, y: 0 }
-        }
+        position = viewportCenterPosition()
       }
       const updated = [
         ...updatedNodes,
@@ -629,6 +629,75 @@ export default function App() {
     [nodes, selectNode]
   )
 
+  // Select a scene in graph + doc, mark it selected in ReactFlow and pan to it
+  // if it is off-screen.
+  const focusScene = useCallback((id, { focusTitle = false } = {}) => {
+    setNodes(ns => ns.map(n => ({ ...n, selected: n.id === id })))
+    const node = nodes.find(n => n.id === id)
+    if (node) selectNode(id, node.data)
+    if (focusTitle) setFocusTitleId(id)
+    const rf = viewportRef.current
+    const el = document.getElementById('graph')
+    if (rf && el && node) {
+      const c = nodeCenter(node)
+      const s = rf.flowToScreenPosition(c)
+      const r = el.getBoundingClientRect()
+      const inside = s.x > r.left + 40 && s.x < r.right - 40 && s.y > r.top + 40 && s.y < r.bottom - 40
+      if (!inside) {
+        const z = rf.getZoom()
+        rf.setCenter(c.x, c.y, { zoom: z, duration: 200 })
+      }
+    }
+  }, [nodes, selectNode])
+
+  // cmd+Enter: next scene linked from `fromId` (or a free one), selected, with
+  // the title ready for typing. Returns the scene id.
+  const createLinkedScene = useCallback((fromId) => {
+    const pick = chooseNextSceneId(nodes, fromId, nextId)
+    pushUndoState()
+    const from = fromId ? nodes.find(n => n.id === fromId) : null
+    setNodes(ns => {
+      let updated = ns
+      if (from && !pick.referenced) {
+        updated = updated.map(n => {
+          if (n.id !== fromId) return n
+          const t = n.data.text || ''
+          const sep = t.trim() ? ' ' : ''
+          return { ...n, data: { ...n.data, text: `${t}${sep}[#${pick.id}]` } }
+        })
+      }
+      if (!pick.exists) {
+        const count = from ? (spawnCounts[fromId] || 0) : 0
+        const offset = count === 0 ? 0 : Math.ceil(count / 2) * 150 * (count % 2 === 0 ? 1 : -1)
+        const position = from
+          ? { x: from.position.x + 300, y: from.position.y + offset }
+          : viewportCenterPosition()
+        updated = [...updated, {
+          id: pick.id,
+          type: 'card',
+          position,
+          data: { text: '', title: '', color: '#1f2937' },
+          width: DEFAULT_NODE_WIDTH,
+          height: DEFAULT_NODE_HEIGHT,
+        }]
+      }
+      updated = updated.map(n => ({ ...n, selected: n.id === pick.id }))
+      setEdges(scanEdges(updated))
+      return updated
+    })
+    if (!pick.exists) {
+      const num = Number(pick.id)
+      if (num >= nextIdRef.current) { nextIdRef.current = num + 1; setNextId(num + 1) }
+      if (from) setSpawnCounts(c => ({ ...c, [fromId]: (c[fromId] || 0) + 1 }))
+    }
+    setCurrentId(pick.id)
+    setActiveNodeId(pick.id)
+    setText('')
+    setTitle('')
+    setFocusTitleId(pick.id)
+    return pick.id
+  }, [nodes, nextId, spawnCounts, pushUndoState, viewportCenterPosition])
+
   const onPaneClick = e => {
     const t = e.target
     if (resizingRef.current) return
@@ -697,7 +766,6 @@ export default function App() {
   )
 
   const handleProjectSwitch = id => {
-    linearInitialized.current = false
     const p = projects[id]
     if (!p) return
     const loaded = (p.data.nodes || []).map(n => ({
@@ -714,10 +782,6 @@ export default function App() {
     }))
     setNodes(loaded)
     setEdges(scanEdges(loaded))
-    // Set linear text synchronously (not via the deferred init effect) and bump
-    // the doc key so the keyed DocPane remounts with THIS project's prose.
-    setLinearText(convertNodesToLinearText(loaded))
-    setDocReloadKey(k => k + 1)
     setNextId(p.data.nextNodeId || 1)
     setProjectName(p.data.projectName || '')
     setCurrentId(null)
@@ -740,7 +804,6 @@ export default function App() {
       ...p,
       [newId]: { id: newId, start: Date.now(), updated: Date.now(), data },
     }))
-    linearInitialized.current = false
     const loaded = (data.nodes || []).map(n => ({
       id: n.id,
       type: n.type || 'card',
@@ -751,8 +814,6 @@ export default function App() {
     }))
     setNodes(loaded)
     setEdges(scanEdges(loaded))
-    setLinearText(convertNodesToLinearText(loaded))
-    setDocReloadKey(k => k + 1)
     setNextId(data.nextNodeId || 1)
     setProjectName(data.projectName)
     setCurrentId(null)
@@ -861,7 +922,6 @@ export default function App() {
     const file = e.target.files[0]
     if (!file) return
     pushUndoState()
-    linearInitialized.current = false
     try {
       const json = await file.text()
       const data = JSON.parse(json)
@@ -875,8 +935,6 @@ export default function App() {
       }))
       setNodes(loaded)
       setEdges(scanEdges(loaded))
-      setLinearText(convertNodesToLinearText(loaded))
-      setDocReloadKey(k => k + 1)
       setNextId(data.nextNodeId || 1)
       setProjectName(data.projectName || '')
       setCurrentId(null)
@@ -989,11 +1047,8 @@ export default function App() {
         height: n.height || DEFAULT_NODE_HEIGHT,
       }))
       pushUndoState()
-      linearInitialized.current = false
       setNodes(loaded)
       setEdges(scanEdges(loaded))
-      setLinearText(convertNodesToLinearText(loaded))
-      setDocReloadKey(k => k + 1)
       setNextId(version.nextNodeId || 1)
       setProjectName(version.projectName || '')
       setCurrentId(null)
@@ -1021,9 +1076,6 @@ export default function App() {
   }, [nodes, edges, pushUndoState])
 
   const startNewProject = () => {
-    linearInitialized.current = false
-    setLinearText('')
-    setDocReloadKey(k => k + 1)
     const id = String(Date.now())
     setNodes([])
     setEdges([])
@@ -1052,6 +1104,22 @@ export default function App() {
         ) {
           e.preventDefault()
           redo()
+        } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          if (e.target.closest?.('.ProseMirror')) return   // DocPane owns it there
+          e.preventDefault()
+          createLinkedScene(currentId)
+        } else if (
+          (e.metaKey || e.ctrlKey) &&
+          ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)
+        ) {
+          if (e.target.closest?.('.ProseMirror')) return
+          if (e.target.closest?.('input, textarea') && !e.target.closest?.('.node-card')) return
+          if (!currentId) return
+          const dir = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[e.key]
+          const id = pickNodeInDirection(nodes, currentId, dir)
+          if (!id) return
+          e.preventDefault()
+          focusScene(id)
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
           e.preventDefault()
           addNode()
@@ -1077,7 +1145,7 @@ export default function App() {
       }
       window.addEventListener('keydown', handler)
       return () => window.removeEventListener('keydown', handler)
-    }, [undo, redo, addNode, duplicateNode, deleteNode, saveVersion])
+    }, [undo, redo, addNode, duplicateNode, deleteNode, saveVersion, createLinkedScene, focusScene, currentId, nodes])
 
   useEffect(() => {
     const handler = (e) => {
@@ -1167,6 +1235,9 @@ export default function App() {
             onAutoLayout={handleAutoLayout}
             onAddSection={addSection}
             onAddIdea={addIdea}
+            viewportRef={viewportRef}
+            focusTitleId={focusTitleId}
+            onTitleFocused={() => setFocusTitleId(null)}
           />
         )}
         renderSplit={({ ratio, setRatio }) => (
@@ -1195,6 +1266,9 @@ export default function App() {
                 onAutoLayout={handleAutoLayout}
                 onAddSection={addSection}
                 onAddIdea={addIdea}
+                viewportRef={viewportRef}
+                focusTitleId={focusTitleId}
+                onTitleFocused={() => setFocusTitleId(null)}
               />
             </div>
             <div
@@ -1217,11 +1291,9 @@ export default function App() {
             />
             <div style={{ flex: 1 - ratio, minWidth: 0, display: 'flex' }}>
               <DocPane
-                key={docReloadKey}
-                text={linearText}
-                setText={setLinearText}
-                setNodes={setNodes}
-                nextId={nextId}
+                nodes={nodes}
+                onDocChange={handleDocChange}
+                onNewScene={createLinkedScene}
                 activeNodeId={activeNodeId}
                 onSelectNode={handleLinearSelect}
                 full={false}
@@ -1231,11 +1303,9 @@ export default function App() {
         )}
         renderText={({ focusMode, setFocusMode }) => (
           <DocPane
-            key={docReloadKey}
-            text={linearText}
-            setText={setLinearText}
-            setNodes={setNodes}
-            nextId={nextId}
+            nodes={nodes}
+            onDocChange={handleDocChange}
+            onNewScene={createLinkedScene}
             activeNodeId={activeNodeId}
             onSelectNode={handleLinearSelect}
             full={true}
@@ -1298,6 +1368,7 @@ export default function App() {
         actions={{
           setMode: (m) => { window.dispatchEvent(new CustomEvent('vv-set-mode', { detail: m })) },
           addNode,
+          newLinkedScene: () => createLinkedScene(currentId),
           newProject: confirmNewProject,
           autoLayout: handleAutoLayout,
           addSection,
