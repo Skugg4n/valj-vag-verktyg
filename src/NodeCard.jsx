@@ -60,11 +60,13 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   }, [selected])
 
   useEffect(() => {
-    if (selected && !prevSelectedRef.current) {
+    // Skip the textarea when the title input is about to take focus
+    // (scene created by cmd+Enter), so focus doesn't flicker between them.
+    if (selected && !prevSelectedRef.current && focusTitleId !== id) {
       textRef.current?.focus()
     }
     prevSelectedRef.current = selected
-  }, [selected])
+  }, [selected, focusTitleId, id])
 
   useEffect(() => {
     if (!selected || focusTitleId !== id) return
