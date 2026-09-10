@@ -1,7 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactFlow, { MiniMap, ReactFlowProvider, useReactFlow } from 'reactflow'
 import { Plus, LayoutGrid, Layers, Lightbulb, Search, X } from 'lucide-react'
 import NodeEditorContext from './NodeEditorContext.ts'
+
+export function ViewportBridge({ viewportRef }) {
+  const rf = useReactFlow()
+  useEffect(() => {
+    if (!viewportRef) return
+    viewportRef.current = rf
+    return () => { if (viewportRef.current === rf) viewportRef.current = null }
+  }, [rf, viewportRef])
+  return null
+}
 
 export default function GraphPane({
   nodes,
@@ -74,6 +84,7 @@ export default function GraphPane({
           maxZoom={4}
         >
           <MiniMap zoomable pannable />
+          <ViewportBridge viewportRef={viewportRef} />
         </ReactFlow>
 
         <GraphToolbar
