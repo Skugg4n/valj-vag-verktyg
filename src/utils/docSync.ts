@@ -56,8 +56,13 @@ export function sceneIdsInDoc(md: string): Set<string> {
 export interface DocToNodesOptions {
   nextId: number
   /** Scene ids the document showed when editing began. Only these may be
-   *  removed or emptied by this document change. Defaults to all prev scenes. */
+   *  removed or emptied by this document change. Defaults to all prev scenes.
+   *  Derived from `baselineMarkdown` when only that is given. */
   baselineIds?: Set<string>
+  /** The markdown the document held when editing began. Enables a per-scene
+   *  three-way merge: a scene whose title and text are unchanged since the
+   *  baseline keeps whatever the graph wrote in the meantime. */
+  baselineMarkdown?: string
   /** Where to place a new scene that has no parent to sit next to. */
   fallbackPosition?: { x: number; y: number }
 }
@@ -80,16 +85,15 @@ function makeNode(id: string, title: string, text: string, position: { x: number
   } as Node
 }
 
-export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodesOptions): DocToNodesResult {
-  const prevMap = new Map(prevNodes.map(n => [n.id, n]))
-  const baseline = opts.baselineIds ?? new Set(prevNodes.filter(isScene).map(n => n.id))
-  let nextNum = opts.nextId
-  for (const n of prevNodes) {
-    const num = Number(n.id)
-    if (Number.isFinite(num) && num >= nextNum) nextNum = num + 1
-  }
-
-  // 1. Split into scenes.
+/**
+ * Split markdown into scenes keyed by id, with refs stored as [#NNN].
+ * `allocId` supplies an id for a heading that has none; when it is null such
+ * headings (and their bodies) are skipped, which is what a baseline parse wants.
+ */
+function splitScenes(
+  markdown: string,
+  allocId: (() => string) | null
+): Map<string, { title: string; text: string }> {
   type Scene = { id: string; title: string; lines: string[] }
   const scenes: Scene[] = []
   const seen = new Set<string>()
@@ -99,8 +103,8 @@ export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodes
     if (m) {
       let id = m[1] || m[2]
       if (!id) {
-        id = String(nextNum).padStart(3, '0')
-        nextNum += 1
+        if (!allocId) { current = null; continue }
+        id = allocId()
       }
       if (seen.has(id)) {
         current?.lines.push(line)
@@ -113,13 +117,37 @@ export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodes
     }
     if (current) current.lines.push(line)
   }
-
-  // 2. Build title/text per scene, storing refs as [#NNN].
-  const built = new Map<string, { title: string; text: string }>()
+  const out = new Map<string, { title: string; text: string }>()
   for (const s of scenes) {
     const text = s.lines.join('\n').replace(DOC_REF_G, '[#$1]').replace(/^\n+|\n+$/g, '')
-    built.set(s.id, { title: s.title, text })
+    out.set(s.id, { title: s.title, text })
   }
+  return out
+}
+
+export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodesOptions): DocToNodesResult {
+  const prevMap = new Map(prevNodes.map(n => [n.id, n]))
+  const baseline =
+    opts.baselineIds ??
+    (opts.baselineMarkdown != null
+      ? sceneIdsInDoc(opts.baselineMarkdown)
+      : new Set(prevNodes.filter(isScene).map(n => n.id)))
+  let nextNum = opts.nextId
+  for (const n of prevNodes) {
+    const num = Number(n.id)
+    if (Number.isFinite(num) && num >= nextNum) nextNum = num + 1
+  }
+
+  // 1-2. Split into scenes and build title/text per scene, refs as [#NNN].
+  const built = splitScenes(markdown, () => {
+    const id = String(nextNum).padStart(3, '0')
+    nextNum += 1
+    return id
+  })
+  // The baseline the user started from, parsed the same way. A scene that
+  // still equals its baseline was not touched by the user, so a graph change
+  // that landed in the meantime must not be written over.
+  const baseParsed = opts.baselineMarkdown != null ? splitScenes(opts.baselineMarkdown, null) : null
 
   // 3. Which ids are referenced, and by whom (first source wins).
   const referenced = new Map<string, string>()
@@ -143,7 +171,15 @@ export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodes
     const prev = prevMap.get(id)
     if (prev) {
       const d: any = prev.data || {}
-      if ((d.title || '') !== b.title || (d.text || '') !== b.text) {
+      const untouched = baseParsed
+        ? (() => {
+            const bb = baseParsed.get(id)
+            return !!bb && bb.title === b.title && bb.text === b.text
+          })()
+        : false
+      if (untouched) {
+        result.push(prev)
+      } else if ((d.title || '') !== b.title || (d.text || '') !== b.text) {
         changed = true
         result.push({ ...prev, data: { ...d, title: b.title, text: b.text } })
       } else {

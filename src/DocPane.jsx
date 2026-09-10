@@ -19,7 +19,7 @@ import SceneRef from './SceneRef.ts'
 import BracketAutoClose from './BracketAutoClose.ts'
 import ActiveNodeHighlight from './ActiveNodeHighlight.ts'
 import EditorBubbleMenu from './EditorBubbleMenu.jsx'
-import { nodesToDoc, normalizeDoc, sceneIdsInDoc, isIdeaNode } from './utils/docSync.ts'
+import { nodesToDoc, normalizeDoc, isIdeaNode } from './utils/docSync.ts'
 import 'tippy.js/dist/tippy.css'
 
 const DEBOUNCE_MS = 300
@@ -77,10 +77,11 @@ export default function DocPane({
   // lastMarkdownRef: the markdown last set into or read out of the editor.
   const lastMarkdownRef = useRef('')
   // baselineRef: the markdown the user started editing from (set on every
-  // graph->doc write). Its scene ids travel with each onDocChange.
+  // graph->doc write). It travels with each onDocChange so docToNodes can
+  // merge per scene instead of overwriting scenes the user never touched.
   const baselineRef = useRef('')
   const debounceRef = useRef(null)
-  const pendingRef = useRef(null)          // { md, baselineIds } awaiting debounce
+  const pendingRef = useRef(null)          // { md, baselineMarkdown } awaiting debounce
   const pendingCursorRef = useRef(null)    // scene id whose heading should get the cursor
   const [syncTick, bump] = useState(0)     // bumped to force a re-check after a flush
   const callbacksRef = useRef({ onDocChange, onNewScene, onSelectNode })
@@ -90,7 +91,7 @@ export default function DocPane({
     if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null }
     const p = pendingRef.current
     pendingRef.current = null
-    if (p) callbacksRef.current.onDocChange?.(p.md, p.baselineIds)
+    if (p) callbacksRef.current.onDocChange?.(p.md, p.baselineMarkdown)
   }, [])
 
   // Keyboard commands that need the editor: cmd+Enter (new scene) and
@@ -162,7 +163,7 @@ export default function DocPane({
     onUpdate({ editor }) {
       const md = editor.storage.markdown.getMarkdown()
       lastMarkdownRef.current = md
-      pendingRef.current = { md, baselineIds: sceneIdsInDoc(baselineRef.current) }
+      pendingRef.current = { md, baselineMarkdown: baselineRef.current }
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(flushPending, DEBOUNCE_MS)
     },

@@ -1,6 +1,7 @@
 import { render, screen, act, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import DocPane from '../DocPane.jsx'
+import { sceneIdsInDoc } from '../utils/docSync.ts'
 
 beforeAll(() => {
   global.IntersectionObserver = class {
@@ -50,7 +51,7 @@ describe('DocPane', () => {
     expect(onDocChange).not.toHaveBeenCalled()
   })
 
-  it('calls onDocChange once (debounced) with baseline ids when the user edits', async () => {
+  it('calls onDocChange once (debounced) with the baseline markdown when the user edits', async () => {
     const onDocChange = jest.fn()
     const { container } = render(
       <DocPane {...baseProps} onDocChange={onDocChange} nodes={[node('001', 'Första', 'Lorem'), node('002', 'Andra', '')]} />
@@ -66,9 +67,10 @@ describe('DocPane', () => {
     act(() => { editor.commands.insertContentAt(editor.state.doc.content.size - 1, ' och mer') })
     act(() => { jest.advanceTimersByTime(350) })
     expect(onDocChange).toHaveBeenCalledTimes(1)
-    const [md, baseline] = onDocChange.mock.calls[0]
+    const [md, baselineMarkdown] = onDocChange.mock.calls[0]
     expect(md).toContain('Mer text och mer')
-    expect([...baseline]).toEqual(['001', '002'])
+    expect(typeof baselineMarkdown).toBe('string')
+    expect([...sceneIdsInDoc(baselineMarkdown)]).toEqual(['001', '002'])
     jest.useRealTimers()
   })
 

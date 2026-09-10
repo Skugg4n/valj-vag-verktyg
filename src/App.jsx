@@ -12,7 +12,7 @@ import './App.css'
 import NodeCard from './NodeCard.jsx'
 import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
-import { docToNodes, chooseNextSceneId } from './utils/docSync.ts'
+import { docToNodes, chooseNextSceneId, sceneIdsInDoc } from './utils/docSync.ts'
 import { pickNodeInDirection, nodeCenter } from './utils/graphNav.ts'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
@@ -500,14 +500,20 @@ export default function App() {
   }, [])
 
   // Doc -> nodes. Functional update so a graph change that raced the debounce
-  // is merged, not overwritten; baselineIds limits removals to scenes the doc
-  // actually showed.
-  const handleDocChange = useCallback((md, baselineIds) => {
+  // is merged, not overwritten; the baseline markdown limits removals to the
+  // scenes the doc actually showed and keeps untouched scenes as the graph
+  // left them.
+  const handleDocChange = useCallback((md, baselineMarkdown) => {
     beginEdit('doc')
     const fallbackPosition = viewportCenterPosition()
     const startNextId = nextIdRef.current
     setNodes(ns => {
-      const r = docToNodes(md, ns, { nextId: startNextId, baselineIds, fallbackPosition })
+      const r = docToNodes(md, ns, {
+        nextId: startNextId,
+        baselineIds: sceneIdsInDoc(baselineMarkdown || ''),
+        baselineMarkdown,
+        fallbackPosition,
+      })
       if (!r.changed) return ns
       setEdges(scanEdges(r.nodes))
       if (r.nextId !== startNextId) { nextIdRef.current = r.nextId; setNextId(r.nextId) }

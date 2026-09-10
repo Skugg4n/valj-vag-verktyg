@@ -119,7 +119,11 @@ skrivs alltid med `emitUpdate=false`. Dessutom skickar varje dokumentändring me
 `docToNodes` bara får ta bort eller tömma scener som faktiskt stod i dokumentet.
 Det stänger kapplöpningen "grafändring medan man skriver": en nod som skapats i
 grafen efter att dokumentet ritades kan aldrig raderas av dokumentets nästa
-uppdatering.
+uppdatering. Med i utskicket följer dessutom hela baslinjens markdown, så att
+`docToNodes` kan göra en trevägssammanslagning per scen: en scen vars rubrik och
+text är oförändrade sedan baslinjen behåller det grafen skrivit under tiden (till
+exempel en nytillagd `[#NNN]`), medan scener användaren faktiskt rört följer
+dokumentet.
 
 ### 6.3 Kursor och scroll bevaras
 

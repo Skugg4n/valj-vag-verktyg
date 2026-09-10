@@ -89,6 +89,30 @@ describe('docToNodes', () => {
     expect(r.nodes[2].data.title).toBe('Från grafen')
   })
 
+  test('baselineMarkdown: an untouched scene keeps what the graph wrote', () => {
+    const baselineMd = '## [001] A\n\nx'
+    const prevN = [node('001', 'A', 'x [#005]')]
+    const r = docToNodes(baselineMd, prevN, { nextId: 6, baselineMarkdown: baselineMd })
+    expect(r.changed).toBe(false)
+    expect(r.nodes[0].data.text).toBe('x [#005]')
+  })
+
+  test('baselineMarkdown: a scene the user edited takes the document text', () => {
+    const baselineMd = '## [001] A\n\nx'
+    const prevN = [node('001', 'A', 'x [#005]')]
+    const r = docToNodes('## [001] A\n\nx y', prevN, { nextId: 6, baselineMarkdown: baselineMd })
+    expect(r.changed).toBe(true)
+    expect(r.nodes[0].data.text).toBe('x y')
+  })
+
+  test('baselineMarkdown: per-scene merge, only the edited scene follows the doc', () => {
+    const baselineMd = '## [001] A\n\nett\n\n## [002] B\n\ntva'
+    const prevN = [node('001', 'A', 'ett [#005]'), node('002', 'B', 'tva')]
+    const r = docToNodes('## [001] A\n\nett\n\n## [002] B\n\ntva tre', prevN, { nextId: 6, baselineMarkdown: baselineMd })
+    expect(r.nodes[0].data.text).toBe('ett [#005]')
+    expect(r.nodes[1].data.text).toBe('tva tre')
+  })
+
   test('idea nodes pass through untouched', () => {
     const idea = node('idea-1', '💡 Idé', 'x', { data: { title: '💡 Idé', text: 'x', isIdea: true } })
     const r = docToNodes('## [001] Ett', [node('001'), idea], { nextId: 2, baselineIds: new Set(['001']) })
