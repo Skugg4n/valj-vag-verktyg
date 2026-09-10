@@ -39,13 +39,15 @@ function sceneIdAtSelection(state) {
   return found
 }
 
-/** Positions (end of heading text) for every h2, in document order, with ids. */
+/** Start/end positions for every h2, in document order, with ids.
+ *  `start` is the heading node's opening boundary (position right before its
+ *  content); `end` is the position at the end of its text content. */
 function headingPositions(doc) {
   const out = []
   doc.descendants((node, pos) => {
     if (node.type.name === 'heading' && node.attrs.level === 2) {
       const m = node.textContent.match(HEADING_ID)
-      out.push({ id: m ? m[1] : null, end: pos + node.nodeSize - 1 })
+      out.push({ id: m ? m[1] : null, start: pos, end: pos + node.nodeSize - 1 })
       return false
     }
     return true
@@ -112,6 +114,15 @@ export default function DocPane({
         'Mod-ArrowUp': ({ editor }) => {
           const hs = headingPositions(editor.state.doc)
           const pos = editor.state.selection.from
+          // Intent: the previous heading is the last one whose end lies
+          // before the cursor. `h.end < pos - 1` (rather than `h.end < pos`)
+          // is kept deliberately: when the cursor already sits at a
+          // heading's own end (pos === h.end), `h.end < pos` would still be
+          // false for that heading (correctly skipping it), but the `- 1`
+          // margin additionally treats a cursor one character before a
+          // heading's end as "still in that heading" for cmd+up purposes,
+          // matching the cmd+down margin below. Cursor in body -> own
+          // heading; cursor in heading -> previous heading.
           const prev = [...hs].reverse().find(h => h.end < pos - 1)
           if (!prev) return true
           editor.chain().focus().setTextSelection(prev.end).run()
@@ -120,7 +131,13 @@ export default function DocPane({
         'Mod-ArrowDown': ({ editor }) => {
           const hs = headingPositions(editor.state.doc)
           const pos = editor.state.selection.from
-          const next = hs.find(h => h.end > pos + 1)
+          // The next heading is the first whose opening boundary lies after
+          // the cursor. The current heading's own `start` is always < pos
+          // when the cursor is inside it (start is the position right
+          // before the heading's content), so it never matches here -
+          // fixing the bug where cmd+down from inside a heading landed on
+          // that same heading's own end instead of advancing.
+          const next = hs.find(h => h.start > pos)
           if (!next) return true
           editor.chain().focus().setTextSelection(next.end).run()
           return true

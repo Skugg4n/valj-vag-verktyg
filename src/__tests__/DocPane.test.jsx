@@ -107,4 +107,32 @@ describe('DocPane', () => {
     render(<DocPane {...baseProps} />)
     expect(document.querySelector('.doc-pane')).toBeTruthy()
   })
+
+  it('cmd+down from inside a heading moves to the next heading; cmd+up goes back', async () => {
+    const { container } = render(
+      <DocPane {...baseProps} nodes={[node('001', 'Första', 'Lorem ipsum'), node('002', 'Andra', 'Dolor')]} />
+    )
+    const pm = container.querySelector('.ProseMirror')
+    await waitFor(() => expect(pm.__tiptapEditor).toBeTruthy())
+    const editor = pm.__tiptapEditor
+    // editor.commands.keyboardShortcut(name) synthesizes a real keydown and
+    // replays it through Editor#captureTransaction, which only replays
+    // transaction *steps* — a selection-only transaction (which is all our
+    // Mod-ArrowUp/Down handlers produce) has no steps, so the replay is a
+    // no-op and the selection never visibly moves. Call the extension's
+    // registered handler directly instead, bypassing that replay path.
+    const shortcuts = editor.extensionManager.extensions
+      .find(e => e.name === 'docKeys')
+      .config.addKeyboardShortcuts.call({ editor })
+    // Cursor early inside the first heading ("[001] Första"): position 3 is after "[0".
+    act(() => { editor.commands.setTextSelection(3) })
+    act(() => { shortcuts['Mod-ArrowDown']({ editor }) })
+    const $a = editor.state.selection.$from
+    expect($a.parent.type.name).toBe('heading')
+    expect($a.parent.textContent).toMatch(/^\[002\]/)
+    act(() => { shortcuts['Mod-ArrowUp']({ editor }) })
+    const $b = editor.state.selection.$from
+    expect($b.parent.type.name).toBe('heading')
+    expect($b.parent.textContent).toMatch(/^\[001\]/)
+  })
 })
