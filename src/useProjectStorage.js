@@ -59,7 +59,9 @@ export default function useProjectStorage({
     }
     if (data) {
       try {
-        const loaded = (data.nodes || []).map(n => {
+        const loaded = (data.nodes || [])
+          .filter(n => n.type !== 'group')
+          .map(n => {
           const w = n.style?.width ?? n.width ?? DEFAULT_NODE_WIDTH
           const h = n.style?.height ?? n.height ?? estimateNodeHeight(n.text || '')
           return {

@@ -1,3 +1,41 @@
+## v0.15.1 — Synkfixar efter slutgranskning — 2026-09-10
+
+### Fixed
+- **Ingen förlorad text vid lägesbyte.** Ett påbörjat stycke som ännu inte
+  hunnit sparas levereras nu när dokumentrutan lämnas eller stängs.
+- **Grafändring under skrivande skrivs inte över.** Dokumentet skickar med den
+  version det utgick från, så en scen du inte rört behåller det grafen skrev.
+- **Nya scener hamnar aldrig ovanpå en befintlig nod** utan flyttas nedåt.
+- **Inga dubbletter av scennummer** när en scen skapats strax innan, och en
+  rubrik utan nummer tar aldrig ett nummer som används längre ned i texten.
+
+## v0.15.0 — Advanced: graf och dokument är samma berättelse — 2026-09-10
+
+### Changed
+- **Noderna är enda sanningen.** Dokumentet ritas om från noderna vid varje
+  ändring och skriver tillbaka till dem. Grafändringar (ny nod, titel, text,
+  koppling) syns direkt i dokumentet; dokumentändringar syns direkt i grafen.
+  Ersätter den enkelriktade synken från v0.7.4.
+- **Referenser skrivs `[004]`** i dokumentet (gamla `[#004]` förstås). Skriver
+  man `[` läggs `]` till automatiskt. En referens till en scen som saknas skapar
+  den, tom, i graf, dokument och outline.
+- **Radera en rubrik** i dokumentet: texten flyter in i scenen ovanför; noden
+  finns kvar om något pekar på den.
+- **Nya noder** utan markerad nod hamnar mitt i det du ser, oavsett zoom.
+- **Sparpillen** visar klockslag för senaste sparning.
+- **Sektionsnoder tas bort vid inläsning** av gamla projekt (de sparas inte om).
+
+### Added
+- **⌘Enter** skapar nästa länkade scen (först en redan refererad tom scen,
+  annars nästa lediga nummer), markerar den och ställer kursorn i titeln. I
+  både graf och dokument.
+- **⌘ + pil** byter scen: i grafen närmsta nod i pilens riktning, i dokumentet
+  föregående/nästa scen.
+- **Ny länkad scen** finns även i kommandopaletten (⌘K).
+
+### Removed
+- Sektionsnoder (halvbyggda och avstängda sedan v0.9.4).
+
 ## v0.14.1 — Workshop: share without login + author credit — 2026-06-16
 
 ### Added

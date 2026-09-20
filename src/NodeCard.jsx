@@ -22,7 +22,7 @@ const COLOR_OPTIONS = [
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
-  const { updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet } = useContext(NodeEditorContext)
+  const { updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused } = useContext(NodeEditorContext)
   const isActive = activeNodeId === id || selected
   const { zoom } = useViewport()
   const isOverview = zoom < OVERVIEW_ZOOM_THRESHOLD
@@ -34,6 +34,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   const colorBtnRef = useRef(null)
   const colorPickerRef = useRef(null)
   const textRef = useRef(null)
+  const titleRef = useRef(null)
   const previewRef = useRef(null)
   const prevSelectedRef = useRef(selected)
 
@@ -59,11 +60,22 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
   }, [selected])
 
   useEffect(() => {
-    if (selected && !prevSelectedRef.current) {
+    // Skip the textarea when the title input is about to take focus
+    // (scene created by cmd+Enter), so focus doesn't flicker between them.
+    if (selected && !prevSelectedRef.current && focusTitleId !== id) {
       textRef.current?.focus()
     }
     prevSelectedRef.current = selected
-  }, [selected])
+  }, [selected, focusTitleId, id])
+
+  useEffect(() => {
+    if (!selected || focusTitleId !== id) return
+    const t = setTimeout(() => {
+      titleRef.current?.focus()
+      onTitleFocused?.()
+    }, 0)
+    return () => clearTimeout(t)
+  }, [selected, focusTitleId, id, onTitleFocused])
 
   useEffect(() => {
     const el = previewRef.current
@@ -169,6 +181,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
             <span className="node-id">#{id}</span>
             {selected ? (
               <input
+                ref={titleRef}
                 className="node-title-input"
                 value={data.title || ''}
                 placeholder="Title..."

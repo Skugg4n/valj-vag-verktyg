@@ -1,9 +1,15 @@
 import { Search, Share2 } from 'lucide-react'
 
+function fmtTime(ts) {
+  const d = new Date(ts)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 export default function Topbar({
   projectName,
   setProjectName,
   isSaving,
+  lastSavedAt,
   onCmdK,
   onShare,
   userMenuSlot,
@@ -22,7 +28,7 @@ export default function Topbar({
       )}
       <span className={`pill ${isSaving ? 'saving' : ''}`} aria-live="polite">
         <span className="dot" aria-hidden="true" />
-        {isSaving ? 'sparar…' : 'sparad'}
+        {isSaving ? 'sparar…' : lastSavedAt ? `sparad ${fmtTime(lastSavedAt)}` : 'sparad'}
       </span>
       <span className="spacer" aria-hidden="true" />
       <button className="btn ghost sm" onClick={onCmdK} title="Sök / Kommandopalett">

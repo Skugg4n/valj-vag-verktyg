@@ -103,6 +103,7 @@ function buildSections(a) {
       title: 'Skapa',
       items: [
         { id: 'new-node',    label: 'Ny nod',          icon: <Plus />,       shortcut: '⌘N', run: a.addNode },
+        { id: 'new-linked',  label: 'Ny länkad scen', icon: <Plus />, shortcut: '⌘Enter', run: a.newLinkedScene },
         { id: 'new-project', label: 'Nytt projekt...', icon: <FilePlus />,                  run: a.newProject },
         { id: 'auto-layout', label: 'Auto-layout',     icon: <LayoutGrid />,                run: a.autoLayout },
         { id: 'add-idea',    label: 'Idé',             icon: <Lightbulb />,                 run: a.addIdea },

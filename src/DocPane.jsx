@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
+import { Extension } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
@@ -14,14 +15,50 @@ import {
   List, Link as LinkIcon, Plus, Maximize2,
 } from 'lucide-react'
 import CustomLink from './CustomLink.ts'
-import ArrowLink from './ArrowLink.ts'
+import SceneRef from './SceneRef.ts'
+import BracketAutoClose from './BracketAutoClose.ts'
 import ActiveNodeHighlight from './ActiveNodeHighlight.ts'
 import EditorBubbleMenu from './EditorBubbleMenu.jsx'
-import useLinearParser, { parseLinearText } from './useLinearParser.ts'
+import { nodesToDoc, normalizeDoc, isIdeaNode } from './utils/docSync.ts'
 import 'tippy.js/dist/tippy.css'
 
+const DEBOUNCE_MS = 300
+const HEADING_ID = /^\[?#?(\d{3})\]?/
+
+/** Id of the scene heading at or above the cursor, or null. */
+function sceneIdAtSelection(state) {
+  const { $from } = state.selection
+  let found = null
+  state.doc.nodesBetween(0, $from.pos, (node, pos) => {
+    if (node.type.name === 'heading' && node.attrs.level === 2 && pos <= $from.pos) {
+      const m = node.textContent.match(HEADING_ID)
+      if (m) found = m[1]
+    }
+    return true
+  })
+  return found
+}
+
+/** Start/end positions for every h2, in document order, with ids.
+ *  `start` is the heading node's opening boundary (position right before its
+ *  content); `end` is the position at the end of its text content. */
+function headingPositions(doc) {
+  const out = []
+  doc.descendants((node, pos) => {
+    if (node.type.name === 'heading' && node.attrs.level === 2) {
+      const m = node.textContent.match(HEADING_ID)
+      out.push({ id: m ? m[1] : null, start: pos, end: pos + node.nodeSize - 1 })
+      return false
+    }
+    return true
+  })
+  return out
+}
+
 export default function DocPane({
-  text, setText, setNodes, nextId,
+  nodes = [],
+  onDocChange,
+  onNewScene,
   activeNodeId, onSelectNode,
   full = false,
   focusMode = false,
@@ -30,20 +67,88 @@ export default function DocPane({
 }) {
   const [outlineHidden, setOutlineHidden] = useState(false)
   const scrollRef = useRef(null)
-  const initialTextRef = useRef(text)
-  // Latest activeNodeId for the observer callback (avoids rebuilding it on
-  // every change), and a guard so an activeNodeId set BY doc-scrolling doesn't
-  // trigger the graph→doc scroll effect back (which would fight the scroll).
   const activeNodeIdRef = useRef(activeNodeId)
   const fromScrollRef = useRef(null)
   useEffect(() => { activeNodeIdRef.current = activeNodeId }, [activeNodeId])
+
+  // ---- Sync state -------------------------------------------------------
+  // markdown: what the nodes say the document should be.
+  const markdown = useMemo(() => nodesToDoc(nodes), [nodes])
+  // lastMarkdownRef: the markdown last set into or read out of the editor.
+  const lastMarkdownRef = useRef('')
+  // baselineRef: the markdown the user started editing from (set on every
+  // graph->doc write). It travels with each onDocChange so docToNodes can
+  // merge per scene instead of overwriting scenes the user never touched.
+  const baselineRef = useRef('')
+  const debounceRef = useRef(null)
+  const pendingRef = useRef(null)          // { md, baselineMarkdown } awaiting debounce
+  const pendingCursorRef = useRef(null)    // scene id whose heading should get the cursor
+  const [syncTick, bump] = useState(0)     // bumped to force a re-check after a flush
+  const callbacksRef = useRef({ onDocChange, onNewScene, onSelectNode })
+  useEffect(() => { callbacksRef.current = { onDocChange, onNewScene, onSelectNode } })
+
+  const flushPending = useCallback(() => {
+    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null }
+    const p = pendingRef.current
+    pendingRef.current = null
+    if (p) callbacksRef.current.onDocChange?.(p.md, p.baselineMarkdown)
+  }, [])
+
+  // Keyboard commands that need the editor: cmd+Enter (new scene) and
+  // cmd+Up/Down (previous/next scene). Callbacks are read through refs so the
+  // extension is created once.
+  const DocKeys = useMemo(() => Extension.create({
+    name: 'docKeys',
+    addKeyboardShortcuts() {
+      return {
+        'Mod-Enter': ({ editor }) => {
+          flushPending()
+          const fromId = sceneIdAtSelection(editor.state)
+          const id = callbacksRef.current.onNewScene?.(fromId)
+          if (id) {
+            const h = headingPositions(editor.state.doc).find(h => h.id === id)
+            if (h) editor.chain().focus().setTextSelection(h.end).run()
+            else pendingCursorRef.current = id
+          }
+          return true
+        },
+        'Mod-ArrowUp': ({ editor }) => {
+          const hs = headingPositions(editor.state.doc)
+          const pos = editor.state.selection.from
+          // The previous heading is the last one whose end lies before the
+          // cursor. The `- 1` margin treats a cursor one character before a
+          // heading's end as still inside that heading. Cursor in body ->
+          // own heading; cursor in heading -> previous heading.
+          const prev = [...hs].reverse().find(h => h.end < pos - 1)
+          if (!prev) return true
+          editor.chain().focus().setTextSelection(prev.end).run()
+          return true
+        },
+        'Mod-ArrowDown': ({ editor }) => {
+          const hs = headingPositions(editor.state.doc)
+          const pos = editor.state.selection.from
+          // The next heading is the first whose opening boundary lies after
+          // the cursor. The current heading's own `start` is always < pos
+          // when the cursor is inside it (start is the position right
+          // before the heading's content), so it never matches here -
+          // fixing the bug where cmd+down from inside a heading landed on
+          // that same heading's own end instead of advancing.
+          const next = hs.find(h => h.start > pos)
+          if (!next) return true
+          editor.chain().focus().setTextSelection(next.end).run()
+          return true
+        },
+      }
+    },
+  }), [flushPending])
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
       Underline,
       CustomLink.configure({ openOnClick: false }),
-      ArrowLink,
+      SceneRef,
+      BracketAutoClose,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: 'Börja skriva din berättelse...' }),
       CharacterCount,
@@ -52,41 +157,92 @@ export default function DocPane({
       Markdown.configure({ html: false }),
       BubbleMenuExtension,
       ActiveNodeHighlight,
+      DocKeys,
     ],
-    content: initialTextRef.current || '',
+    content: '',
     onUpdate({ editor }) {
-      setText(editor.storage.markdown.getMarkdown())
+      const md = editor.storage.markdown.getMarkdown()
+      lastMarkdownRef.current = md
+      pendingRef.current = { md, baselineMarkdown: baselineRef.current }
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(flushPending, DEBOUNCE_MS)
     },
+    // Leaving the editor must not park an edit in the debounce.
+    onBlur: () => flushPending(),
     editorProps: {
       attributes: { class: 'doc-page' },
     },
   })
 
-  // Initial content load — runs exactly once per editor instance
-  const hasLoaded = useRef(false)
+  // Expose the editor on the DOM node for tests.
   useEffect(() => {
-    if (!editor || !text || hasLoaded.current) return
-    hasLoaded.current = true
-    editor.commands.setContent(text, false)
-  }, [text, editor])
+    if (!editor) return
+    const dom = editor.view?.dom
+    if (dom) dom.__tiptapEditor = editor
+  }, [editor])
 
-  // Sync parser: text -> nodes (debounced inside useLinearParser)
-  useLinearParser(text, setNodes)
+  // Graph -> Doc. Runs whenever the nodes' markdown differs from what the
+  // editor holds. Uses emitUpdate=false so onUpdate never fires for it.
+  useEffect(() => {
+    if (!editor) return
+    if (normalizeDoc(markdown) === normalizeDoc(lastMarkdownRef.current)) {
+      baselineRef.current = markdown
+      return
+    }
+    // A pending doc edit must reach the nodes first; the resulting nodes
+    // change re-runs this effect with fresh markdown. If the flush doesn't
+    // change `nodes` (e.g. the parent ignores it), bump syncTick so this
+    // effect re-evaluates on the next render instead of going silent.
+    if (pendingRef.current) { flushPending(); bump(n => n + 1); return }
 
-  // Outline: parsed from current text
-  const outlineEntries = useMemo(() => parseLinearText(text || ''), [text])
+    const { from, to } = editor.state.selection
+    const scrollTop = scrollRef.current?.scrollTop ?? 0
+    const wasInHeading = editor.state.selection.$from.parent.type.name === 'heading'
+    const headingId = wasInHeading ? sceneIdAtSelection(editor.state) : null
 
-  // Tag every rendered <h2> with data-node-id="NNN" from its "#NNN" text.
-  // Returns the heading matching `wantId` (if any). ProseMirror regenerates
-  // heading DOM on its own schedule and wipes external attributes, and the
-  // initial setContent uses emitUpdate=false, so we (re)tag on demand right
-  // before we need it rather than trusting a persisted attribute.
+    editor.commands.setContent(markdown, false)
+    lastMarkdownRef.current = markdown
+    baselineRef.current = markdown
+
+    const explicitTargetId = pendingCursorRef.current
+    pendingCursorRef.current = null
+    const max = editor.state.doc.content.size
+    if (explicitTargetId) {
+      // Came from an explicit action (⌘Enter / toolbar "new scene") — it's
+      // fine, expected even, to move focus into the doc for this.
+      const h = headingPositions(editor.state.doc).find(h => h.id === explicitTargetId)
+      if (h) editor.chain().focus().setTextSelection(h.end).run()
+    } else if (headingId) {
+      // The cursor merely happened to be in a heading before the rewrite.
+      // Restore the selection there without stealing focus if the user
+      // isn't actually focused on the editor right now.
+      const h = headingPositions(editor.state.doc).find(h => h.id === headingId)
+      if (h && editor.isFocused) editor.commands.setTextSelection(h.end)
+    } else if (editor.isFocused) {
+      editor.commands.setTextSelection({ from: Math.min(from, max), to: Math.min(to, max) })
+    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollTop
+  }, [editor, markdown, flushPending, syncTick])
+
+  // Unmount (mode switch, project switch) must deliver a pending edit, not
+  // drop it: flushPending clears the timer and calls onDocChange.
+  useEffect(() => () => flushPending(), [flushPending])
+
+  // Outline straight from nodes.
+  const outlineEntries = useMemo(
+    () => nodes
+      .filter(n => n.type !== 'group' && !isIdeaNode(n))
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map(n => ({ id: n.id, title: (n.data?.title || '').trim(), empty: !(n.data?.title || '').trim() && !(n.data?.text || '').trim() })),
+    [nodes]
+  )
+
   const tagHeadings = useCallback((wantId) => {
     const container = scrollRef.current
     if (!container) return null
     let match = null
     container.querySelectorAll('h2').forEach(h => {
-      const m = (h.textContent || '').match(/^#(\d{3})/)
+      const m = (h.textContent || '').match(HEADING_ID)
       if (!m) return
       if (h.getAttribute('data-node-id') !== m[1]) h.setAttribute('data-node-id', m[1])
       if (wantId && m[1] === wantId) match = h
@@ -94,18 +250,11 @@ export default function DocPane({
     return match
   }, [])
 
-  // Graph -> Doc: when activeNodeId changes from outside (e.g. clicking a node
-  // in the graph), scroll to that scene's heading. Self-contained: it (re)tags
-  // every heading by its "#NNN" text and finds the target by id at click time,
-  // when the DOM is guaranteed rendered — so it doesn't depend on the async
-  // tagging effect having already run. Manual DOM scroll because ProseMirror's
-  // scrollIntoView doesn't line up with the top of the scroll container.
+  // Graph -> Doc scroll on active scene (unchanged behaviour).
   useEffect(() => {
     if (!activeNodeId) return
     const container = scrollRef.current
     if (!container) return
-    // If this activeNodeId came from the doc being scrolled (Doc→Graph), don't
-    // scroll back — that would fight the user's manual scroll.
     if (fromScrollRef.current === activeNodeId) {
       fromScrollRef.current = null
       const target = tagHeadings(activeNodeId)
@@ -126,10 +275,8 @@ export default function DocPane({
     })
   }, [activeNodeId, tagHeadings])
 
-  // Doc -> Graph: the topmost heading in view becomes the active scene. The
-  // heading id is read from its "#NNN" text (not a persisted attribute, which
-  // ProseMirror wipes), and the IntersectionObserver is (re)attached via a
-  // MutationObserver so it survives ProseMirror's async render of the content.
+  // Doc -> Graph: topmost visible heading becomes the active scene (unchanged
+  // except for the id regex).
   useEffect(() => {
     const container = scrollRef.current
     if (!container) return
@@ -145,11 +292,11 @@ export default function DocPane({
             .filter(e => e.isIntersecting)
             .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
           if (!visible.length) return
-          const m = (visible[0].target.textContent || '').match(/^#(\d{3})/)
+          const m = (visible[0].target.textContent || '').match(HEADING_ID)
           const id = m?.[1]
           if (id && id !== activeNodeIdRef.current) {
             fromScrollRef.current = id
-            onSelectNode?.(id)
+            callbacksRef.current.onSelectNode?.(id)
           }
         },
         { root: container, rootMargin: '-60px 0px -60% 0px', threshold: 0 }
@@ -161,31 +308,38 @@ export default function DocPane({
     const mo = new MutationObserver(schedule)
     mo.observe(container, { childList: true, subtree: true })
     return () => { cancelAnimationFrame(raf); mo.disconnect(); io?.disconnect() }
-  }, [onSelectNode])
+  }, [])
 
-  // Ref-link click handler (delegated on the scroll container)
-  // ArrowLink.ts renders: <a class="node-link" href="#NNN"> — match that contract.
+  // Pill click -> select scene.
   useEffect(() => {
     const container = scrollRef.current
     if (!container) return
     const onClick = (e) => {
       const a = e.target.closest('a.node-link')
       if (!a) return
-      const href = a.getAttribute('href') || ''
-      const m = href.match(/^#(\d{3})$/)
+      const m = (a.getAttribute('href') || '').match(/^#(\d{3})$/)
       if (m) {
         e.preventDefault()
-        onSelectNode?.(m[1])
+        callbacksRef.current.onSelectNode?.(m[1])
       }
     }
     container.addEventListener('click', onClick)
     return () => container.removeEventListener('click', onClick)
-  }, [onSelectNode])
+  }, [])
 
-  // Status: word count — use TipTap's CharacterCount API so markdown syntax
-  // tokens don't inflate the count.
   const wordCount = editor?.storage.characterCount?.words?.() ?? 0
   const sectionCount = outlineEntries.length
+
+  const newSceneFromToolbar = () => {
+    if (!editor) return
+    flushPending()
+    const id = onNewScene?.(sceneIdAtSelection(editor.state))
+    if (id) {
+      const h = headingPositions(editor.state.doc).find(h => h.id === id)
+      if (h) editor.chain().focus().setTextSelection(h.end).run()
+      else pendingCursorRef.current = id
+    }
+  }
 
   return (
     <div className="doc-pane">
@@ -196,7 +350,7 @@ export default function DocPane({
         full={full}
         focusMode={focusMode}
         setFocusMode={setFocusMode}
-        nextId={nextId}
+        onNewScene={newSceneFromToolbar}
       />
 
       <div className="doc-body">
@@ -213,7 +367,7 @@ export default function DocPane({
 
       {full && !focusMode && (
         <div className="doc-status">
-          <span>{sectionCount} sektioner</span>
+          <span>{sectionCount} scener</span>
           <span className="sep">·</span>
           <span>{wordCount} ord</span>
           <span className="sep">·</span>
@@ -228,7 +382,7 @@ export default function DocPane({
   )
 }
 
-function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, setFocusMode, nextId }) {
+function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, setFocusMode, onNewScene }) {
   if (!editor) return <div className="doc-toolbar" />
 
   const headingLevel = editor.isActive('heading', { level: 1 })
@@ -243,11 +397,6 @@ function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, 
     const v = e.target.value
     if (v === 'p') editor.chain().focus().setParagraph().run()
     else editor.chain().focus().toggleHeading({ level: Number(v) }).run()
-  }
-
-  const insertNewSection = () => {
-    const id = String(nextId).padStart(3, '0')
-    editor.chain().focus().insertContent(`\n\n## #${id} \n\n`).run()
   }
 
   return (
@@ -303,7 +452,7 @@ function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, 
         ><LinkIcon /></button>
       </div>
       <div className="group">
-        <button className="tb-btn" onClick={insertNewSection} title="Ny nod" aria-label="Ny nod">
+        <button className="tb-btn" onClick={onNewScene} title="Ny scen (⌘Enter)" aria-label="Ny scen">
           <Plus />
         </button>
       </div>
@@ -329,10 +478,10 @@ function Outline({ entries, activeId, hidden, onPick }) {
             <button
               className={`doc-outline-item${activeId === e.id ? ' active' : ''}`}
               onClick={() => onPick?.(e.id)}
-              title={e.title || `#${e.id}`}
+              title={e.title || `[${e.id}]`}
             >
-              <span className="id-tag">#{e.id}</span>
-              {e.title || '(utan titel)'}
+              <span className="id-tag">[{e.id}]</span>
+              {e.title || (e.empty ? '(tom)' : '(utan titel)')}
             </button>
           </li>
         ))}

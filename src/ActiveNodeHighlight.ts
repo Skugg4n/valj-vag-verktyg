@@ -36,9 +36,9 @@ const ActiveNodeHighlight = Extension.create({
             if (!activeId) return null
             const { doc } = state
             const decorations: Decoration[] = []
-            const target = `#${activeId}`
+            const re = new RegExp(`^\\[?#?${activeId}\\]?`)
             doc.descendants((node, pos) => {
-              if (node.type.name === 'heading' && node.textContent.startsWith(target)) {
+              if (node.type.name === 'heading' && re.test(node.textContent)) {
                 decorations.push(
                   Decoration.node(pos, pos + node.nodeSize, { class: 'is-active-node' })
                 )

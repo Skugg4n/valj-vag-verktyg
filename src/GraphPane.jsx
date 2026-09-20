@@ -1,7 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactFlow, { MiniMap, ReactFlowProvider, useReactFlow } from 'reactflow'
-import { Plus, LayoutGrid, Layers, Lightbulb, Search, X } from 'lucide-react'
+import { Plus, LayoutGrid, Lightbulb, Search, X } from 'lucide-react'
 import NodeEditorContext from './NodeEditorContext.ts'
+
+export function ViewportBridge({ viewportRef }) {
+  const rf = useReactFlow()
+  useEffect(() => {
+    if (!viewportRef) return
+    viewportRef.current = rf
+    return () => { if (viewportRef.current === rf) viewportRef.current = null }
+  }, [rf, viewportRef])
+  return null
+}
 
 export default function GraphPane({
   nodes,
@@ -24,8 +34,10 @@ export default function GraphPane({
   activeNodeId,
   onAddNode,
   onAutoLayout,
-  onAddSection,
   onAddIdea,
+  viewportRef,
+  focusTitleId,
+  onTitleFocused,
 }) {
   const [search, setSearch] = useState('')
 
@@ -46,7 +58,7 @@ export default function GraphPane({
   return (
     <ReactFlowProvider>
     <div className="graph-pane" id="graph">
-      <NodeEditorContext.Provider value={{ updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet }}>
+      <NodeEditorContext.Provider value={{ updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused }}>
         <ReactFlow
           style={{ width: '100%', height: '100%' }}
           nodes={nodes}
@@ -71,12 +83,12 @@ export default function GraphPane({
           maxZoom={4}
         >
           <MiniMap zoomable pannable />
+          <ViewportBridge viewportRef={viewportRef} />
         </ReactFlow>
 
         <GraphToolbar
           onAddNode={onAddNode}
           onAutoLayout={onAutoLayout}
-          onAddSection={onAddSection}
           onAddIdea={onAddIdea}
         />
 
@@ -105,7 +117,7 @@ export default function GraphPane({
   )
 }
 
-function GraphToolbar({ onAddNode, onAutoLayout, onAddSection, onAddIdea }) {
+function GraphToolbar({ onAddNode, onAutoLayout, onAddIdea }) {
   return (
     <div className="graph-toolbar">
       <button className="btn ghost icon" onClick={onAddNode} title="Ny nod" aria-label="Ny nod">
@@ -113,15 +125,6 @@ function GraphToolbar({ onAddNode, onAutoLayout, onAddSection, onAddIdea }) {
       </button>
       <button className="btn ghost icon" onClick={onAutoLayout} title="Auto-layout" aria-label="Auto-layout">
         <LayoutGrid />
-      </button>
-      <button
-        className="btn ghost icon"
-        onClick={onAddSection}
-        disabled
-        title="Sektioner – kommer snart"
-        aria-label="Sektioner (kommer snart)"
-      >
-        <Layers />
       </button>
       <button className="btn ghost icon" onClick={onAddIdea} title="Idé" aria-label="Idé">
         <Lightbulb />

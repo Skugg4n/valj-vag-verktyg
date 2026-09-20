@@ -10,6 +10,10 @@ export interface NodeEditorContextType {
   selectNode: (id: string, data: { text?: string; title?: string }) => void
   /** The globally active node id (e.g. from Doc → Graph sync). */
   activeNodeId: string | null
+  matchSet?: Set<string> | null
+  /** Scene whose title input should receive focus (set by cmd+Enter). */
+  focusTitleId: string | null
+  onTitleFocused: () => void
 }
 
 const NodeEditorContext = createContext<NodeEditorContextType>({
@@ -17,6 +21,9 @@ const NodeEditorContext = createContext<NodeEditorContextType>({
   resizingRef: { current: false },
   selectNode: (_id, _data) => {},
   activeNodeId: null,
+  matchSet: null,
+  focusTitleId: null,
+  onTitleFocused: () => {},
 })
 
 export default NodeEditorContext
