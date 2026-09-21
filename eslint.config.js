@@ -32,7 +32,9 @@ export default [
   },
   {
     // Test files: add jest + node globals so the lint gate is meaningful.
-    files: ['**/*.test.{js,jsx,ts,tsx}', 'src/__tests__/**/*.{js,jsx,ts,tsx}'],
+    // Only JS/JSX: there is no TypeScript parser configured, so .ts tests
+    // are type-checked by babel-jest at test time instead.
+    files: ['**/*.test.{js,jsx}', 'src/__tests__/**/*.{js,jsx}'],
     languageOptions: {
       globals: { ...globals.jest, ...globals.node },
     },
