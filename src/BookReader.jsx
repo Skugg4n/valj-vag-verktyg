@@ -4,7 +4,7 @@ import './BookReader.css'
 
 // Clean reading view. nodes = published scene shape [{ id, title, text, color }].
 // Used by the public /spela/:id reader and the workshop "Spela upp" preview.
-export default function BookReader({ title, nodes, onClose }) {
+export default function BookReader({ title, nodes, onClose, onChoice, onEnd }) {
   const map = useMemo(() => new Map((nodes || []).map(n => [n.id, n])), [nodes])
   // Start at the lowest 3-digit scene id, else the first node.
   const firstId = useMemo(() => {
@@ -22,7 +22,16 @@ export default function BookReader({ title, nodes, onClose }) {
     [node, map]
   )
 
-  const go = id => { setHistory(h => [...h, curId]); setCurId(id) }
+  // Signal "reached an ending" once per scene that has no onward choices.
+  useEffect(() => {
+    if (node && choices.length === 0 && onEnd) onEnd(curId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [curId])
+
+  const go = id => {
+    onChoice?.(curId, id, map.get(id)?.title)
+    setHistory(h => [...h, curId]); setCurId(id)
+  }
   const back = () =>
     setHistory(h => {
       if (!h.length) return h

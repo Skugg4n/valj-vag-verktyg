@@ -1,4 +1,122 @@
-## v0.15.1 — Synkfixar efter slutgranskning — 2026-09-10
+# Changelog
+
+## v0.19.0 — Sammanslagning: verkstadens juni-arbete + Advanced-synken — 2026-09-21
+
+Master innehöll inte det som låg live (v0.18.1 publicerades från grenen
+`feature/workshop-lite` i juni utan att slås ihop). Den här versionen förenar
+båda spåren: allt från v0.15.2 till v0.18.1 (verkstaden) och v0.15.0/v0.15.1
+(Advanced-synken, nedan daterade september). Se `facts/LESSONS.md` 2026-09-20.
+
+## v0.18.1: Readable node text on light cards + visible crash screen (2026-06-22)
+
+### Fixed
+- Node cards with a light fill (e.g. a yellow workshop story opened in the
+  advanced editor) showed light text on a light background, unreadable. The card
+  id/title/body now follow the contrast-aware colour the card already computes
+  (dark text on light cards, light text on dark cards). CSS-only, in the advanced
+  editor's node styling.
+- The crash screen was dark text with no background, so on a dark page it looked
+  like a blank black screen. It now has a white background and prints the error,
+  so a failure shows what went wrong instead of a black page.
+
+## v0.18.0: Workshop list cleanup + admin polish (2026-06-20)
+
+### Changed
+- The workshop story list no longer shows advanced-app projects. Stories are
+  tagged by which app created them (workshop vs advanced). The list shows
+  workshop and untagged stories and hides only those explicitly from the
+  advanced app, so a real workshop story is never accidentally hidden across
+  devices. Covered by unit tests (workshopList).
+
+### Added
+- Admin dashboard: an "Uppdatera" button to reload stats without a full reload.
+- The admin's own reads of share links are no longer counted in the stats.
+
+## v0.17.0: Stories are never lost — account linking + honest save status (2026-06-20)
+
+### Fixed
+- Logging in with Google no longer throws away anonymous work. The anonymous
+  session is now *linked* (upgraded) to Google, keeping the same identity and all
+  its data. If the Google account already exists, the in-progress work is copied
+  into it, and any copy failure is reported to the user instead of lost silently.
+- The cloud listener no longer overwrites the story you currently have open.
+
+### Added
+- An always-visible save status in the workshop topbar: "Sparat på den här
+  enheten" (without login) vs "Sparar…" / "Sparat i ditt konto" / "Kunde inte
+  spara" (logged in). A failed cloud backup is surfaced honestly, never a false
+  "saved". Backed by unit tests (saveStatus, migrateProjects).
+- Clearer welcome text: without login the story is saved only on this device.
+
+## v0.16.0: Workshop stories sync to your account (2026-06-20)
+
+### Changed
+- Workshop stories now save to the cloud for any signed-in identity, including
+  anonymous (a same-browser safety net), not just logged-in Google users.
+- The story list shows every cloud-synced story (flagged on load), so your
+  stories appear on any device when you are logged in with Google, instead of
+  being limited to the browser's local list.
+
+## v0.15.2: Fix sign-in on the verkstaden domain (2026-06-19)
+
+### Fixed
+- Sign-in failed on verkstaden.olabelin.se with auth/unauthorized-domain. The
+  root cause: the domain was not in Firebase Auth's authorized domains. Added
+  verkstaden.olabelin.se and verkstad.olabelin.se.
+- Reverted to signInWithPopup. signInWithRedirect cannot complete on a custom
+  domain whose auth handler is on a different origin (the credential cannot be
+  read back across domains), which bounced mobile users back to the login gate.
+
+## v0.15.1: Fix mobile Google sign-in (2026-06-19)
+
+### Fixed
+- Google sign-in on mobile (the popup opened, then vanished without completing).
+  Mobile now uses a full-page redirect (signInWithRedirect); desktop keeps the
+  popup with a redirect fallback when it is blocked or dismissed.
+
+## v0.15.0 — Admin dashboard + pseudonymous analytics — 2026-06-18
+
+### Added
+- **Pseudonymous event logging.** A `track()` helper records visits, reads,
+  reader choices, story builds, and shares to an `events` collection — keyed to
+  the anonymous Firebase uid only (browser/OS/device/lang/referrer context; no
+  IP, no names, no PII). Cheap aggregate counters: `published/{id}.views` and
+  per-day `stats/{date}`.
+- **Reader tracking.** `PublicReader` signs readers in anonymously so they are
+  countable, and logs `read_open` / `read_choice` / `read_complete` + view
+  counts.
+- **/admin dashboard** (dark, gated to the admin uid): KPI cards, a 14-day
+  trend chart, shared-stories table with moderation (delete), reader insights
+  (most-read, popular choices, device/browser breakdown), and a raw event log.
+  Discreet "Admin" link in the user menu for the admin account.
+- `firestore.rules`: `events` (create-by-self, admin-read), `stats`, and
+  `published` (public read, counter-only updates by non-owners, admin
+  list/delete).
+
+### Changed
+- `UserMenu` now treats anonymous identities as signed-out for display (the
+  workshop signs visitors in anonymously on load for analytics).
+
+### Notes
+- Scope-limited on purpose: per-keystroke `scene_edit` is **not** logged (avoids
+  write-spam on the free Spark plan); coarse build events are. Full Auth user
+  listing is out of scope (needs a server/Blaze) — counts come from events.
+- Going live requires deploying `firestore.rules` (additive, validated).
+
+## v0.14.2 — Workshop: brand re-skin (warm cream + teal + Fredoka) — 2026-06-17
+
+### Changed
+- **Workshop re-skin** to match olabelin.se + Racet/Välj Väg: warm cream canvas,
+  white cards with more air, teal accent, Fredoka in the brand, Hanken Grotesk in
+  the UI. Pure design-token + font + padding changes scoped to
+  `[data-app='workshop']` — function unchanged, advanced (dark) mode untouched.
+- Calmer, warmer scene-colour palette in the workshop colour picker.
+
+### Fixed
+- `index.html`: added Fredoka + Hanken Grotesk but **kept Inter** in the font
+  link — the advanced mode and main app still depend on Inter, so dropping it
+  would have silently changed their typography on non-Apple systems.
+## v0.15.1 (Advanced-synk, ingick i 0.19.0) — Synkfixar efter slutgranskning — 2026-09-10
 
 ### Fixed
 - **Ingen förlorad text vid lägesbyte.** Ett påbörjat stycke som ännu inte
@@ -9,7 +127,7 @@
 - **Inga dubbletter av scennummer** när en scen skapats strax innan, och en
   rubrik utan nummer tar aldrig ett nummer som används längre ned i texten.
 
-## v0.15.0 — Advanced: graf och dokument är samma berättelse — 2026-09-10
+## v0.15.0 (Advanced-synk, ingick i 0.19.0) — Advanced: graf och dokument är samma berättelse — 2026-09-10
 
 ### Changed
 - **Noderna är enda sanningen.** Dokumentet ritas om från noderna vid varje

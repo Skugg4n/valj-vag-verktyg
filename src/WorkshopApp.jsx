@@ -3,6 +3,7 @@ import ReactFlow, { Background, applyNodeChanges, applyEdgeChanges, ReactFlowPro
 import 'reactflow/dist/style.css'
 import { signInAnonymously } from 'firebase/auth'
 import { auth } from './firebase.js'
+import { ensureAnonAuth, track } from './track.js'
 import { useAuth } from './AuthContext.jsx'
 import useProjectStorage from './useProjectStorage.js'
 import useFirestoreSync from './useFirestoreSync.js'
@@ -15,6 +16,8 @@ import { toPublishedNodes } from './storyExport.js'
 import { splitBodyAndChoices, joinBodyAndChoices } from './sceneRefs.js'
 import { makeShareId } from './utils/shareId.js'
 import { shareUrl } from './routing.js'
+import { saveStatusLabel } from './saveStatus.js'
+import { showInWorkshopList } from './workshopList.js'
 import './WorkshopApp.css'
 
 const SCALE_KEY = 'cyoa-ws-scale'
@@ -94,6 +97,21 @@ function WorkshopCanvas(props) {
   )
 }
 
+// Honest, always-visible save status. Anonymous = this device only; signed in
+// with Google = saved to the account and available on every device.
+function SaveStatus({ user, cloudState }) {
+  const isAnonymous = !user || user.isAnonymous
+  const { text, error } = saveStatusLabel({ isAnonymous, cloudState })
+  return (
+    <span
+      className={`ws-save${error ? ' err' : ''}`}
+      title={isAnonymous ? 'Logga in med Google för att nå berättelsen på alla dina enheter' : undefined}
+    >
+      {text}
+    </span>
+  )
+}
+
 export default function WorkshopApp() {
   useEffect(() => {
     document.documentElement.setAttribute('data-app', 'workshop')
@@ -103,6 +121,12 @@ export default function WorkshopApp() {
       document.documentElement.removeAttribute('data-app')
       document.title = prevTitle
     }
+  }, [])
+
+  // Pseudonymous analytics: count the visit. Signs in anonymously so the event
+  // satisfies the rules; returning visitors reuse their persisted anon id.
+  useEffect(() => {
+    ensureAnonAuth().then(() => track('app_open', {}, 'workshop'))
   }, [])
 
   const nodeTypes = useMemo(() => ({ card: WorkshopNode }), [])
@@ -123,6 +147,7 @@ export default function WorkshopApp() {
   const [playing, setPlaying] = useState(false)
   const [shareInfo, setShareInfo] = useState(null) // { id, url }
   const [busy, setBusy] = useState(false)
+  const [cloudState, setCloudState] = useState('idle') // 'idle' | 'saving' | 'saved' | 'error'
   const [storyMenu, setStoryMenu] = useState(false)
   const [autoSave] = useState(true)
   // UI text scale, adjustable on-site for projectors/TVs. Persisted.
@@ -157,21 +182,27 @@ export default function WorkshopApp() {
     setEdges(scanEdges(nodes))
   }, [nodes])
 
-  // Firestore autosave when logged in (same shape as the advanced app).
-  // Anonymous users (who only signed in to share) stay on localStorage — no
-  // per-project cloud sync — to keep Firestore usage down.
+  // Firestore autosave for any signed-in identity (incl. anonymous), so every
+  // workshop story is backed up to the account and appears on any device when
+  // logged in. Anonymous identities are per-browser, so their cloud copy is a
+  // same-browser safety net; a Google login makes it truly cross-device.
   useEffect(() => {
-    if (!user || user.isAnonymous || !projectId || nodes.length === 0) return
+    if (!user || !projectId || nodes.length === 0) return
+    setCloudState('saving')
     const data = {
-      projectName, nextNodeId: nextId,
+      projectName, nextNodeId: nextId, app: 'workshop',
       nodes: nodes.map(n => ({
         id: n.id, text: n.data.text || '', title: n.data.title || '',
         color: n.data.color || '#2f6df6', position: n.position,
         type: n.type || 'card', width: n.width, height: n.height,
       })),
     }
-    const t = setTimeout(() => saveToFirestore(projectId, data), 2000)
-    return () => clearTimeout(t)
+    let alive = true
+    const t = setTimeout(async () => {
+      const ok = await saveToFirestore(projectId, data)
+      if (alive) setCloudState(ok ? 'saved' : 'error')
+    }, 2000)
+    return () => { alive = false; clearTimeout(t) }
   }, [user, nodes, nextId, projectName, projectId, saveToFirestore])
 
   // Mark current project as a workshop story; load its share link.
@@ -228,8 +259,10 @@ export default function WorkshopApp() {
   )
   const workshopProjects = useMemo(() => {
     const ids = loadJSON(WORKSHOP_IDS_KEY, [])
+    // Show local workshop stories + any cloud story that is not explicitly an
+    // advanced-app project, so a workshop story is never hidden across devices.
     return Object.entries(projects)
-      .filter(([id]) => ids.includes(id))
+      .filter(([id, p]) => showInWorkshopList(id, p, ids))
       .map(([id, p]) => ({ id, name: p.data?.projectName || '', updated: p.updated || 0 }))
       .sort((a, b) => (b.updated || 0) - (a.updated || 0))
   }, [projects])
@@ -254,6 +287,7 @@ export default function WorkshopApp() {
     commit(ns => [...ns, newCard(id, { x: base.x + 40, y: base.y + 160 })])
     setNextId(n => n + 1)
     setSelectedId(id)
+    track('scene_create', { sceneId: id }, 'workshop')
   }
 
   const onAddChoice = (targetId, newTitle) => {
@@ -351,6 +385,7 @@ export default function WorkshopApp() {
     const p = projects[id]; if (!p) return
     setStoryMenu(false)
     loadProject(id, p.data); setProjectId(id); setProjectStart(p.start || Date.now())
+    setCloudState('idle')
   }
   const newStory = () => {
     setStoryMenu(false)
@@ -364,6 +399,8 @@ export default function WorkshopApp() {
     const sid = '001'
     commit(() => [newCard(sid, { x: 120, y: 140 }, DEFAULT_COLOR, 'Start')])
     setNextId(2); setSelectedId(sid)
+    setCloudState('idle')
+    track('project_create', {}, 'workshop')
   }
   const deleteStory = id => {
     setStoryMenu(false)
@@ -381,6 +418,7 @@ export default function WorkshopApp() {
   const publish = async () => {
     if (nodes.length === 0) return
     setBusy(true)
+    track('share_click', {}, 'workshop')
     try {
       // Anyone can share — sign in anonymously (a silent browser identity) if
       // not already logged in, so the publish satisfies the Firestore rules.
@@ -399,7 +437,7 @@ export default function WorkshopApp() {
       const ok = await publishStory(sid, {
         title: projectName || 'Berättelse', nodes: toPublishedNodes(nodes), sourceProjectId: projectId,
       })
-      if (ok) { setShareInfo({ id: sid, url: shareUrl(sid) }); setToast('Berättelsen är delad. Länken är kopierad.'); navigator.clipboard?.writeText(shareUrl(sid)) }
+      if (ok) { setShareInfo({ id: sid, url: shareUrl(sid) }); setToast('Berättelsen är delad. Länken är kopierad.'); navigator.clipboard?.writeText(shareUrl(sid)); track('publish', { storyId: sid, sceneCount: nodes.length }, 'workshop') }
       else setToast('Kunde inte publicera just nu. Försök igen.')
     } finally { setBusy(false) }
   }
@@ -411,6 +449,7 @@ export default function WorkshopApp() {
     setBusy(true)
     try {
       await unpublishStory(shareInfo.id)
+      track('unpublish', { storyId: shareInfo.id }, 'workshop')
       const map = loadJSON(SHAREIDS_KEY, {}); delete map[projectId]; saveJSON(SHAREIDS_KEY, map)
       setShareInfo(null)
       setToast('Delningen är avslutad.')
@@ -446,6 +485,7 @@ export default function WorkshopApp() {
             </div>
           )}
         </div>
+        <SaveStatus user={user} cloudState={cloudState} />
         <span className="ws-flex" />
         <div className="ws-zoom" title="Textstorlek på skärmen">
           <button className="ws-tb-btn ghost ws-zoom-btn" onClick={() => bumpScale(-0.1)} disabled={uiScale <= SCALE_MIN} aria-label="Mindre text">A−</button>
@@ -521,12 +561,12 @@ export default function WorkshopApp() {
           <div className="ws-modal ws-welcome" onClick={e => e.stopPropagation()}>
             <h2 className="ws-welcome-title">Ola Belins Berättarverkstad ✨</h2>
             <p>Bygg din egen <b>välj-väg-berättelse</b>: varje ruta är en scen, och valen leder vidare till nästa.</p>
-            <p className="ws-welcome-dim">Din berättelse sparas i den här webbläsaren. Dela den med en länk när du vill — logga in uppe till höger om du vill spara den för gott.</p>
+            <p className="ws-welcome-dim">Utan inloggning sparas berättelsen bara på <b>den här enheten</b>. Logga in med Google uppe till höger, så sparas den på ditt konto och finns på alla dina enheter.</p>
             <div className="ws-modal-actions">
               <button className="ws-tb-btn accent" onClick={dismissInfo}>Sätt igång!</button>
             </div>
             <p className="ws-welcome-credit">
-              Av <a href="https://olabelin.se" target="_blank" rel="noopener noreferrer">Ola Belin</a> — författare till den interaktiva boken <i>Racet</i>.
+              Av <a href="https://olabelin.se" target="_blank" rel="noopener noreferrer">Ola Belin</a>, författare till den interaktiva boken <i>Racet</i>.
             </p>
           </div>
         </div>

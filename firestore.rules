@@ -1,20 +1,55 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // The single admin (ola@turbin.se, Google). Custom claims would need a
+    // server (Blaze); a hard-coded uid is the right call on the Spark plan.
+    // Mirrored in src/adminConfig.js.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.uid == 'E7Kc9DudNYY5YgObML67NJt6y202';
+    }
+
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Public, no-login story copies for the /spela/:id reader. Anyone may
-    // open a story they have the link to (get), but nobody can enumerate them
-    // all (list is denied). Only the signed-in owner may create/update/delete.
+    // Public, no-login story copies for the /spela/:id reader. Anyone may open
+    // a story they have the link to (get); nobody can enumerate them (list)
+    // except the admin. The owner may create/update/delete content; any signed-
+    // in user (incl. anonymous readers) may bump ONLY the view counters.
     match /published/{shareId} {
       allow get: if true;
-      allow list: if false;
+      allow list: if isAdmin();
       allow create: if request.auth != null
                     && request.resource.data.ownerUid == request.auth.uid;
-      allow update, delete: if request.auth != null
-                    && resource.data.ownerUid == request.auth.uid;
+      allow update: if request.auth != null && (
+                      resource.data.ownerUid == request.auth.uid
+                      || request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['views', 'viewsUnique', 'lastViewedAt'])
+                    );
+      allow delete: if request.auth != null
+                    && (resource.data.ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // Pseudonymous analytics event log (append-only). Anyone signed in (incl.
+    // anonymous) may create an event attributed to their own uid. Only the
+    // admin may read/enumerate or clean up. No updates.
+    match /events/{id} {
+      allow create: if request.auth != null
+                    && request.resource.data.anonId == request.auth.uid
+                    && request.resource.data.type is string;
+      allow read: if isAdmin();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // Per-day aggregate counters (increments). Any signed-in user may bump
+    // them; only the admin may read. Low-stakes by design (counters only).
+    match /stats/{date} {
+      allow read: if isAdmin();
+      allow create, update: if request.auth != null;
+      allow delete: if isAdmin();
     }
   }
 }

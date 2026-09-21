@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { splitBodyAndChoices, joinBodyAndChoices } from './sceneRefs.js'
 
-const COLORS = ['#2f6df6', '#e8554e', '#e8954e', '#e6c34e', '#3fae6b', '#8e6bd6', '#d96bb0', '#7d8696']
+const COLORS = ['#2C97A3', '#CB5A3C', '#E7B23E', '#6E9E6B', '#8A5B86', '#6E7F8C']
 
 // Permanent right pane: edit the selected scene's name, body, colour, choices.
 // Choices are stored as trailing [#NNN] refs in the scene text (single source).

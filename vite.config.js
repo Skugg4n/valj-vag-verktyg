@@ -7,7 +7,7 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 let gitHash = 'unknown'
 try {
   gitHash = execSync('git rev-parse --short HEAD').toString().trim()
-} catch {}
+} catch { /* no git available in this environment */ }
 
 // https://vite.dev/config/
 export default defineConfig({

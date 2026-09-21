@@ -53,3 +53,24 @@ den lazy-laddade `App-*.js`. Index visade 0.14.1 fast App-chunken sa 0.18.1.
 2. Publicera aldrig en gren med `vercel --prod` utan att samma dag slå ihop den
    i master. Auto-deploy från master gör annars nästa push till en rollback.
 3. Rollback är `vercel promote <tidigare prod-url> --yes`, tar under en minut.
+## 2026-06-20: Anonymous identities are per-browser; login must LINK, not replace
+**Discovery:** The workshop signs users in anonymously and saved work under
+`users/{anonUid}/projects`. But the anonymous uid lives only in the browser, and
+`loginWithGoogle` used `signInWithPopup`, which REPLACES the anonymous session
+with a brand-new Google uid. So logging in (the exact action the welcome modal
+told users to take "to save for good") orphaned all anonymous work under a uid
+no one can reach again. The kids' stories were also made anonymously and were
+only recoverable from the `published` copies.
+
+**Fix (v0.17.0):** Use `linkWithPopup` to upgrade the anonymous account to Google
+(same uid, data preserved). On `auth/credential-already-in-use` (the Google
+account already exists), read the anon projects while still anonymous, sign into
+the existing account, copy them over, and report any failures instead of
+swallowing them. Added an honest always-visible save status, and made anonymous
+= "saved on this device" explicit in the UI.
+
+**Lesson:** Anonymous auth is a per-device identity, not a durable account. Never
+tell a user their work is "saved" without being precise about WHERE (this device
+vs the cloud account), never use plain sign-in to "upgrade" an anonymous user
+(link the credential so data carries over), and reassure only after a confirmed
+save, not optimistically.

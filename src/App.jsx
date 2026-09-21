@@ -35,6 +35,7 @@ import useFirestoreSync from './useFirestoreSync.js'
 import { useAuth } from './AuthContext.jsx'
 import { setDebug as setDebugFlag, debugLog, isDebug } from './utils/debug.js'
 
+/* global __APP_VERSION__, __GIT_HASH__ */
 function estimateNodeHeight(text) {
   const charsPerLine = 32
   const lines = text
@@ -196,6 +197,7 @@ export default function App() {
     const data = {
       projectName,
       nextNodeId: nextId,
+      app: 'advanced',
       nodes: nodes.map(n => ({
         id: n.id,
         text: n.data.text || '',
