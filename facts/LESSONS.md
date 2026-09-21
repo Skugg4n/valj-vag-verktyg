@@ -30,3 +30,26 @@ created (`firestore_get_database .../databases/(default)` → "does not exist";
 **Lesson:** Don't assume a declared backend is provisioned. A hardcoded/declared
 config (`firebase.json`, `firebase.js`) is intent, not proof the resource exists
 — verify with the admin API before building features that depend on it.
+
+## 2026-09-20 — Master var inte det som låg live; en push till master skrev över produktionen
+**Vad hände:** Produktionen (valj-vag-verktyg.vercel.app och verkstaden.olabelin.se)
+kördes sedan 23 juni på `feature/workshop-lite` v0.18.1, publicerad med
+`vercel --prod` från CLI utan att grenen slogs ihop i master (som stod på
+v0.14.1). När v0.15.1 pushades till master byggde Vercel automatiskt och flyttade
+båda adresserna till den nya deployen. Verkstaden tappade därmed molnsynk av
+berättelser (v0.16), kontokoppling anonym→Google och sparstatus (v0.17),
+adminpanel och döljande av avancerade projekt (v0.18) i cirka 40 minuter, tills
+den gamla deployen promotades tillbaka (`vercel promote <url>`).
+
+**Varför det inte upptäcktes:** kontrollen av "vad ligger live" lästes ur
+`index-*.js`, som bara innehåller shellet. Versionen och all editor-kod ligger i
+den lazy-laddade `App-*.js`. Index visade 0.14.1 fast App-chunken sa 0.18.1.
+
+**Regler framåt:**
+1. Före varje deploy: läs versionen ur App-chunken på den publicerade sajten och
+   jämför med `git show master:package.json`. Skiljer de sig är master inte
+   sanningen; stanna och ta reda på vilken gren som ligger live
+   (`vercel inspect <prod-url>` visar aliasen).
+2. Publicera aldrig en gren med `vercel --prod` utan att samma dag slå ihop den
+   i master. Auto-deploy från master gör annars nästa push till en rollback.
+3. Rollback är `vercel promote <tidigare prod-url> --yes`, tar under en minut.
