@@ -6,7 +6,9 @@ export default function EditorBubbleMenu({ editor }) {
 
   return (
     <BubbleMenu editor={editor} tippyOptions={{ duration: 150 }}
-      shouldShow={({ state }) => {
+      shouldShow={({ editor: ed, state }) => {
+        // Not while the find bar is stepping through matches.
+        if (ed?.storage?.searchReplace?.query) return false
         const { from, to } = state.selection
         return from !== to
       }}

@@ -1,4 +1,4 @@
-import { render, screen, act, waitFor } from '@testing-library/react'
+import { render, screen, act, waitFor, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import DocPane from '../DocPane.jsx'
 import { sceneIdsInDoc, nodesToDoc, normalizeDoc } from '../utils/docSync.ts'
@@ -211,5 +211,29 @@ describe('DocPane', () => {
     const $b = editor.state.selection.$from
     expect($b.parent.type.name).toBe('heading')
     expect($b.parent.textContent).toMatch(/^\[001\]/)
+  })
+})
+
+describe('find bar', () => {
+  it('opens on Mod-f, counts matches, replaces all and closes on Escape', async () => {
+    const { container } = render(
+      <DocPane {...baseProps} nodes={[node('001', 'A', 'katt och katt'), node('002', 'B', 'katt')]} />
+    )
+    const pm = container.querySelector('.ProseMirror')
+    await waitFor(() => expect(pm.__tiptapEditor).toBeTruthy())
+    const editor = pm.__tiptapEditor
+    expect(container.querySelector('.find-bar')).toBeNull()
+    act(() => { editor.commands.keyboardShortcut('Mod-f') })
+    const input = await waitFor(() => container.querySelector('.find-input'))
+    act(() => { fireEvent.change(input, { target: { value: 'katt' } }) })
+    await waitFor(() => expect(container.querySelector('.find-count').textContent).toBe('1 av 3'))
+    expect(container.querySelectorAll('.ProseMirror .search-match')).toHaveLength(3)
+    const replace = container.querySelectorAll('.find-input')[1]
+    act(() => { fireEvent.change(replace, { target: { value: 'hund' } }) })
+    act(() => { fireEvent.click(screen.getByText('Ersätt alla')) })
+    await waitFor(() => expect(pm.textContent).not.toContain('katt'))
+    expect(pm.textContent).toContain('hund och hund')
+    act(() => { fireEvent.keyDown(container.querySelector('.find-input'), { key: 'Escape' }) })
+    await waitFor(() => expect(container.querySelector('.find-bar')).toBeNull())
   })
 })

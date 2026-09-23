@@ -31,6 +31,8 @@
 | CustomLink | src/CustomLink.ts | TipTap link extension | → LinearView |
 | ActiveNodeHighlight | src/ActiveNodeHighlight.ts | Highlights active node in editor | → LinearView |
 | SceneRef | src/SceneRef.ts | TipTap pill for `[NNN]` scene references; serialises `[NNN]` | → DocPane |
+| SearchReplace | src/SearchReplace.ts | TipTap extension: find matches, decorations, next/prev, replace/replaceAll | → DocPane, FindBar |
+| FindBar | src/FindBar.jsx | Search-and-replace bar in the document (⌘F) | → DocPane |
 | BracketAutoClose | src/BracketAutoClose.ts | `[` inserts `[]`; `]` completes a `[NNN]` pill or skips over | → DocPane |
 
 ## Hooks
@@ -108,6 +110,7 @@
 | graphNav.test | src/__tests__/graphNav.test.ts | Direction picking | → graphNav |
 | theme.test | src/__tests__/theme.test.jsx | resolveTheme + useTheme (persist, toggle, OS change) | → theme |
 | manuscriptImport.test | src/__tests__/manuscriptImport.test.ts | Manuscript parsing, refs, empty scenes, layout | → manuscriptImport |
+| SearchReplace.test | src/__tests__/SearchReplace.test.ts | Matching, cycling, replace | → SearchReplace |
 | SceneRef.test | src/__tests__/SceneRef.test.ts | Pill parse/serialise, bracket auto-close | → SceneRef |
 | NodeCardFocus.test | src/__tests__/NodeCardFocus.test.jsx | Title focus after cmd+Enter | → NodeCard |
 | GraphPaneBridge.test | src/__tests__/GraphPaneBridge.test.jsx | viewportRef exposure | → GraphPane |

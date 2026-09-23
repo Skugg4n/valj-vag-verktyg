@@ -1192,6 +1192,7 @@ export default function App() {
           e.preventDefault()
           saveVersion()
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+          if (e.target.closest?.('.ProseMirror')) return   // DocPane opens its find bar
           // Graph visible: jump to "Sök scen…". Otherwise leave ⌘F to the browser.
           const search = document.querySelector('.graph-search input')
           if (search) {

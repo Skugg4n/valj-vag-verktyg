@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.22.0 — Sök och ersätt i dokumentet — 2026-09-23
+
+### Added
+- **⌘F i dokumentet** öppnar en sökrad: sökord, räknare "2 av 7", pilar,
+  Enter för nästa, Shift+Enter för föregående, Esc stänger. Träffarna
+  markeras i texten och dokumentet scrollar till den aktuella. Sökningen är
+  skiftlägesokänslig och täcker titlar, löptext och regianvisningar.
+- **Ersätt och Ersätt alla** i samma rad. Pillarna (`[NNN]`) rörs aldrig.
+- **Grafen följer med:** samma sökord filtrerar korten i grafen, och scenen
+  med den aktuella träffen markeras.
+- I grafläget utan dokument hoppar ⌘F till "Sök scen…" som förut.
+
 ## v0.21.3 — Länk skapas direkt vid tredje siffran — 2026-09-23
 
 ### Fixed

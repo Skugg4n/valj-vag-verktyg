@@ -41,6 +41,12 @@ export default function GraphPane({
   cardColor,
 }) {
   const [search, setSearch] = useState('')
+  // The document's find bar broadcasts its query so the graph dims the same way.
+  useEffect(() => {
+    const onDocSearch = e => setSearch(e.detail || '')
+    window.addEventListener('vv-doc-search', onDocSearch)
+    return () => window.removeEventListener('vv-doc-search', onDocSearch)
+  }, [])
 
   const matchSet = useMemo(() => {
     const q = search.trim().toLowerCase()

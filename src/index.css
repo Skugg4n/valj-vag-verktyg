@@ -2067,3 +2067,38 @@ textarea:focus {
 .graph-search-clear:hover { color: var(--ink); background: var(--panel-2); }
 .node-card.dimmed { opacity: 0.28; filter: saturate(.5); transition: opacity .15s var(--ease); }
 .node-card.matched { box-shadow: 0 0 0 2px var(--accent), 0 8px 22px rgba(0, 0, 0, .4); }
+
+/* Find bar (document search and replace) */
+.find-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  flex: 0 0 auto;
+}
+.find-row { display: flex; align-items: center; gap: 6px; }
+.find-input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--bg);
+  color: var(--ink);
+  font: 13px var(--font-ui);
+}
+.find-input:focus { outline: none; border-color: var(--accent); }
+.find-count { color: var(--ink-dim); font: 12px var(--font-mono); white-space: nowrap; min-width: 72px; text-align: right; }
+.find-bar .tb-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border: none; border-radius: var(--r);
+  background: transparent; color: var(--ink-soft); cursor: pointer;
+}
+.find-bar .tb-btn:hover { background: var(--panel-2); color: var(--ink); }
+.find-bar .tb-btn:disabled { opacity: .4; cursor: default; }
+.find-bar .tb-btn svg { width: 15px; height: 15px; }
+.ProseMirror .search-match { background: rgba(240, 185, 85, .35); border-radius: 2px; }
+.ProseMirror .search-match.active { background: rgba(240, 185, 85, .8); color: #1f1d19; outline: 1px solid var(--warn); }

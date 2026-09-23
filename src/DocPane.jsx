@@ -19,6 +19,8 @@ import CustomLink from './CustomLink.ts'
 import SceneRef from './SceneRef.ts'
 import BracketAutoClose from './BracketAutoClose.ts'
 import ActiveNodeHighlight from './ActiveNodeHighlight.ts'
+import SearchReplace from './SearchReplace.ts'
+import FindBar from './FindBar.jsx'
 import EditorBubbleMenu from './EditorBubbleMenu.jsx'
 import { nodesToDoc, normalizeDoc, isIdeaNode } from './utils/docSync.ts'
 import 'tippy.js/dist/tippy.css'
@@ -67,6 +69,7 @@ export default function DocPane({
   isSaving = false,
 }) {
   const [outlineHidden, setOutlineHidden] = useState(false)
+  const [findOpen, setFindOpen] = useState(false)
   const scrollRef = useRef(null)
   const activeNodeIdRef = useRef(activeNodeId)
   const fromScrollRef = useRef(null)
@@ -102,6 +105,10 @@ export default function DocPane({
     name: 'docKeys',
     addKeyboardShortcuts() {
       return {
+        'Mod-f': () => {
+          setFindOpen(true)
+          return true
+        },
         'Mod-Enter': ({ editor }) => {
           flushPending()
           const fromId = sceneIdAtSelection(editor.state)
@@ -158,6 +165,7 @@ export default function DocPane({
       Markdown.configure({ html: false }),
       BubbleMenuExtension,
       ActiveNodeHighlight,
+      SearchReplace,
       DocKeys,
     ],
     content: '',
@@ -331,6 +339,31 @@ export default function DocPane({
   const wordCount = editor?.storage.characterCount?.words?.() ?? 0
   const sectionCount = outlineEntries.length
 
+  // Find bar helpers. The graph listens for the query so both views filter
+  // on the same word; the active match's scene becomes the selected scene.
+  const closeFind = useCallback(() => {
+    setFindOpen(false)
+    requestAnimationFrame(() => editor?.commands.focus())
+  }, [editor])
+  const broadcastQuery = useCallback((q) => {
+    window.dispatchEvent(new CustomEvent('vv-doc-search', { detail: q }))
+  }, [])
+  const scrollToMatch = useCallback(() => {
+    if (!editor) return
+    const { matches, index } = editor.storage.searchReplace
+    const m = matches[index]
+    const container = scrollRef.current
+    if (!m || !container) return
+    const coords = editor.view.coordsAtPos(m.from)
+    const cRect = container.getBoundingClientRect()
+    container.scrollTop += coords.top - cRect.top - cRect.height / 2
+    const id = sceneIdAtSelection(editor.state)
+    if (id) {
+      fromScrollRef.current = id
+      callbacksRef.current.onSelectNode?.(id)
+    }
+  }, [editor])
+
   const newSceneFromToolbar = () => {
     if (!editor) return
     flushPending()
@@ -352,6 +385,14 @@ export default function DocPane({
         focusMode={focusMode}
         setFocusMode={setFocusMode}
         onNewScene={newSceneFromToolbar}
+      />
+
+      <FindBar
+        editor={editor}
+        open={findOpen}
+        onClose={closeFind}
+        onQueryChange={broadcastQuery}
+        onMatchChange={scrollToMatch}
       />
 
       <div className="doc-body">
