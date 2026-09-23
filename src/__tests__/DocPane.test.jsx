@@ -237,3 +237,26 @@ describe('find bar', () => {
     await waitFor(() => expect(container.querySelector('.find-bar')).toBeNull())
   })
 })
+
+describe('source mode', () => {
+  it('shows the raw markdown, and edits flow back through onDocChange', async () => {
+    jest.useFakeTimers()
+    const onDocChange = jest.fn()
+    const { container } = render(
+      <DocPane {...baseProps} onDocChange={onDocChange} nodes={[node('001', 'A', 'Hej [#002]'), node('002', 'B', '')]} />
+    )
+    act(() => { fireEvent.click(screen.getByLabelText('Visa källtext')) })
+    const ta = container.querySelector('textarea.doc-source')
+    expect(ta).toBeTruthy()
+    expect(ta.value).toBe('## [001] A\n\nHej [002]\n\n## [002] B')
+    expect(container.querySelector('.ProseMirror')).toBeNull()
+    act(() => { fireEvent.change(ta, { target: { value: '## [001] A\n\nHej du [002]\n\n## [002] B' } }) })
+    act(() => { jest.advanceTimersByTime(350) })
+    expect(onDocChange).toHaveBeenCalledTimes(1)
+    expect(onDocChange.mock.calls[0][0]).toContain('Hej du [002]')
+    expect(onDocChange.mock.calls[0][1]).toBe('## [001] A\n\nHej [002]\n\n## [002] B')
+    act(() => { fireEvent.click(screen.getByLabelText('Visa källtext')) })
+    expect(container.querySelector('textarea.doc-source')).toBeNull()
+    jest.useRealTimers()
+  })
+})

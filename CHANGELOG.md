@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.23.0 — Källtext-läge i dokumentet — 2026-09-23
+
+### Added
+- **Knappen `</>` i dokumentets verktygsrad** visar hela manuset som råtext,
+  exakt som det lagras: `## [001] Titel`, `[002]` för val, `*kursiv*`. Redigera
+  fritt; ändringar går samma väg till noderna som den formaterade vyn. Klicka
+  igen för att komma tillbaka. Bra när något ser skumt ut i den fina texten.
+
 ## v0.22.1 — Läsarens brödsmulor flyter inte längre över texten — 2026-09-23
 
 ### Fixed

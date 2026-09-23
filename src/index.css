@@ -2102,3 +2102,21 @@ textarea:focus {
 .find-bar .tb-btn svg { width: 15px; height: 15px; }
 .ProseMirror .search-match { background: rgba(240, 185, 85, .35); border-radius: 2px; }
 .ProseMirror .search-match.active { background: rgba(240, 185, 85, .8); color: #1f1d19; outline: 1px solid var(--warn); }
+
+/* Document source mode (raw markdown) */
+.doc-source {
+  display: block;
+  width: min(720px, 92%);
+  min-height: calc(100% - 48px);
+  margin: 24px auto;
+  padding: 32px clamp(20px, 5%, 56px);
+  box-sizing: border-box;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+  font: 13px/1.6 var(--font-mono);
+  resize: none;
+  white-space: pre-wrap;
+}
+.doc-source:focus { outline: none; border-color: var(--accent); }

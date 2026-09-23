@@ -13,7 +13,7 @@ import { Markdown } from 'tiptap-markdown'
 import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
 import {
   PanelLeftClose, PanelLeftOpen, Bold, Italic, Underline as UnderlineIcon,
-  List, Link as LinkIcon, Plus, Maximize2,
+  List, Link as LinkIcon, Plus, Maximize2, Code2,
 } from 'lucide-react'
 import CustomLink from './CustomLink.ts'
 import SceneRef from './SceneRef.ts'
@@ -70,6 +70,12 @@ export default function DocPane({
 }) {
   const [outlineHidden, setOutlineHidden] = useState(false)
   const [findOpen, setFindOpen] = useState(false)
+  // Source mode: the whole document as raw markdown (what the nodes store),
+  // for fixing things the rich editor hides. Same sync path as the editor.
+  const [sourceMode, setSourceMode] = useState(false)
+  const [sourceText, setSourceText] = useState('')
+  const sourceTimerRef = useRef(null)
+  const sourceBaselineRef = useRef('')
   const scrollRef = useRef(null)
   const activeNodeIdRef = useRef(activeNodeId)
   const fromScrollRef = useRef(null)
@@ -364,6 +370,52 @@ export default function DocPane({
     }
   }, [editor])
 
+  // Source mode helpers. Entering: flush the editor and snapshot the nodes'
+  // markdown. Typing: debounce, then hand the raw markdown to the same
+  // onDocChange as the rich editor (baseline = the snapshot we started from).
+  const flushSource = useCallback(() => {
+    if (sourceTimerRef.current) { clearTimeout(sourceTimerRef.current); sourceTimerRef.current = null }
+    if (sourceText !== sourceBaselineRef.current) {
+      callbacksRef.current.onDocChange?.(sourceText, sourceBaselineRef.current)
+      sourceBaselineRef.current = sourceText
+    }
+  }, [sourceText])
+  const toggleSource = useCallback(() => {
+    if (sourceMode) {
+      flushSource()
+      setSourceMode(false)
+      return
+    }
+    flushPending()
+    setFindOpen(false)
+    sourceBaselineRef.current = markdown
+    setSourceText(markdown)
+    setSourceMode(true)
+  }, [sourceMode, flushSource, flushPending, markdown])
+  const onSourceChange = useCallback((e) => {
+    const v = e.target.value
+    setSourceText(v)
+    if (sourceTimerRef.current) clearTimeout(sourceTimerRef.current)
+    sourceTimerRef.current = setTimeout(() => {
+      sourceTimerRef.current = null
+      if (v !== sourceBaselineRef.current) {
+        callbacksRef.current.onDocChange?.(v, sourceBaselineRef.current)
+        sourceBaselineRef.current = v
+      }
+    }, DEBOUNCE_MS)
+  }, [])
+  // Nodes changed from elsewhere (graph, undo) while in source mode: refresh
+  // the text unless the user has unsent edits.
+  useEffect(() => {
+    if (!sourceMode) return
+    if (sourceTimerRef.current) return
+    if (normalizeDoc(markdown) !== normalizeDoc(sourceBaselineRef.current)) {
+      sourceBaselineRef.current = markdown
+      setSourceText(markdown)
+    }
+  }, [markdown, sourceMode])
+  useEffect(() => () => { if (sourceTimerRef.current) clearTimeout(sourceTimerRef.current) }, [])
+
   const newSceneFromToolbar = () => {
     if (!editor) return
     flushPending()
@@ -385,6 +437,8 @@ export default function DocPane({
         focusMode={focusMode}
         setFocusMode={setFocusMode}
         onNewScene={newSceneFromToolbar}
+        sourceMode={sourceMode}
+        onToggleSource={toggleSource}
       />
 
       <FindBar
@@ -403,7 +457,17 @@ export default function DocPane({
           onPick={onSelectNode}
         />
         <div className="doc-scroll" ref={scrollRef}>
-          <EditorContent editor={editor} />
+          {sourceMode ? (
+            <textarea
+              className="doc-source"
+              value={sourceText}
+              onChange={onSourceChange}
+              spellCheck={false}
+              aria-label="Dokumentets källtext"
+            />
+          ) : (
+            <EditorContent editor={editor} />
+          )}
         </div>
       </div>
 
@@ -424,7 +488,7 @@ export default function DocPane({
   )
 }
 
-function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, setFocusMode, onNewScene }) {
+function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, setFocusMode, onNewScene, sourceMode, onToggleSource }) {
   if (!editor) return <div className="doc-toolbar" />
 
   const headingLevel = editor.isActive('heading', { level: 1 })
@@ -496,6 +560,17 @@ function DocToolbar({ editor, outlineHidden, setOutlineHidden, full, focusMode, 
       <div className="group">
         <button className="tb-btn" onClick={onNewScene} title="Ny scen (⌘Enter)" aria-label="Ny scen">
           <Plus />
+        </button>
+      </div>
+      <div className="group">
+        <button
+          className={`tb-btn ${sourceMode ? 'active' : ''}`}
+          onClick={onToggleSource}
+          title={sourceMode ? 'Tillbaka till formaterad text' : 'Visa källtext (markdown)'}
+          aria-label="Visa källtext"
+          aria-pressed={!!sourceMode}
+        >
+          <Code2 />
         </button>
       </div>
       <span style={{ flex: 1 }} />
