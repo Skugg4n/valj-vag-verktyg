@@ -12,7 +12,7 @@ import './App.css'
 import NodeCard from './NodeCard.jsx'
 import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
-import { docToNodes, chooseNextSceneId, sceneIdsInDoc } from './utils/docSync.ts'
+import { docToNodes, chooseNextSceneId, sceneIdsInDoc, cleanStoredText } from './utils/docSync.ts'
 import { pickNodeInDirection, nodeCenter, freePosition } from './utils/graphNav.ts'
 import { parseManuscript, projectNameFromFile } from './utils/manuscriptImport.ts'
 import { useTheme } from './theme.js'
@@ -813,7 +813,7 @@ export default function App() {
         type: 'card',
         position: n.position || { x: 0, y: 0 },
         data: {
-          text: n.text || '',
+          text: cleanStoredText(n.text || ''),
           title: n.title || '',
           color: n.color || '#1f2937',
         },
@@ -850,7 +850,7 @@ export default function App() {
         id: n.id,
         type: 'card',
         position: n.position || { x: 0, y: 0 },
-        data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+        data: { text: cleanStoredText(n.text || ''), title: n.title || '', color: n.color || '#1f2937' },
         width: n.width ?? DEFAULT_NODE_WIDTH,
         height: n.height ?? estimateNodeHeight(n.text || ''),
       }))
@@ -955,7 +955,10 @@ export default function App() {
     const safe = (projectName.trim() || 'berattelse').toLowerCase().replace(/[^\w-]+/g, '_')
     downloadFile(
       `${safe}-att-lasa.html`,
-      buildReaderHTML(nodes, projectName.trim() || 'Berättelse'),
+      buildReaderHTML(
+        nodes.map(n => ({ ...n, data: { ...n.data, text: cleanStoredText(n.data?.text || '') } })),
+        projectName.trim() || 'Berättelse'
+      ),
       'text/html'
     )
   }
@@ -973,7 +976,7 @@ export default function App() {
           id: n.id,
           type: 'card',
           position: n.position || { x: 0, y: 0 },
-          data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+          data: { text: cleanStoredText(n.text || ''), title: n.title || '', color: n.color || '#1f2937' },
           width: n.width ?? DEFAULT_NODE_WIDTH,
           height: n.height ?? estimateNodeHeight(n.text || ''),
         }))
@@ -1101,7 +1104,7 @@ export default function App() {
           id: n.id,
           type: 'card',
           position: n.position || { x: 0, y: 0 },
-          data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+          data: { text: cleanStoredText(n.text || ''), title: n.title || '', color: n.color || '#1f2937' },
           width: n.width || DEFAULT_NODE_WIDTH,
           height: n.height || DEFAULT_NODE_HEIGHT,
         }))
@@ -1189,8 +1192,13 @@ export default function App() {
           e.preventDefault()
           saveVersion()
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-          e.preventDefault()
-          // legacy search removed in Task 2; ⌘F currently a no-op until palette wires it in Task 6
+          // Graph visible: jump to "Sök scen…". Otherwise leave ⌘F to the browser.
+          const search = document.querySelector('.graph-search input')
+          if (search) {
+            e.preventDefault()
+            search.focus()
+            search.select()
+          }
         } else if (
           (e.key === 'Delete' || e.key === 'Backspace') &&
           !e.target.closest('input, textarea, [contenteditable]')

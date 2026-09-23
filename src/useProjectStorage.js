@@ -1,3 +1,4 @@
+import { cleanStoredText } from './utils/docSync.ts'
 import { useEffect, useState } from 'react'
 import { DEFAULT_NODE_WIDTH } from './constants.js'
 
@@ -68,7 +69,7 @@ export default function useProjectStorage({
             id: n.id,
             type: 'card',
             position: n.position || { x: 0, y: 0 },
-            data: { text: n.text || '', title: n.title || '', color: n.color || '#1f2937' },
+            data: { text: cleanStoredText(n.text || ''), title: n.title || '', color: n.color || '#1f2937' },
             width: w,
             height: h,
             style: { width: w, height: h },

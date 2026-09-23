@@ -132,3 +132,22 @@ describe('splitChoices', () => {
     expect(body).not.toMatch(/\[#002\]/)
   })
 })
+
+describe('reader text rendering', () => {
+  it('turns hard breaks and escaped brackets into plain text and <br>', () => {
+    const nodes = [{ id: '001', data: { title: 'A', text: 'Rad ett\\\nRad två\\\n\\\nNytt stycke *[MUSIK: tema]* och **fet**.' } }]
+    const { container } = render(<ReadPane nodes={nodes} startId="001" activeNodeId={null} onSelectNode={() => {}} />)
+    const ps = container.querySelectorAll('.read-page p')
+    expect(ps).toHaveLength(2)
+    expect(ps[0].innerHTML).toContain('Rad ett<br>Rad två')
+    expect(ps[1].textContent).toBe('Nytt stycke [MUSIK: tema] och fet.')
+    expect(ps[1].querySelector('em').textContent).toBe('[MUSIK: tema]')
+    expect(ps[1].querySelector('strong').textContent).toBe('fet')
+    expect(container.querySelector('.read-page').textContent).not.toContain('\\')
+  })
+
+  it('also accepts two-space hard breaks', () => {
+    const { body } = splitChoices('Rad ett  \nRad två [#002]', new Map())
+    expect(body).toBe('Rad ett\nRad två')
+  })
+})

@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.21.2 — Läsaren visar radbrytningar och kursiv, inga bakstreck — 2026-09-23
+
+### Fixed
+- **Läsläget** visar inte längre bakstreck vid radbrytningar gjorda med
+  Shift+Enter. Enkel radbrytning blir radbrytning, dubbel blir nytt stycke,
+  `*kursiv*` och `**fet**` renderas, `\[` blir `[`. Samma tvätt görs i den
+  exporterade HTML-läsaren.
+- **Gamla texter tvättas när projektet laddas**, så bakstreck som sparats av
+  tidigare versioner försvinner utan att du behöver röra scenerna.
+- **⌘F** hoppar till "Sök scen…" i grafen. I dokumentläget lämnas ⌘F till
+  webbläsarens egen sökning.
+
 ## v0.21.1 — Rubrik 1 som scen, renare lagrad text — 2026-09-23
 
 ### Fixed

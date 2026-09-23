@@ -4,6 +4,29 @@ import { loadLS, saveLS } from './utils/persistence.js'
 
 const CHOICE_RE = /\[#(\d{3})]|#(\d{3})/g
 
+/** Stored scene text is light markdown. Normalise what the reader needs:
+ *  "\\" + newline (TipTap hard break) and two trailing spaces -> plain
+ *  newline; "\\[" / "\\]" -> plain brackets. */
+export function normaliseBody(text) {
+  return (text || '')
+    .replace(/\\\n/g, '\n')
+    .replace(/\\([[\]])/g, '$1')
+}
+
+/** Render **bold**, *italic* and single newlines inside one paragraph. */
+export function renderInline(text) {
+  const out = []
+  const parts = text.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*|\n)/)
+  parts.forEach((part, i) => {
+    if (!part) return
+    if (part === '\n') out.push(<br key={i} />)
+    else if (/^\*\*[^*]+\*\*$/.test(part)) out.push(<strong key={i}>{part.slice(2, -2)}</strong>)
+    else if (/^\*[^*]+\*$/.test(part)) out.push(<em key={i}>{part.slice(1, -1)}</em>)
+    else out.push(part)
+  })
+  return out
+}
+
 export function splitChoices(text, nodeMap) {
   // Returns { body, choices } — strips ref tokens from body, lists them as choices.
   const choices = []
@@ -15,7 +38,7 @@ export function splitChoices(text, nodeMap) {
     const target = nodeMap.get(id)
     choices.push({ id, label: target?.data?.title || `Gå till #${id}` })
   }
-  const body = (text || '')
+  const body = normaliseBody(text)
     .replace(CHOICE_RE, '')
     .replace(/[ \t]+([.,!?;:…»)\]])/g, '$1') // drop space left before punctuation by a stripped ref
     .replace(/ {2,}/g, ' ')      // collapse mid-line double-spaces left behind
@@ -142,7 +165,7 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
           {chapterLabel && <span className="chapter-num">{chapterLabel}</span>}
           {node.data.title && <h1>{node.data.title}</h1>}
           {paragraphs.map((p, i) => (
-            <p key={i} className={i === 0 ? 'first-letter' : undefined}>{p}</p>
+            <p key={i} className={i === 0 ? 'first-letter' : undefined}>{renderInline(p)}</p>
           ))}
 
           {choices.length > 0 && (
