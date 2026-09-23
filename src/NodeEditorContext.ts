@@ -14,6 +14,8 @@ export interface NodeEditorContextType {
   /** Scene whose title input should receive focus (set by cmd+Enter). */
   focusTitleId: string | null
   onTitleFocused: () => void
+  /** Theme colour for cards that use the default colour. */
+  cardColor?: string
 }
 
 const NodeEditorContext = createContext<NodeEditorContextType>({

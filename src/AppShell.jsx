@@ -20,6 +20,8 @@ export default function AppShell({
   onShare,
   userMenuSlot,
   projectMenuSlot,
+  theme,
+  onToggleTheme,
 }) {
   const [mode, setModeRaw] = useState(() => {
     const m = loadLS('mode', 'split')
@@ -89,6 +91,8 @@ export default function AppShell({
         onShowInsights={onShowInsights}
         onShowHistory={onShowHistory}
         onShowSettings={onShowSettings}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
       />
       <div className="right-col">
         <Topbar

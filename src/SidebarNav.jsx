@@ -1,4 +1,4 @@
-import { Network, Columns2, FileText, BookOpen, BarChart3, History, Settings } from 'lucide-react'
+import { Network, Columns2, FileText, BookOpen, BarChart3, History, Settings, Sun, Moon } from 'lucide-react'
 
 const MODES = [
   { id: 'skiss', label: 'Skiss', icon: Network },
@@ -7,7 +7,7 @@ const MODES = [
   { id: 'read',  label: 'Läsa', icon: BookOpen },
 ]
 
-export default function SidebarNav({ mode, setMode, onShowInsights, onShowHistory, onShowSettings }) {
+export default function SidebarNav({ mode, setMode, onShowInsights, onShowHistory, onShowSettings, theme = 'dark', onToggleTheme }) {
   return (
     <nav className="sidebar-nav" aria-label="Lägesväxlare">
       <button className="logo" title="Hem" aria-label="Hem" onClick={() => setMode('split')} />
@@ -30,6 +30,14 @@ export default function SidebarNav({ mode, setMode, onShowInsights, onShowHistor
       </button>
       <button className="sb-btn" title="Historik" aria-label="Historik" onClick={onShowHistory}>
         <History />
+      </button>
+      <button
+        className="sb-btn"
+        title={theme === 'dark' ? 'Ljust tema' : 'Mörkt tema'}
+        aria-label={theme === 'dark' ? 'Byt till ljust tema' : 'Byt till mörkt tema'}
+        onClick={onToggleTheme}
+      >
+        {theme === 'dark' ? <Sun /> : <Moon />}
       </button>
       <button className="sb-btn" title="Inställningar" aria-label="Inställningar" onClick={onShowSettings}>
         <Settings />

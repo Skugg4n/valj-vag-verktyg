@@ -38,6 +38,7 @@ export default function GraphPane({
   viewportRef,
   focusTitleId,
   onTitleFocused,
+  cardColor,
 }) {
   const [search, setSearch] = useState('')
 
@@ -58,7 +59,7 @@ export default function GraphPane({
   return (
     <ReactFlowProvider>
     <div className="graph-pane" id="graph">
-      <NodeEditorContext.Provider value={{ updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused }}>
+      <NodeEditorContext.Provider value={{ updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused, cardColor }}>
         <ReactFlow
           style={{ width: '100%', height: '100%' }}
           nodes={nodes}

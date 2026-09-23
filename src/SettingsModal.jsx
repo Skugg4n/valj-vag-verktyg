@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import { Settings as SettingsIcon } from 'lucide-react'
+import { THEME_PREFS, THEME_LABELS } from './theme.js'
 
 export default function SettingsModal({
   open, onClose,
   fontSize, setFontSize,
+  themePref = 'system', setThemePref,
   autoSave, setAutoSave,
   debugMode, setDebugMode,
   onOpenAiSettings,
@@ -25,6 +27,16 @@ export default function SettingsModal({
         <div className="body">
           <div>
             <div className="section-title">Visning</div>
+            <div className="row">
+              <label htmlFor="setting-theme">Tema</label>
+              <select
+                id="setting-theme"
+                value={themePref}
+                onChange={(e) => setThemePref?.(e.target.value)}
+              >
+                {THEME_PREFS.map(p => <option key={p} value={p}>{THEME_LABELS[p]}</option>)}
+              </select>
+            </div>
             <div className="row">
               <label htmlFor="setting-font-size">Textstorlek ({fontSize}px)</label>
               <input

@@ -15,14 +15,15 @@ function isLightColor(hex) {
 }
 
 const OVERVIEW_ZOOM_THRESHOLD = 0.45
+const DEFAULT_CARD = '#1f2937'
 const COLOR_OPTIONS = [
-  '#1f2937', '#ef4444', '#f97316', '#facc15',
+  DEFAULT_CARD, '#ef4444', '#f97316', '#facc15',
   '#22c55e', '#3b82f6', '#e879f9', '#d1d5db',
 ]
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
-  const { updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused } = useContext(NodeEditorContext)
+  const { updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused, cardColor } = useContext(NodeEditorContext)
   const isActive = activeNodeId === id || selected
   const { zoom } = useViewport()
   const isOverview = zoom < OVERVIEW_ZOOM_THRESHOLD
@@ -133,7 +134,9 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
     requestAnimationFrame(() => updateNodeInternals(id))
   }
 
-  const bg = data.color || '#1f2937'
+  // Cards with the default colour follow the theme (dark card on dark,
+  // white card on light); user-picked colours are kept as they are.
+  const bg = !data.color || data.color === DEFAULT_CARD ? (cardColor || DEFAULT_CARD) : data.color
   const lightBg = isLightColor(bg)
   const textColor = lightBg ? '#111827' : '#f3f4f6'
   const dimColor = lightBg ? '#6b7280' : '#9ca3af'

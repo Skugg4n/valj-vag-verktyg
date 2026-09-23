@@ -39,6 +39,31 @@
 
 }
 
+/* Light theme: same layout, warm-white surfaces. Stamped by src/theme.js. */
+:root[data-theme="light"] {
+  --bg:          #f4f1ea;
+  --bg-soft:     #ece8df;
+  --panel:       #fbf9f4;
+  --panel-2:     #f1ede4;
+  --line:        #dcd6c9;
+  --line-strong: #c4bcab;
+  --card:        #ffffff;
+
+  --ink:      #1f1d19;
+  --ink-soft: #4d4a44;
+  --ink-dim:  #7f7a70;
+
+  --accent:      #2f6fd6;
+  --accent-soft: #d9e6fb;
+
+  --good:   #2f9a63;
+  --warn:   #b8780f;
+  --danger: #cc3b3b;
+
+  color-scheme: light;
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+
 /* Reading-mode tokens (used by ReadPane via [data-reading="..."]) */
 [data-reading="paper"] {
   --paper-bg:      #f6f1e6;

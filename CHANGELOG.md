@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.21.0 — Ljust tema — 2026-09-23
+
+### Added
+- **Ljust tema** i Advanced. Standard är "Följ systemet": appen byter själv
+  när datorn byter mellan ljust och mörkt. Välj fast läge i Inställningar
+  (Tema: Följ systemet / Ljust / Mörkt), med sol/måne-knappen i sidoraden,
+  eller "Byt tema" i kommandopaletten. Valet sparas i webbläsaren.
+- Kort med standardfärg följer temat (vita på ljust, mörkgrå på mörkt).
+  Kort du färgat själv behåller sin färg.
+
+### Changed
+- Kvarvarande hårdkodade gråa och röda färger i gränssnittet går nu via
+  tema-variabler. Läsläget behåller sin egen papper/mörkt-knapp. Verkstaden
+  påverkas inte.
+
 ## v0.20.0 — Importera manus (markdown) — 2026-09-23
 
 ### Added

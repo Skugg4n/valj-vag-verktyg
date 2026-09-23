@@ -36,6 +36,7 @@
 ## Hooks
 | Name | Path | Description | Related |
 |------|------|-------------|---------|
+| theme | src/theme.js | useTheme(): system/light/dark preference, stamps data-theme, toggle | → App, SettingsModal, SidebarNav |
 | useProjectStorage | src/useProjectStorage.js | LocalStorage CRUD for projects | → App |
 | useFirestoreSync | src/useFirestoreSync.js | Firestore sync + history (saveHistorySnapshot, getHistory) | → App, firebase, HistoryModal |
 | useAi | src/useAi.js | AI integration (inactive) | → AiSettingsModal |
@@ -105,6 +106,7 @@
 | ProjectStorage.test | src/__tests__/ProjectStorage.test.jsx | Storage CRUD tests | → useProjectStorage |
 | docSync.test | src/__tests__/docSync.test.ts | Round trip, existence rule, baseline guard | → docSync |
 | graphNav.test | src/__tests__/graphNav.test.ts | Direction picking | → graphNav |
+| theme.test | src/__tests__/theme.test.jsx | resolveTheme + useTheme (persist, toggle, OS change) | → theme |
 | manuscriptImport.test | src/__tests__/manuscriptImport.test.ts | Manuscript parsing, refs, empty scenes, layout | → manuscriptImport |
 | SceneRef.test | src/__tests__/SceneRef.test.ts | Pill parse/serialise, bracket auto-close | → SceneRef |
 | NodeCardFocus.test | src/__tests__/NodeCardFocus.test.jsx | Title focus after cmd+Enter | → NodeCard |

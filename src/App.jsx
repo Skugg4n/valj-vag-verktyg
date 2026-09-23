@@ -15,6 +15,7 @@ import DocPane from './DocPane.jsx'
 import { docToNodes, chooseNextSceneId, sceneIdsInDoc } from './utils/docSync.ts'
 import { pickNodeInDirection, nodeCenter, freePosition } from './utils/graphNav.ts'
 import { parseManuscript, projectNameFromFile } from './utils/manuscriptImport.ts'
+import { useTheme } from './theme.js'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -142,9 +143,8 @@ export default function App() {
     localStorage.setItem('cyoa-font-size', String(fontSize))
   }, [fontSize])
 
-  useEffect(() => {
-    document.documentElement.removeAttribute('data-theme')
-  }, [])
+  const theme = useTheme()
+  const cardColor = theme.resolved === 'light' ? '#ffffff' : '#1f2937'
 
   // Scan edges once when nodes first arrive from storage. The storage hook
   // loads nodes via setNodes directly without computing edges, so a freshly
@@ -1297,6 +1297,7 @@ export default function App() {
             viewportRef={viewportRef}
             focusTitleId={focusTitleId}
             onTitleFocused={handleTitleFocused}
+            cardColor={cardColor}
           />
         )}
         renderSplit={({ ratio, setRatio }) => (
@@ -1327,6 +1328,7 @@ export default function App() {
                 viewportRef={viewportRef}
                 focusTitleId={focusTitleId}
                 onTitleFocused={handleTitleFocused}
+                cardColor={cardColor}
               />
             </div>
             <div
@@ -1389,6 +1391,8 @@ export default function App() {
         onOpenPalette={() => setCmdOpen(true)}
         onShowSettings={() => setSettingsOpen(true)}
         onShare={() => setExportOpen(true)}
+        theme={theme.resolved}
+        onToggleTheme={theme.toggle}
         userMenuSlot={<UserMenu />}
         projectMenuSlot={
           <ProjectMenu
@@ -1440,6 +1444,7 @@ export default function App() {
           showInsights: () => setInsightsOpen(true),
           showHistory,
           showSettings: () => setSettingsOpen(true),
+          toggleTheme: theme.toggle,
           openHelp,
         }}
         extraSection={{ title: 'Projekt', items: projectSwitchItems }}
@@ -1475,6 +1480,8 @@ export default function App() {
         onClose={() => setSettingsOpen(false)}
         fontSize={fontSize}
         setFontSize={setFontSize}
+        themePref={theme.pref}
+        setThemePref={theme.setPref}
         autoSave={autoSave}
         setAutoSave={setAutoSave}
         debugMode={debugMode}
