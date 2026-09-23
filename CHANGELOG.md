@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.21.3 — Länk skapas direkt vid tredje siffran — 2026-09-23
+
+### Fixed
+- Skriver man `[` (som ger `[]`) och sedan tre siffror blir referensen en pill
+  direkt. Tidigare krävdes att man raderade och skrev om den avslutande
+  hakparentesen. Inne i rubriker förblir `[NNN]` text som förut.
+
 ## v0.21.2 — Läsaren visar radbrytningar och kursiv, inga bakstreck — 2026-09-23
 
 ### Fixed

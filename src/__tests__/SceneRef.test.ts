@@ -96,3 +96,33 @@ describe('SceneRef together with CustomLink (as in DocPane)', () => {
     expect(editor.storage.markdown.getMarkdown()).toBe('Gå till [004] nu')
   })
 })
+
+describe('BracketAutoClose: typing the digits is enough', () => {
+  test('[ then 0 0 4 becomes a pill without typing ]', () => {
+    const editor = makeEditor('')
+    editor.commands.focus('end')
+    const typeChar = (ch: string) => {
+      const pos = editor.state.selection.from
+      editor.view.someProp('handleTextInput', f => f(editor.view, pos, pos, ch)) ||
+        editor.view.dispatch(editor.state.tr.insertText(ch, pos, pos))
+    }
+    typeChar('[')
+    typeChar('0'); typeChar('0'); typeChar('4')
+    expect(editor.getHTML()).toContain('data-scene-id="004"')
+    expect(editor.getHTML()).not.toContain('</a>]')
+    expect(editor.storage.markdown.getMarkdown()).toBe('[004]')
+  })
+
+  test('digits inside a heading stay text', () => {
+    const editor = makeEditor('## Rubrik')
+    editor.commands.focus('end')
+    const typeChar = (ch: string) => {
+      const pos = editor.state.selection.from
+      editor.view.someProp('handleTextInput', f => f(editor.view, pos, pos, ch)) ||
+        editor.view.dispatch(editor.state.tr.insertText(ch, pos, pos))
+    }
+    typeChar(' '); typeChar('['); typeChar('0'); typeChar('0'); typeChar('5')
+    expect(editor.getHTML()).not.toContain('data-scene-id')
+    expect(editor.getHTML()).toContain('[005]')
+  })
+})

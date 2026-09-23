@@ -20,6 +20,21 @@ const BracketAutoClose = Extension.create({
               view.dispatch(tr)
               return true
             }
+            // Typing the third digit inside an auto-closed "[]" completes the
+            // reference straight away; the user never has to type "]" again.
+            if (/^\d$/.test(text)) {
+              const $from = state.doc.resolve(from)
+              const before = $from.parent.textBetween(0, $from.parentOffset, '\0', '\0') + text
+              const m = before.match(/\[#?(\d{3})$/)
+              const after = state.doc.textBetween(to, Math.min(to + 1, state.doc.content.size), '\0', '\0')
+              const sceneRef = state.schema.nodes.sceneRef
+              if (m && after === ']' && sceneRef && $from.parent.type.name !== 'heading') {
+                const start = from - (m[0].length - 1)
+                view.dispatch(state.tr.replaceWith(start, to + 1, sceneRef.create({ id: m[1] })))
+                return true
+              }
+              return false
+            }
             if (text === ']') {
               const after = state.doc.textBetween(from, Math.min(from + 1, state.doc.content.size), '\0', '\0')
               if (after !== ']') return false
