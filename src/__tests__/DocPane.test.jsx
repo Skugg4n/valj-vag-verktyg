@@ -260,3 +260,12 @@ describe('source mode', () => {
     jest.useRealTimers()
   })
 })
+
+describe('find bar via window event', () => {
+  it('opens when App forwards a cmd+F pressed outside the editor', async () => {
+    const { container } = render(<DocPane {...baseProps} nodes={[node('001', 'A', 'x')]} />)
+    expect(container.querySelector('.find-bar')).toBeNull()
+    act(() => { window.dispatchEvent(new CustomEvent('vv-open-find')) })
+    await waitFor(() => expect(container.querySelector('.find-bar')).toBeTruthy())
+  })
+})

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.24.1 — ⌘F öppnar alltid sökrutan när dokumentet syns — 2026-09-23
+
+### Fixed
+- ⌘F öppnade Chromes egen sökning om markören inte stod i texten. Nu öppnas
+  dokumentets sökrad så länge dokumentet är synligt, oavsett var fokus är.
+
 ## v0.24.0 — Dela via länk, raka citattecken, stabilare markör — 2026-09-23
 
 ### Added

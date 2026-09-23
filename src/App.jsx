@@ -1258,8 +1258,14 @@ export default function App() {
           e.preventDefault()
           saveVersion()
         } else if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-          if (e.target.closest?.('.ProseMirror')) return   // DocPane opens its find bar
-          // Graph visible: jump to "Sök scen…". Otherwise leave ⌘F to the browser.
+          if (e.target.closest?.('.ProseMirror')) return   // DocPane's own shortcut opens the find bar
+          // Document visible: open its find bar wherever focus is. Otherwise
+          // jump to "Sök scen…" in the graph. Never fall through to Chrome's find.
+          if (document.querySelector('.doc-pane')) {
+            e.preventDefault()
+            window.dispatchEvent(new CustomEvent('vv-open-find'))
+            return
+          }
           const search = document.querySelector('.graph-search input')
           if (search) {
             e.preventDefault()

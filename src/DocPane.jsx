@@ -70,6 +70,13 @@ export default function DocPane({
 }) {
   const [outlineHidden, setOutlineHidden] = useState(false)
   const [findOpen, setFindOpen] = useState(false)
+  // ⌘F pressed outside the editor (graph, outline, nothing focused): App
+  // forwards it here so the find bar still opens.
+  useEffect(() => {
+    const open = () => setFindOpen(true)
+    window.addEventListener('vv-open-find', open)
+    return () => window.removeEventListener('vv-open-find', open)
+  }, [])
   // Source mode: the whole document as raw markdown (what the nodes store),
   // for fixing things the rich editor hides. Same sync path as the editor.
   const [sourceMode, setSourceMode] = useState(false)
