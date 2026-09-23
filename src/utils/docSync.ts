@@ -6,8 +6,18 @@ import { freePosition } from './graphNav.ts'
 const DOC_REF_G = /\\?\[#?(\d{3})\\?\]/g
 /** A scene reference as stored in node text. */
 const STORED_REF_G = /\[#(\d{3})\]/g
-/** "## [003] Titel", "## \[003\] Titel", "## #003 Titel" or "## Titel" (no id). */
-const HEADING = /^##\s+(?:\\?\[#?(\d{3})\\?\]|#(\d{3}))?\s*(.*)$/
+/** Scene headings. With an id, level 1 or 2 both count: "# [003] Titel",
+ *  "## \[003\] Titel", "## #003 Titel". Without an id only level 2 starts a
+ *  scene ("## Titel" gets the next free number); a plain "# Titel" is text. */
+const HEADING_WITH_ID = /^#{1,2}\s+(?:\\?\[#?(\d{3})\\?\]|#(\d{3}))\s*(.*)$/
+const HEADING_NO_ID = /^##\s+(?!\\?\[#?\d{3}\\?\]|#\d{3})(.*)$/
+function matchHeading(line: string): { id?: string; title: string } | null {
+  const m = line.match(HEADING_WITH_ID)
+  if (m) return { id: m[1] || m[2], title: (m[3] || '').trim() }
+  const n = line.match(HEADING_NO_ID)
+  if (n) return { title: (n[1] || '').trim() }
+  return null
+}
 
 export function isIdeaNode(n: Node): boolean {
   return !!(n.data as any)?.isIdea || String(n.id).startsWith('idea-')
@@ -47,9 +57,8 @@ export function normalizeDoc(md: string): string {
 export function sceneIdsInDoc(md: string): Set<string> {
   const ids = new Set<string>()
   for (const line of md.replace(/\r\n?/g, '\n').split('\n')) {
-    const m = line.match(HEADING)
-    const id = m?.[1] || m?.[2]
-    if (id) ids.add(id)
+    const h = matchHeading(line)
+    if (h?.id) ids.add(h.id)
   }
   return ids
 }
@@ -100,9 +109,9 @@ function splitScenes(
   const seen = new Set<string>()
   let current: Scene | null = null
   for (const line of markdown.replace(/\r\n?/g, '\n').split('\n')) {
-    const m = line.match(HEADING)
-    if (m) {
-      let id = m[1] || m[2]
+    const h = matchHeading(line)
+    if (h) {
+      let id = h.id
       if (!id) {
         if (!allocId) { current = null; continue }
         id = allocId()
@@ -112,7 +121,7 @@ function splitScenes(
         continue
       }
       seen.add(id)
-      current = { id, title: (m[3] || '').trim(), lines: [] }
+      current = { id, title: h.title, lines: [] }
       scenes.push(current)
       continue
     }
@@ -120,10 +129,20 @@ function splitScenes(
   }
   const out = new Map<string, { title: string; text: string }>()
   for (const s of scenes) {
-    const text = s.lines.join('\n').replace(DOC_REF_G, '[#$1]').replace(/^\n+|\n+$/g, '')
-    out.set(s.id, { title: s.title, text })
+    out.set(s.id, { title: s.title, text: cleanStoredText(s.lines.join('\n')) })
   }
   return out
+}
+
+/** Body text as stored on the node: refs as [#NNN], no markdown escapes for
+ *  brackets, hard line breaks as two trailing spaces instead of "\\" + newline. */
+export function cleanStoredText(raw: string): string {
+  return raw
+    .replace(/\[\\?\[#?(\d{3})\\?\]\]\(#\d{3}\)/g, '[#$1]')   // [[002]](#002) link form
+    .replace(DOC_REF_G, '[#$1]')
+    .replace(/\\\n/g, '  \n')
+    .replace(/\\([\[\]])/g, '$1')
+    .replace(/^\n+|\n+$/g, '')
 }
 
 export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodesOptions): DocToNodesResult {
@@ -143,9 +162,8 @@ export function docToNodes(markdown: string, prevNodes: Node[], opts: DocToNodes
   // document already uses, further down as well as in the graph, or two
   // scenes end up fighting over the same number.
   for (const line of markdown.replace(/\r\n?/g, '\n').split('\n')) {
-    const m = line.match(HEADING)
-    const hid = m?.[1] || m?.[2]
-    if (hid) raiseAbove(hid)
+    const h = matchHeading(line)
+    if (h?.id) raiseAbove(h.id)
   }
   for (const m of markdown.matchAll(DOC_REF_G)) raiseAbove(m[1])
 

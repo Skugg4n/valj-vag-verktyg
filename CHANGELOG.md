@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.21.1 — Rubrik 1 som scen, renare lagrad text — 2026-09-23
+
+### Fixed
+- **`# [018] Titel` (Rubrik 1 med scennummer) räknas nu som scen** i dokumentet,
+  inte bara `##`. Tidigare hamnade allt under en sådan rubrik i scenen ovanför,
+  och referenserna i texten skapade tomma dubbletter som inte gick att ta bort
+  (de återskapades eftersom texten fortfarande pekade på dem). En vanlig
+  Rubrik 1 utan nummer är fortfarande text.
+- **Lagrad scentext innehåller inte längre markdown-escapes.** `\[MUSIK: ...\]`
+  sparas som `[MUSIK: ...]`, och radbrytningar med Shift+Enter sparas som
+  markdown-radbrytning i stället för ett bakstreck. Syns i kort, läsare och export.
+
 ## v0.21.0 — Ljust tema — 2026-09-23
 
 ### Added

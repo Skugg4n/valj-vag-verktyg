@@ -1,4 +1,5 @@
 import {
+  cleanStoredText,
   nodesToDoc, docToNodes, normalizeDoc, sceneIdsInDoc, chooseNextSceneId,
 } from '../utils/docSync.ts'
 
@@ -183,5 +184,42 @@ describe('chooseNextSceneId', () => {
   })
   test('no from node gives nextId', () => {
     expect(chooseNextSceneId([], null, 1)).toEqual({ id: '001', exists: false, referenced: false })
+  })
+})
+
+describe('h1 scene headings and stored-text cleanup', () => {
+  const node = (id: string, title = '', text = '') => ({
+    id, type: 'card', position: { x: 0, y: 0 }, width: 220, height: 120,
+    data: { title, text, color: '#1f2937' },
+  } as any)
+
+  test('"# [018] Titel" (level 1 with an id) starts a scene', () => {
+    const md = '## [017] GPS\n\nx [018]\n\n# [018] Prästön\n\nVattnet är blankt.'
+    const r = docToNodes(md, [node('017')], { nextId: 18, baselineIds: new Set(['017']) })
+    expect(r.nodes.map(n => n.id)).toEqual(['017', '018'])
+    expect(r.nodes[1].data.title).toBe('Prästön')
+    expect(r.nodes[1].data.text).toBe('Vattnet är blankt.')
+    expect([...sceneIdsInDoc(md)]).toEqual(['017', '018'])
+  })
+
+  test('a plain "# Titel" without an id stays text; "## Titel" still gets a number', () => {
+    const r = docToNodes('## [001] A\n\n# Del två\n\ntext\n\n## Ny\n\ny', [node('001')], { nextId: 2, baselineIds: new Set(['001']) })
+    expect(r.nodes.map(n => n.id)).toEqual(['001', '002'])
+    expect(r.nodes[0].data.text).toContain('# Del två')
+    expect(r.nodes[1].data.title).toBe('Ny')
+  })
+
+  test('stored text has no escaped brackets and hard breaks become two spaces', () => {
+    expect(cleanStoredText('*\\[MUSIK: tema\\]*\n\nRad ett\\\nRad två [\\[002\\]](#002) [12]'))
+      .toBe('*[MUSIK: tema]*\n\nRad ett  \nRad två [#002] [12]')
+  })
+
+  test('round trip is stable with brackets and hard breaks in the text', () => {
+    const prev = [node('001', 'A', '*[MUSIK: tema]*\n\nRad ett  \nRad två [#002]'), node('002')]
+    const md = nodesToDoc(prev)
+    // what the TipTap serializer would hand back: escaped brackets, "\" breaks
+    const serialised = md.replace(/\[MUSIK: tema\]/, '\\[MUSIK: tema\\]').replace('  \n', '\\\n')
+    const r = docToNodes(serialised, prev, { nextId: 3, baselineIds: new Set(['001', '002']) })
+    expect(r.changed).toBe(false)
   })
 })
