@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Copy, Trash2, FilePlus, Pencil, Upload, Download, History } from 'lucide-react'
+import { ChevronDown, Copy, Trash2, FilePlus, Pencil, Upload, Download, History, FileText } from 'lucide-react'
 
 function timeAgo(ts) {
   if (!ts) return ''
@@ -19,6 +19,7 @@ export default function ProjectMenu({
   onNew,
   onRename,
   onImport,
+  onImportMarkdown,
   onExport,
   onHistory,
 }) {
@@ -86,7 +87,8 @@ export default function ProjectMenu({
           <div className="proj-pop-divider" />
           <button className="proj-action" onClick={() => { setOpen(false); onNew?.() }}><FilePlus size={15} /> Nytt projekt</button>
           <button className="proj-action" onClick={() => { setOpen(false); onRename?.() }}><Pencil size={15} /> Byt namn</button>
-          <button className="proj-action" onClick={() => { setOpen(false); onImport?.() }}><Upload size={15} /> Importera…</button>
+          <button className="proj-action" onClick={() => { setOpen(false); onImport?.() }}><Upload size={15} /> Importera JSON…</button>
+          <button className="proj-action" onClick={() => { setOpen(false); onImportMarkdown?.() }}><FileText size={15} /> Importera manus (markdown)…</button>
           <button className="proj-action" onClick={() => { setOpen(false); onExport?.() }}><Download size={15} /> Exportera…</button>
           <button className="proj-action" onClick={() => { setOpen(false); onHistory?.() }}><History size={15} /> Versionshistorik</button>
         </div>

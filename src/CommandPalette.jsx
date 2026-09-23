@@ -115,6 +115,7 @@ function buildSections(a) {
         { id: 'undo',     label: 'Ångra',          icon: <RotateCcw />, shortcut: '⌘Z',   run: a.undo },
         { id: 'redo',     label: 'Gör om',         icon: <RotateCw />,  shortcut: '⌘⇧Z', run: a.redo },
         { id: 'import',   label: 'Importera JSON...', icon: <Upload />,                    run: a.importProject },
+        { id: 'import-md', label: 'Importera manus (markdown)...', icon: <FileText />,     run: a.importManuscript },
         { id: 'export',   label: 'Exportera...',   icon: <Download />,                     run: a.showExport },
       ],
     },

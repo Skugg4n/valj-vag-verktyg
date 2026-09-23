@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.20.0 — Importera manus (markdown) — 2026-09-23
+
+### Added
+- **Importera manus (markdown)** i projektmenyn och kommandopaletten. Ett manus
+  med rubriker `# [001] Titel` (h1 eller h2) och val skrivna `[002]`, `[#002]`
+  eller `[[002]](#002)` blir ett **nytt projekt** med noder, titlar, texter och
+  kopplingar. Refererade scener utan rubrik skapas tomma. Noderna läggs i nivåer
+  efter avstånd från 001. Regianvisningar i kursiv, `*[MUSIK: ...]*`, ligger kvar
+  som text. Format: `facts/MANUS-FORMAT.md`.
+- JSON-importen accepterar nu bara `.json` i filväljaren; menyposten heter
+  "Importera JSON…".
+
 ## v0.19.0 — Sammanslagning: verkstadens juni-arbete + Advanced-synken — 2026-09-21
 
 Master innehöll inte det som låg live (v0.18.1 publicerades från grenen

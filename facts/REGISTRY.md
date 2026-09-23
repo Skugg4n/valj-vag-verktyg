@@ -45,6 +45,7 @@
 |------|------|-------------|---------|
 | docSync | src/utils/docSync.ts | nodesToDoc / docToNodes (nodes are the source of truth), chooseNextSceneId | → DocPane, App |
 | graphNav | src/utils/graphNav.ts | pickNodeInDirection for cmd+arrow | → App |
+| manuscriptImport | src/utils/manuscriptImport.ts | parseManuscript: markdown manus → nodes (h1/h2 `[NNN]` headings, refs, layered layout) | → App |
 | storyAnalysis | src/storyAnalysis.js | Pure CYOA structural analysis (reachability, dead ends, longest path, loops) | → InsightsModal |
 | buildReaderHTML | src/utils/buildReaderHTML.js | Generates standalone offline-playable reader HTML + downloadFile | → ExportModal |
 | persistence | src/utils/persistence.js | vv-prefixed localStorage load/save | → AppShell, ReadPane |
@@ -104,6 +105,7 @@
 | ProjectStorage.test | src/__tests__/ProjectStorage.test.jsx | Storage CRUD tests | → useProjectStorage |
 | docSync.test | src/__tests__/docSync.test.ts | Round trip, existence rule, baseline guard | → docSync |
 | graphNav.test | src/__tests__/graphNav.test.ts | Direction picking | → graphNav |
+| manuscriptImport.test | src/__tests__/manuscriptImport.test.ts | Manuscript parsing, refs, empty scenes, layout | → manuscriptImport |
 | SceneRef.test | src/__tests__/SceneRef.test.ts | Pill parse/serialise, bracket auto-close | → SceneRef |
 | NodeCardFocus.test | src/__tests__/NodeCardFocus.test.jsx | Title focus after cmd+Enter | → NodeCard |
 | GraphPaneBridge.test | src/__tests__/GraphPaneBridge.test.jsx | viewportRef exposure | → GraphPane |

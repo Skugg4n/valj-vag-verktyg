@@ -14,6 +14,7 @@ import ReadPane from './ReadPane.jsx'
 import DocPane from './DocPane.jsx'
 import { docToNodes, chooseNextSceneId, sceneIdsInDoc } from './utils/docSync.ts'
 import { pickNodeInDirection, nodeCenter, freePosition } from './utils/graphNav.ts'
+import { parseManuscript, projectNameFromFile } from './utils/manuscriptImport.ts'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -119,6 +120,7 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false)
   const [lastSavedAt, setLastSavedAt] = useState(null)
   const importRef = useRef(null)
+  const importMdRef = useRef(null)
   const reconnectInfo = useRef({ handleType: null, didReconnect: false })
   const undoStack = useRef([])
   const redoStack = useRef([])
@@ -989,6 +991,44 @@ export default function App() {
     }
   }
 
+  // Markdown manuscript (facts/MANUS-FORMAT.md) -> a NEW project, so the open
+  // one is never overwritten by a stray import.
+  const importManuscript = async e => {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const md = await file.text()
+      const parsed = parseManuscript(md)
+      if (parsed.nodes.length === 0) {
+        alert('Hittade inga scener. Rubriker ska se ut som "# [001] Titel".')
+        return
+      }
+      const loaded = parsed.nodes.map(n => ({
+        ...n,
+        height: estimateNodeHeight(n.data.text),
+      }))
+      const id = String(Date.now())
+      setNodes(loaded)
+      setEdges(scanEdges(loaded))
+      setNextId(parsed.nextNodeId)
+      nextIdRef.current = parsed.nextNodeId
+      setCurrentId(null)
+      setText('')
+      setTitle('')
+      setProjectId(id)
+      setProjectName(projectNameFromFile(file.name))
+      setProjectStart(Date.now())
+      const empty = parsed.createdEmpty.length
+        ? ` ${parsed.createdEmpty.length} refererade scener utan rubrik skapades tomma (${parsed.createdEmpty.join(', ')}).`
+        : ''
+      alert(`Importerade ${parsed.sceneCount} scener som nytt projekt.${empty}`)
+    } catch {
+      alert('Kunde inte läsa manuset.')
+    } finally {
+      e.target.value = ''
+    }
+  }
+
   const addIdea = () => {
     pushUndoState()
     const id = `idea-${Date.now()}`
@@ -1359,6 +1399,7 @@ export default function App() {
             onNew={confirmNewProject}
             onRename={renameProject}
             onImport={() => importRef.current?.click()}
+            onImportMarkdown={() => importMdRef.current?.click()}
             onExport={() => setExportOpen(true)}
             onHistory={showHistory}
           />
@@ -1392,6 +1433,7 @@ export default function App() {
           addIdea,
           undo, redo,
           importProject: () => importRef.current?.click(),
+          importManuscript: () => importMdRef.current?.click(),
           exportProject,
           exportMarkdown,
           showExport: () => setExportOpen(true),
@@ -1444,7 +1486,15 @@ export default function App() {
       <input
         ref={importRef}
         type="file"
+        accept=".json,application/json"
         onChange={importProject}
+        style={{ display: 'none' }}
+      />
+      <input
+        ref={importMdRef}
+        type="file"
+        accept=".md,.markdown,.txt,text/markdown,text/plain"
+        onChange={importManuscript}
         style={{ display: 'none' }}
       />
 
