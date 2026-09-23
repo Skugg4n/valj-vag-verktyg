@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.23.1 — Delbar HTML-läsare: rätt stycken och radbrytningar — 2026-09-23
+
+### Fixed
+- Den exporterade läsaren slog ihop alla radbrytningar och delade sedan upp
+  texten två meningar per stycke. Nu följer den manuset: tomrad ger nytt
+  stycke, enkel radbrytning ger radbrytning, `*kursiv*` och `**fet**` renderas.
+
 ## v0.23.0 — Källtext-läge i dokumentet — 2026-09-23
 
 ### Added

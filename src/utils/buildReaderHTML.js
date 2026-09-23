@@ -82,8 +82,9 @@ const map=new Map(STORY.nodes.map(n=>[n.id,n]));
 let cur=STORY.nodes[0]?.id, hist=[];
 const REF=/\\[#(\\d{3})\\]|#(\\d{3})/g;
 function outs(t){const o=[];let m;REF.lastIndex=0;while(m=REF.exec(t||"")){const id=m[1]||m[2];if(!o.includes(id)&&map.has(id))o.push(id);}return o;}
-function clean(t){return (t||"").replace(/\\[#\\d{3}\\]/g,"").replace(/#\\d{3}/g,"").replace(/\\s+([.,!?;:])/g,"$1").replace(/\\s{2,}/g," ").trim();}
-function paras(t){const r=clean(t);if(r.includes("\\n\\n"))return r.split(/\\n{2,}/);const s=r.split(/(?<=[.!?])\\s+/);const o=[];for(let i=0;i<s.length;i+=2)o.push(s.slice(i,i+2).join(" "));return o.filter(Boolean);}
+function clean(t){return (t||"").replace(/\\[#\\d{3}\\]/g,"").replace(/(^|[^\\w])#\\d{3}(?!\\d)/g,"$1").replace(/\\\\\\n/g,"\\n").replace(/\\\\([\\[\\]])/g,"$1").replace(/[ \\t]+\\n/g,"\\n").replace(/[ \\t]+([.,!?;:])/g,"$1").replace(/[ \\t]{2,}/g," ").trim();}
+function paras(t){return clean(t).split(/\\n{2,}/).map(p=>p.trim()).filter(Boolean);}
+function inline(p){return esc(p).replace(/\\*\\*([^*\\n]+)\\*\\*/g,"<strong>$1</strong>").replace(/\\*([^*\\n]+)\\*/g,"<em>$1</em>").replace(/\\n/g,"<br>");}
 function render(){
   const n=map.get(cur);if(!n)return;
   const idx=STORY.nodes.findIndex(x=>x.id===cur);
@@ -91,7 +92,7 @@ function render(){
   let h='<span class="cn">Kapitel '+String(idx+1).padStart(2,"0")+'</span><h1>'+esc(n.title||"Namnlös")+'</h1>';
   const ps=paras(n.text);
   if(!ps.length)h+='<p><em>(tom)</em></p>';
-  ps.forEach((p,i)=>h+='<p'+(i===0?' class="fl"':'')+'>'+esc(p)+'</p>');
+  ps.forEach((p,i)=>h+='<p'+(i===0?' class="fl"':'')+'>'+inline(p)+'</p>');
   if(ch.length){h+='<div class="choices"><div class="lbl">Vad gör du?</div>';ch.forEach((c,i)=>h+='<button class="choice" data-go="'+c.id+'"><span class="n">'+String.fromCharCode(65+i)+'.</span>'+esc(c.title||"Namnlös")+'</button>');h+='</div>';}
   else h+='<div class="choices"><div class="lbl">Slut</div><button class="choice" data-restart><span class="n">↺</span>Börja om</button></div>';
   h+='<div class="bc">'+hist.map((id,i)=>'<span class="c" data-bc="'+i+'">'+esc(map.get(id)?.title||id)+'</span> ›').join(" ")+'<span class="c cur">'+esc(n.title||cur)+'</span></div>';

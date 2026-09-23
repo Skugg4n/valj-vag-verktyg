@@ -55,3 +55,31 @@ describe('buildReaderHTML', () => {
     expect(html).toContain('\\u003c/script>')
   })
 })
+
+describe('embedded runtime: paragraphs and inline markdown', () => {
+  // Pull the pure helpers out of the generated script and run them here.
+  function helpers(html) {
+    const src = html.match(/<script>([\s\S]*?)function render\(\)/)[1]
+    const escSrc = html.match(/function esc\(s\)\{[^\n]*\}/)[0]
+    // eslint-disable-next-line no-new-func
+    return new Function(src + '\n' + escSrc + '\nreturn { clean, paras, inline }')()
+  }
+  const html = buildReaderHTML([node('001', 'A', 'x')], 'T')
+  const { paras, inline } = helpers(html)
+
+  it('keeps blank-line paragraphs and single line breaks', () => {
+    const ps = paras('Alba petar där sladdarna satt. "Inte bra.\nInte bra", muttrar hon.\n\nMen allt är normalt. [#002]')
+    expect(ps).toEqual(['Alba petar där sladdarna satt. "Inte bra.\nInte bra", muttrar hon.', 'Men allt är normalt.'])
+    expect(inline(ps[0])).toContain('"Inte bra.<br>Inte bra", muttrar hon.')
+  })
+
+  it('does not split a long paragraph into sentence pairs', () => {
+    expect(paras('En. Två. Tre. Fyra. Fem.')).toEqual(['En. Två. Tre. Fyra. Fem.'])
+  })
+
+  it('renders italics and bold, unescapes brackets, handles backslash breaks', () => {
+    const ps = paras('*\\[MUSIK: tema\\]* och **fet**\\\nrad två')
+    expect(ps).toEqual(['*[MUSIK: tema]* och **fet**\nrad två'])
+    expect(inline(ps[0])).toBe('<em>[MUSIK: tema]</em> och <strong>fet</strong><br>rad två')
+  })
+})
