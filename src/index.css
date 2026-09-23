@@ -1645,17 +1645,17 @@ textarea:focus {
 }
 
 .read-breadcrumb {
-  position: sticky; bottom: 0;
   display: flex; align-items: center; gap: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--paper-ink-dim);
-  background: linear-gradient(to top, var(--paper-bg) 70%, transparent);
-  padding: 16px 24px 14px;
+  border-top: 1px solid var(--paper-rule);
+  padding: 14px 0 24px;
   flex-wrap: wrap;
   max-width: 620px;
-  margin: 32px auto 0;
+  margin: 40px auto 0;
 }
+.read-breadcrumb .label { text-transform: uppercase; letter-spacing: .1em; margin-right: 6px; }
 .read-breadcrumb .crumb { padding: 2px 6px; border-radius: 3px; cursor: pointer; background: transparent; border: none; color: inherit; font: inherit; }
 .read-breadcrumb .crumb:hover { background: rgba(0,0,0,.06); }
 [data-reading="dark"] .read-breadcrumb .crumb:hover { background: rgba(255,255,255,.06); }

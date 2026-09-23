@@ -185,7 +185,9 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
             </div>
           )}
 
-          <nav className="read-breadcrumb" aria-label="Brödsmulor">
+          {history.length > 0 && (
+          <nav className="read-breadcrumb" aria-label="Vägen hit">
+            <span className="label">Vägen hit</span>
             {history.map((hId, i) => {
               const hNode = nodeMap.get(hId)
               return (
@@ -206,6 +208,7 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
             })}
             <span className="crumb current">{node.data.title || `#${currentId}`}</span>
           </nav>
+          )}
         </article>
       </div>
     </div>

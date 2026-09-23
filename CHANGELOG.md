@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.22.1 — Läsarens brödsmulor flyter inte längre över texten — 2026-09-23
+
+### Fixed
+- Raden "Vägen hit" i läsläget låg fast nederst i fönstret och flöt över
+  texten i långa kapitel. Den ligger nu sist på sidan under en linje, och visas
+  först när minst ett val gjorts.
+
 ## v0.22.0 — Sök och ersätt i dokumentet — 2026-09-23
 
 ### Added
