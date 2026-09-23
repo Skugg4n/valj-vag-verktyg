@@ -166,7 +166,10 @@ export default function DocPane({
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: 'Börja skriva din berättelse...' }),
       CharacterCount,
-      Typography,
+      Typography.configure({
+        openDoubleQuote: false, closeDoubleQuote: false,
+        openSingleQuote: false, closeSingleQuote: false,
+      }),
       Highlight,
       Markdown.configure({ html: false }),
       BubbleMenuExtension,
@@ -214,6 +217,12 @@ export default function DocPane({
     const scrollTop = scrollRef.current?.scrollTop ?? 0
     const wasInHeading = editor.state.selection.$from.parent.type.name === 'heading'
     const headingId = wasInHeading ? sceneIdAtSelection(editor.state) : null
+    // Remember the cursor relative to its scene, so a rewrite that inserts or
+    // removes scenes above it (a new [NNN] heading, say) doesn't move it.
+    const sceneId = sceneIdAtSelection(editor.state)
+    const sceneStartBefore = sceneId ? headingPositions(editor.state.doc).find(h => h.id === sceneId)?.start ?? 0 : 0
+    const offsetFrom = from - sceneStartBefore
+    const offsetTo = to - sceneStartBefore
 
     editor.commands.setContent(markdown, false)
     lastMarkdownRef.current = markdown
@@ -234,7 +243,16 @@ export default function DocPane({
       const h = headingPositions(editor.state.doc).find(h => h.id === headingId)
       if (h && editor.isFocused) editor.commands.setTextSelection(h.end)
     } else if (editor.isFocused) {
-      editor.commands.setTextSelection({ from: Math.min(from, max), to: Math.min(to, max) })
+      const hs = headingPositions(editor.state.doc)
+      const idx = sceneId ? hs.findIndex(h => h.id === sceneId) : -1
+      let nf = from, nt = to
+      if (idx >= 0) {
+        const start = hs[idx].start
+        const sceneEnd = idx + 1 < hs.length ? hs[idx + 1].start - 1 : max
+        nf = Math.min(start + offsetFrom, sceneEnd)
+        nt = Math.min(start + offsetTo, sceneEnd)
+      }
+      editor.commands.setTextSelection({ from: Math.max(0, Math.min(nf, max)), to: Math.max(0, Math.min(nt, max)) })
     }
     if (scrollRef.current) scrollRef.current.scrollTop = scrollTop
   }, [editor, markdown, flushPending, syncTick])
@@ -461,6 +479,7 @@ export default function DocPane({
             <textarea
               className="doc-source"
               value={sourceText}
+              ref={el => { if (el) { el.style.height = 'auto'; el.style.height = `${el.scrollHeight + 4}px` } }}
               onChange={onSourceChange}
               spellCheck={false}
               aria-label="Dokumentets källtext"

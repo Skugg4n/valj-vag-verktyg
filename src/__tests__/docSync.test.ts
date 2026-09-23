@@ -223,3 +223,15 @@ describe('h1 scene headings and stored-text cleanup', () => {
     expect(r.changed).toBe(false)
   })
 })
+
+describe('hard breaks and quotes', () => {
+  test('a TipTap hard break ("\\\\" + newline) compares equal to the stored two-space form', () => {
+    expect(normalizeDoc('## [001] A\n\nRad ett\\\nRad två')).toBe(normalizeDoc('## [001] A\n\nRad ett  \nRad två'))
+  })
+  test('a trailing hard break (Shift+Enter, nothing typed yet) does not force a rewrite', () => {
+    expect(normalizeDoc('## [001] A\n\nRad ett\\\n\n## [002] B')).toBe(normalizeDoc('## [001] A\n\nRad ett  \n\n## [002] B'))
+  })
+  test('typographic quotes are stored as straight quotes', () => {
+    expect(cleanStoredText('“Hej”, sa hon. »Ja«. It’s')).toBe('"Hej", sa hon. "Ja". It\'s')
+  })
+})

@@ -111,6 +111,7 @@
 | theme.test | src/__tests__/theme.test.jsx | resolveTheme + useTheme (persist, toggle, OS change) | → theme |
 | manuscriptImport.test | src/__tests__/manuscriptImport.test.ts | Manuscript parsing, refs, empty scenes, layout | → manuscriptImport |
 | SearchReplace.test | src/__tests__/SearchReplace.test.ts | Matching, cycling, replace | → SearchReplace |
+| plainForReader.test | src/__tests__/plainForReader.test.js | Published text is plain (no markdown markers) | → App |
 | SceneRef.test | src/__tests__/SceneRef.test.ts | Pill parse/serialise, bracket auto-close | → SceneRef |
 | NodeCardFocus.test | src/__tests__/NodeCardFocus.test.jsx | Title focus after cmd+Enter | → NodeCard |
 | GraphPaneBridge.test | src/__tests__/GraphPaneBridge.test.jsx | viewportRef exposure | → GraphPane |

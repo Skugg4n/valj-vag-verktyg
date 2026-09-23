@@ -70,7 +70,7 @@
   margin: 0 0 .6em;
   color: #15171c;
 }
-.book-page p { margin: 0 0 1em; }
+.book-page p { margin: 0 0 1em; white-space: pre-line; }
 .book-first::first-letter {
   float: left;
   font-family: 'Oswald', sans-serif;

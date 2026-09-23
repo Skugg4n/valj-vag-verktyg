@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.24.0 — Dela via länk, raka citattecken, stabilare markör — 2026-09-23
+
+### Added
+- **Dela via länk** i Dela-rutan. Publicerar en läsbar version på webben
+  (`/spela/<id>`, samma läsare som verkstaden) som alla med länken kan öppna
+  utan inloggning. Länken kopieras direkt. "Uppdatera delad länk" publicerar
+  senaste texten på samma adress, "Sluta dela" tar bort den. Kräver att du
+  är inloggad.
+
+### Fixed
+- **Markören hoppade** efter Shift+Enter: varje sådan radbrytning fick
+  dokumentet att ritas om, och markören hamnade i rubriken under. Nu räknas
+  radbrytningen som oförändrad och ingen omritning sker. När dokumentet ändå
+  måste ritas om (ny scen skapad av en referens) återställs markören relativt
+  sin scen, så text ovanför kan tillkomma utan att markören flyttar.
+- **Raka citattecken.** Editorn byter inte längre `"` till typografiska
+  citattecken, och gamla typografiska tecken rättas till raka när texten
+  sparas.
+- **Källtext-fönstret** växer med innehållet i stället för att sluta mitt i.
+- Bokläsaren behåller radbrytningar inom ett stycke.
+
 ## v0.23.1 — Delbar HTML-läsare: rätt stycken och radbrytningar — 2026-09-23
 
 ### Fixed

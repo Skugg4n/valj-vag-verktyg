@@ -16,6 +16,10 @@ import { docToNodes, chooseNextSceneId, sceneIdsInDoc, cleanStoredText } from '.
 import { pickNodeInDirection, nodeCenter, freePosition } from './utils/graphNav.ts'
 import { parseManuscript, projectNameFromFile } from './utils/manuscriptImport.ts'
 import { useTheme } from './theme.js'
+import { toPublishedNodes } from './storyExport.js'
+import { makeShareId } from './utils/shareId.js'
+import { shareUrl } from './routing.js'
+import { loadLS, saveLS } from './utils/persistence.js'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -38,6 +42,14 @@ import { useAuth } from './AuthContext.jsx'
 import { setDebug as setDebugFlag, debugLog, isDebug } from './utils/debug.js'
 
 /* global __APP_VERSION__, __GIT_HASH__ */
+// The public reader renders plain text: drop markdown emphasis markers and
+// escapes, keep refs and line breaks (cleanStoredText handles quotes/breaks).
+export function plainForReader(text) {
+  return cleanStoredText(text || '')
+    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+}
+
 function estimateNodeHeight(text) {
   const charsPerLine = 32
   const lines = text
@@ -118,6 +130,8 @@ export default function App() {
   const [historyItems, setHistoryItems] = useState([])
   const [historyBusy, setHistoryBusy] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [shareInfo, setShareInfo] = useState(null)   // { id, url } for the current project
+  const [shareBusy, setShareBusy] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSavedAt, setLastSavedAt] = useState(null)
   const importRef = useRef(null)
@@ -178,7 +192,7 @@ export default function App() {
     setProjectName,
   })
 
-  const { saveToFirestore, saveHistorySnapshot, deleteFromFirestore, getHistory } = useFirestoreSync({
+  const { saveToFirestore, saveHistorySnapshot, deleteFromFirestore, getHistory, publishStory, unpublishStory } = useFirestoreSync({
     user,
     projects,
     setProjects,
@@ -951,6 +965,58 @@ export default function App() {
     URL.revokeObjectURL(a.href)
   }
 
+  // Share link: publish a public copy at /spela/:id (same store the workshop
+  // uses). The share id per project is remembered in this browser.
+  useEffect(() => {
+    if (!projectId) { setShareInfo(null); return }
+    const sid = loadLS('share-ids', {})[projectId]
+    setShareInfo(sid ? { id: sid, url: shareUrl(sid) } : null)
+  }, [projectId])
+
+  const publishedNodes = () =>
+    toPublishedNodes(nodes.map(n => ({ ...n, data: { ...n.data, text: plainForReader(n.data?.text || '') } })))
+
+  const shareStory = async () => {
+    if (!user) { alert('Logga in (uppe till höger) för att dela via länk.'); return }
+    if (nodes.length === 0) return
+    setShareBusy(true)
+    try {
+      const map = loadLS('share-ids', {})
+      let sid = map[projectId]
+      if (!sid) { sid = makeShareId(); map[projectId] = sid; saveLS('share-ids', map) }
+      const ok = await publishStory(sid, {
+        title: projectName.trim() || 'Berättelse',
+        nodes: publishedNodes(),
+        sourceProjectId: projectId,
+      })
+      if (ok) {
+        const url = shareUrl(sid)
+        setShareInfo({ id: sid, url })
+        try { await navigator.clipboard?.writeText(url) } catch { /* clipboard may be blocked */ }
+      } else {
+        alert('Kunde inte publicera just nu. Försök igen.')
+      }
+    } finally {
+      setShareBusy(false)
+    }
+  }
+
+  const unshareStory = async () => {
+    if (!shareInfo) return
+    if (!confirm('Sluta dela? Länken slutar då fungera.')) return
+    setShareBusy(true)
+    try {
+      if (await unpublishStory(shareInfo.id)) {
+        const map = loadLS('share-ids', {})
+        delete map[projectId]
+        saveLS('share-ids', map)
+        setShareInfo(null)
+      }
+    } finally {
+      setShareBusy(false)
+    }
+  }
+
   const exportReaderHTML = () => {
     const safe = (projectName.trim() || 'berattelse').toLowerCase().replace(/[^\w-]+/g, '_')
     downloadFile(
@@ -1482,6 +1548,10 @@ export default function App() {
         onExportJSON={exportProject}
         onExportMarkdown={exportMarkdown}
         onExportHTML={exportReaderHTML}
+        shareInfo={shareInfo}
+        shareBusy={shareBusy}
+        onShare={shareStory}
+        onUnshare={unshareStory}
       />
 
       <SettingsModal

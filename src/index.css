@@ -2107,7 +2107,7 @@ textarea:focus {
 .doc-source {
   display: block;
   width: min(720px, 92%);
-  min-height: calc(100% - 48px);
+  min-height: 70vh;
   margin: 24px auto;
   padding: 32px clamp(20px, 5%, 56px);
   box-sizing: border-box;
@@ -2117,6 +2117,16 @@ textarea:focus {
   color: var(--ink);
   font: 13px/1.6 var(--font-mono);
   resize: none;
+  overflow: hidden;
   white-space: pre-wrap;
 }
 .doc-source:focus { outline: none; border-color: var(--accent); }
+
+/* Share link box in the export modal */
+.share-box { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; flex-wrap: wrap; }
+.share-url {
+  flex: 1 1 200px; min-width: 0; height: 30px; padding: 0 10px;
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--bg); color: var(--ink); font: 12px var(--font-mono);
+}
+.share-box a.btn { text-decoration: none; }

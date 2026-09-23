@@ -45,6 +45,7 @@ export function nodesToDoc(nodes: Node[]): string {
 export function normalizeDoc(md: string): string {
   return md
     .replace(/\r\n?/g, '\n')
+    .replace(/\\\n/g, '\n')          // "\" + newline (hard break) == two-space break
     .replace(/\\([\[\]])/g, '$1')
     .replace(/\[#(\d{3})\]/g, '[$1]')
     .split('\n')
@@ -142,6 +143,8 @@ export function cleanStoredText(raw: string): string {
     .replace(DOC_REF_G, '[#$1]')
     .replace(/\\\n/g, '  \n')
     .replace(/\\([\[\]])/g, '$1')
+    .replace(/[\u201c\u201d\u201e\u00ab\u00bb]/g, '"')   // straight quotes, Swedish style
+    .replace(/[\u2018\u2019\u201a]/g, "'")
     .replace(/^\n+|\n+$/g, '')
 }
 
