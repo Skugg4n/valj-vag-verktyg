@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import ReactFlow, { Background, Controls, MarkerType } from 'reactflow'
+import ReactFlow, { Background, Controls, MarkerType, Handle, Position } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { getPublished } from './useFirestoreSync.js'
 import ReadPane from './ReadPane.jsx'
 import StagePane from './StagePane.jsx'
+import { useTheme } from './theme.js'
 
 // Working link for collaborators (/las/:shareId): the Advanced read view with
 // highlights and {cue} chips, the stage mode, and a read-only map of the
@@ -39,10 +40,13 @@ export function edgesFrom(nodes) {
 }
 
 function MapNode({ data }) {
+  // Edges attach to handles; without them ReactFlow draws nothing.
   return (
     <div className="pr-node" style={{ background: data.color }}>
+      <Handle type="target" position={Position.Left} isConnectable={false} />
       <span className="pr-node-id">#{data.id}</span>
       <span className="pr-node-title">{data.title || '(utan titel)'}</span>
+      <Handle type="source" position={Position.Right} isConnectable={false} />
     </div>
   )
 }
@@ -52,6 +56,7 @@ export default function PublicRead({ shareId }) {
   const [state, setState] = useState({ loading: true, story: null })
   const [tab, setTab] = useState('read')
   const [activeId, setActiveId] = useState(null)
+  useTheme()   // follows the system light/dark like the editor does
 
   useEffect(() => {
     let alive = true
@@ -67,7 +72,11 @@ export default function PublicRead({ shareId }) {
 
   const nodes = useMemo(() => richToNodes(state.story), [state.story])
   const edges = useMemo(() => edgesFrom(nodes), [nodes])
-  const mapNodes = useMemo(() => nodes.map(n => ({ ...n, data: { ...n.data, id: n.id }, style: { width: n.width, height: n.height } })), [nodes])
+  const mapNodes = useMemo(() => nodes.map(n => ({
+    ...n,
+    data: { ...n.data, id: n.id, color: n.data.color === '#1f2937' ? 'var(--card)' : n.data.color },
+    style: { width: n.width, height: n.height },
+  })), [nodes])
 
   if (state.loading) return <div className="pr-shell"><p className="pr-msg">Laddar berättelsen…</p></div>
   if (!state.story) {
@@ -79,7 +88,7 @@ export default function PublicRead({ shareId }) {
   }
 
   return (
-    <div className="pr-shell" data-theme="light">
+    <div className="pr-shell">
       <header className="pr-bar">
         <span className="pr-title">{state.story.title || 'Berättelse'}</span>
         <span className="pr-sub">arbetslänk</span>

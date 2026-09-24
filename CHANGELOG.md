@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.26.1 — Arbetslänkens karta visar pilarna — 2026-09-24
+
+### Fixed
+- Kartan i arbetslänken saknade kopplingslinjer (noderna hade inga
+  anslutningspunkter). Nu ritas pilarna, och kartan följer systemets
+  ljusa/mörka tema som resten av appen.
+
 ## v0.26.0 — Arbetslänk: dela läsvyn med markeringar, scenläge och karta — 2026-09-24
 
 ### Added
