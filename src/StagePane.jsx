@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { X, ArrowLeft, RotateCcw } from 'lucide-react'
+import { X, ArrowLeft, RotateCcw, Maximize2 } from 'lucide-react'
 import { splitChoices, renderInline } from './ReadPane.jsx'
 import { extractCues } from './stageCues.js'
 import { loadLS, saveLS } from './utils/persistence.js'
 
-// Stage mode: reader and musician share one screen. Big text, one scene at a
-// time, {cues} lifted out as numbered bubbles in a side column, choices as big
-// green/red buttons (the thumbs convention).
-//   1 / G = first choice, 2 / R = second, 3 = third, Backspace = back,
-//   ↓ ↑ or scroll wheel = move the "here I am" marker paragraph by paragraph,
-//   + / - = text size, Esc = exit.
+// Stage mode: reader and musician share one screen. One calm column of big
+// text. Each {cue} shows a small number in the text where it happens and a
+// yellow bubble directly under that paragraph. Normal scrolling. A trail of
+// visited scenes at the top so a wrong click is one tap to undo.
+//   G / 1 = first choice, R / 2 = second, 3 = third,
+//   Backspace = back one scene, + / - = text size, Esc = exit.
+//   Optional reading marker (checkbox): click a paragraph or use ↓ ↑ to
+//   underline the one you are reading. Off by default; scrolling stays normal.
 export default function StagePane({ nodes, startId, onExit }) {
   const nodeMap = useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes])
   const firstId = useMemo(() => {
@@ -24,38 +26,41 @@ export default function StagePane({ nodes, startId, onExit }) {
     return Number.isFinite(s) ? s : 1.6
   })
   const [theme, setTheme] = useState(() => (loadLS('stage-theme', 'dark') === 'paper' ? 'paper' : 'dark'))
-  const [active, setActive] = useState(-1)   // index of the paragraph the reader is at
+  const [marker, setMarker] = useState(() => loadLS('stage-marker', false) === true)
+  const [active, setActive] = useState(-1)
   useEffect(() => { saveLS('stage-font', scale) }, [scale])
   useEffect(() => { saveLS('stage-theme', theme) }, [theme])
+  useEffect(() => { saveLS('stage-marker', marker) }, [marker])
 
   const node = currentId ? nodeMap.get(currentId) : null
   const { body, choices } = useMemo(() => splitChoices(node?.data?.text || '', nodeMap), [node, nodeMap])
   const { text, cues } = useMemo(() => extractCues(body), [body])
   const paragraphs = useMemo(() => text.split(/\n{2,}/).filter(p => p.trim()), [text])
-  // Which cue numbers sit in which paragraph (for the bubble emphasis).
-  const cuesOf = useMemo(
-    () => paragraphs.map(p => [...p.matchAll(/(\d+)/g)].map(m => Number(m[1]))),
-    [paragraphs]
-  )
-  const activeCues = new Set(active >= 0 ? cuesOf[active] || [] : [])
+  const cuesOf = p => [...p.matchAll(/(\d+)/g)].map(m => Number(m[1]))
 
-  const goTo = id => { if (!nodeMap.has(id)) return; setHistory(h => [...h, currentId]); setCurrentId(id); setActive(-1) }
-  const goBack = () => { if (!history.length) return; setCurrentId(history[history.length - 1]); setHistory(h => h.slice(0, -1)); setActive(-1) }
-  const restart = () => { setHistory([]); setCurrentId(firstId); setActive(-1) }
-  const step = d => setActive(a => Math.max(-1, Math.min(paragraphs.length - 1, (a < 0 && d > 0 ? -1 : a) + d)))
+  const bodyRef = useRef(null)
+  const goTo = id => { if (!nodeMap.has(id)) return; setHistory(h => [...h, currentId]); setCurrentId(id) }
+  const goBack = () => { if (!history.length) return; setCurrentId(history[history.length - 1]); setHistory(h => h.slice(0, -1)) }
+  const jumpTo = i => { setCurrentId(history[i]); setHistory(h => h.slice(0, i)) }
+  const restart = () => { setHistory([]); setCurrentId(firstId) }
+  useEffect(() => { bodyRef.current?.scrollTo?.(0, 0); setActive(-1) }, [currentId])
+  const stepMarker = d => setActive(a => Math.max(0, Math.min(paragraphs.length - 1, a + d)))
+  useEffect(() => {
+    if (!marker || active < 0) return
+    bodyRef.current?.querySelector('.stage-p.active')?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+  }, [active, marker])
 
   useEffect(() => {
     const onKey = e => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const k = e.key.toLowerCase()
       if (k === 'escape') { e.preventDefault(); onExit?.() }
-      else if (k === 'backspace' || k === 'arrowleft') { e.preventDefault(); goBack() }
-      else if (k === 'arrowdown' || k === 'j') { e.preventDefault(); step(1) }
-      else if (k === 'arrowup' || k === 'k') { e.preventDefault(); step(-1) }
+      else if (k === 'backspace') { e.preventDefault(); goBack() }
+      else if (marker && k === 'arrowdown') { e.preventDefault(); stepMarker(1) }
+      else if (marker && k === 'arrowup') { e.preventDefault(); stepMarker(-1) }
       else if (k === '1' || k === 'g') { if (choices[0]) { e.preventDefault(); goTo(choices[0].id) } }
       else if (k === '2' || k === 'r') { if (choices[1]) { e.preventDefault(); goTo(choices[1].id) } }
       else if (k === '3') { if (choices[2]) { e.preventDefault(); goTo(choices[2].id) } }
-      else if (k === 'enter' || k === ' ' || k === 'arrowright') { if (choices.length === 1) { e.preventDefault(); goTo(choices[0].id) } }
       else if (k === '+' || k === '=') { e.preventDefault(); setScale(s => Math.min(3, +(s + 0.1).toFixed(2))) }
       else if (k === '-') { e.preventDefault(); setScale(s => Math.max(0.8, +(s - 0.1).toFixed(2))) }
     }
@@ -63,78 +68,76 @@ export default function StagePane({ nodes, startId, onExit }) {
     return () => window.removeEventListener('keydown', onKey)
   })
 
-  // Scroll wheel steps the marker one paragraph at a time (a notch or two per
-  // step), instead of free-scrolling the page.
-  const wheelAcc = useRef(0)
-  const onWheel = e => {
-    e.preventDefault()
-    wheelAcc.current += e.deltaY
-    if (Math.abs(wheelAcc.current) >= 60) {
-      step(wheelAcc.current > 0 ? 1 : -1)
-      wheelAcc.current = 0
-    }
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen?.().catch?.(() => {})
+    else document.documentElement.requestFullscreen?.().catch?.(() => {})
   }
-
-  // Keep the marked paragraph in view.
-  const bodyRef = useRef(null)
-  useEffect(() => {
-    const el = bodyRef.current?.querySelector('.stage-p.active')
-    el?.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
-  }, [active, currentId])
-
-  // Fullscreen is a bonus, never a requirement.
-  useEffect(() => {
-    const el = document.documentElement
-    el.requestFullscreen?.().catch?.(() => {})
-    return () => { if (document.fullscreenElement) document.exitFullscreen?.().catch?.(() => {}) }
-  }, [])
+  useEffect(() => () => { if (document.fullscreenElement) document.exitFullscreen?.().catch?.(() => {}) }, [])
 
   const tone = i => (i === 0 ? 'green' : i === 1 ? 'red' : 'neutral')
   const bump = d => setScale(s => Math.max(0.8, Math.min(3, +(s + d).toFixed(2))))
+  const titleOf = id => nodeMap.get(id)?.data?.title || `#${id}`
 
   return (
     <div className="stage" data-stage-theme={theme} style={{ '--stage-scale': scale }} role="dialog" aria-label="Scenläge">
       <div className="stage-bar">
-        <button className="stage-btn" onClick={goBack} disabled={!history.length} title="Tillbaka (Backsteg)"><ArrowLeft size={18} /> Tillbaka</button>
-        <button className="stage-btn" onClick={restart} title="Börja om"><RotateCcw size={18} /> Börja om</button>
-        <span className="stage-chapter">Kapitel {String(history.length + 1).padStart(2, '0')} · #{currentId}</span>
+        <button className="stage-btn" onClick={goBack} disabled={!history.length} title="Tillbaka en scen (Backsteg)"><ArrowLeft size={18} /> Tillbaka</button>
+        <button className="stage-btn" onClick={restart} title="Börja om från första scenen"><RotateCcw size={18} /> Börja om</button>
         <span style={{ flex: 1 }} />
+        <label className="stage-check" title="Understryk stycket du läser (klicka på det, eller pil ned/upp)">
+          <input type="checkbox" checked={marker} onChange={e => { setMarker(e.target.checked); if (!e.target.checked) setActive(-1) }} />
+          Läsmarkör
+        </label>
         <span className="stage-toggle" role="group" aria-label="Tema">
           <button className={theme === 'paper' ? 'on' : ''} onClick={() => setTheme('paper')} aria-pressed={theme === 'paper'}>Ljus</button>
           <button className={theme === 'dark' ? 'on' : ''} onClick={() => setTheme('dark')} aria-pressed={theme === 'dark'}>Mörk</button>
         </span>
         <button className="stage-btn" onClick={() => bump(-0.1)} title="Mindre text (−)">A−</button>
         <button className="stage-btn" onClick={() => bump(0.1)} title="Större text (+)">A+</button>
+        <button className="stage-btn" onClick={toggleFullscreen} title="Helskärm av/på"><Maximize2 size={18} /></button>
         <button className="stage-btn" onClick={onExit} title="Avsluta (Esc)"><X size={18} /> Avsluta</button>
       </div>
+
+      {node && (
+        <nav className="stage-trail" aria-label="Vägen hit">
+          {history.map((id, i) => (
+            <span key={`${id}-${i}`}>
+              <button className="stage-crumb" onClick={() => jumpTo(i)} title="Gå tillbaka hit">{titleOf(id)}</button>
+              <span className="stage-crumb-sep">›</span>
+            </span>
+          ))}
+          <span className="stage-crumb current">{titleOf(currentId)}</span>
+        </nav>
+      )}
 
       {!node ? (
         <div className="stage-body"><p className="stage-empty">Inget att läsa ännu.</p></div>
       ) : (
-        <div className={`stage-body${cues.length ? ' has-cues' : ''}`} ref={bodyRef} onWheel={onWheel}>
+        <div className="stage-body" ref={bodyRef}>
           <article className="stage-text">
             {node.data.title && <h1>{node.data.title}</h1>}
-            {paragraphs.map((p, i) => (
-              <p
-                key={i}
-                className={`stage-p${i === active ? ' active' : ''}${active >= 0 && i !== active ? ' passive' : ''}`}
-                onClick={() => setActive(i)}
-              >
-                {renderInline(p)}
-              </p>
-            ))}
-            <p className="stage-hint">Pil ned/upp eller scrollhjulet flyttar markeringen. Klicka på ett stycke för att hoppa dit.</p>
-          </article>
-          {cues.length > 0 && (
-            <aside className="stage-cues" aria-label="Ljud och regi">
-              {cues.map((c, i) => (
-                <div key={i} className={`stage-cue${activeCues.has(i + 1) ? ' active' : ''}${active >= 0 && !activeCues.has(i + 1) ? ' dim' : ''}`}>
-                  <span className="stage-cue-n">{i + 1}</span>
-                  <span className="stage-cue-text">{c}</span>
+            {paragraphs.map((p, i) => {
+              const nums = cuesOf(p)
+              return (
+                <div key={i} className="stage-block">
+                  <p
+                    className={`stage-p${marker && i === active ? ' active' : ''}${marker ? ' markable' : ''}`}
+                    onClick={marker ? () => setActive(i) : undefined}
+                  >{renderInline(p)}</p>
+                  {nums.length > 0 && (
+                    <div className="stage-cues" aria-label="Ljud och regi">
+                      {nums.map(n => (
+                        <div key={n} className="stage-cue">
+                          <span className="stage-cue-n">{n}</span>
+                          <span className="stage-cue-text">{cues[n - 1]}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </aside>
-          )}
+              )
+            })}
+          </article>
         </div>
       )}
 
@@ -144,7 +147,7 @@ export default function StagePane({ nodes, startId, onExit }) {
             <button className="stage-choice neutral" onClick={restart}>Slut · Börja om</button>
           ) : choices.map((c, i) => (
             <button key={c.id} className={`stage-choice ${tone(i)}`} onClick={() => goTo(c.id)}>
-              <span className="stage-choice-key">{i === 0 ? 'Grön tumme · tangent G' : i === 1 ? 'Röd tumme · tangent R' : `Tangent ${i + 1}`}</span>
+              <span className="stage-choice-key">{i === 0 ? 'Grön tumme · G' : i === 1 ? 'Röd tumme · R' : `Tangent ${i + 1}`}</span>
               <span className="stage-choice-label">{c.label}</span>
             </button>
           ))}

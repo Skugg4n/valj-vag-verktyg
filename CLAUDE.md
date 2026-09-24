@@ -3,7 +3,7 @@
 > Registrerat i Atlas (`/atlas-continue` hittar tillbaka). Manifest: `atlas.json`.
 
 ## Version Management
-- Current version: 0.25.1
+- Current version: 0.25.2
 - Single source of truth: `package.json` → `version`
 - Vite injects `__APP_VERSION__` and `__GIT_HASH__` at build time
 - Version sources (update ALL on bump):

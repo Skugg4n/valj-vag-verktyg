@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.25.2 — Scenläge: lugnare, en spalt, bubblor under stycket — 2026-09-24
+
+### Changed
+- **En spalt.** Texten ligger centrerad och bubblorna direkt under det stycke
+  de hör till, med samma nummer som siffran i texten. Inte längre text till
+  vänster och ljud långt till höger.
+- **Vanlig scroll.** Scrollhjul och piltangenter scrollar som vanligt. Ingen
+  toning, ingen läsmarkör, ingen hjälprad.
+- **Vägen hit** överst: varje besökt scen som en klickbar länk, så ett felklick
+  är ett klick tillbaka. Backsteg går ett steg tillbaka.
+- Höger- och vänsterpil gör ingenting särskilt längre. Helskärm slås på med en
+  egen knapp i stället för automatiskt, så Esc inte gör två saker.
+
+### Added
+- **Läsmarkör som tillval** (kryssruta överst): på, så blir stycket du klickar
+  på eller går till med pil ned/upp understruket. Av som standard.
+
 ## v0.25.1 — Scenläge: ljust tema, läsmarkör, tydligare knappar — 2026-09-24
 
 ### Added
