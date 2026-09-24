@@ -259,7 +259,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
               aria-hidden={selected}
               onWheelCapture={e => e.stopPropagation()}
             >
-              {String(data.text || '').split(/(\[#\d{3}\])/).map((part, i) => {
+              {String(data.text || '').replace(/<\/?mark>/g, '').split(/(\[#\d{3}\])/).map((part, i) => {
                 const m = part.match(/^\[#(\d{3})\]$/)
                 if (m) {
                   const target = getNodes().find(n => n.id === m[1])

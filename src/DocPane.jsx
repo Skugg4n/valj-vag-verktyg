@@ -178,7 +178,9 @@ export default function DocPane({
         openSingleQuote: false, closeSingleQuote: false,
       }),
       Highlight,
-      Markdown.configure({ html: false }),
+      // html:true so highlights survive as <mark>…</mark> in the stored text
+      // (there is no plain-markdown syntax for them).
+      Markdown.configure({ html: true }),
       BubbleMenuExtension,
       ActiveNodeHighlight,
       SearchReplace,

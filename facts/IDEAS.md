@@ -2,6 +2,8 @@
 
 ## New Ideas
 
+- **Presentationsläge för uppläsning** (Ola 2026-09-24): mycket stor text, och de gulmarkerade regi/ljud-instruktionerna utlyfta som bubblor eller egen spalt så att musikern (Cecilia) ser var läsaren är och när ljud, musik och skådisinsatser ska in. Bygger på att markeringar nu överlever i texten (v0.24.2).
+
 ### Public story library (verkstaden) — proposal written 2026-06-20
 Expand verkstaden into a small, moderated publishing/library product. Full
 proposal: `docs/plans/2026-06-20-public-library-roadmap.md`. Phases:

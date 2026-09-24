@@ -151,3 +151,15 @@ describe('reader text rendering', () => {
     expect(body).toBe('Rad ett\nRad två')
   })
 })
+
+describe('reader highlights', () => {
+  it('renders <mark> as a highlight, nested markdown inside works', () => {
+    const nodes = [{ id: '001', data: { title: 'A', text: 'Nu <mark>spelar *musiken*</mark> och [#002]' } }, { id: '002', data: { title: 'B', text: '' } }]
+    const { container } = render(<ReadPane nodes={nodes} startId="001" activeNodeId={null} onSelectNode={() => {}} />)
+    const mark = container.querySelector('.read-page mark')
+    expect(mark).toBeTruthy()
+    expect(mark.textContent).toBe('spelar musiken')
+    expect(mark.querySelector('em').textContent).toBe('musiken')
+    expect(container.querySelector('.read-page').textContent).not.toContain('<mark>')
+  })
+})

@@ -269,3 +269,18 @@ describe('find bar via window event', () => {
     await waitFor(() => expect(container.querySelector('.find-bar')).toBeTruthy())
   })
 })
+
+describe('highlights survive the sync round trip', () => {
+  it('a <mark> in stored text renders as a highlight and is kept when nodes re-render', async () => {
+    const { rerender, container } = render(
+      <DocPane {...baseProps} nodes={[node('001', 'A', 'Musik: <mark>trumma här</mark> och sen [#002]'), node('002')]} />
+    )
+    await waitFor(() => expect(container.querySelector('.ProseMirror mark')).toBeTruthy())
+    expect(container.querySelector('.ProseMirror mark').textContent).toBe('trumma här')
+    rerender(<DocPane {...baseProps} nodes={[node('001', 'A', 'Musik: <mark>trumma här</mark> och sen [#002]'), node('002', 'Ny titel')]} />)
+    await waitFor(() => expect(container.querySelector('.ProseMirror').textContent).toContain('Ny titel'))
+    expect(container.querySelector('.ProseMirror mark')?.textContent).toBe('trumma här')
+    const editor = container.querySelector('.ProseMirror').__tiptapEditor
+    expect(editor.storage.markdown.getMarkdown()).toContain('<mark>trumma här</mark>')
+  })
+})

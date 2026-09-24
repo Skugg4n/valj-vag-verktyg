@@ -2130,3 +2130,7 @@ textarea:focus {
   background: var(--bg); color: var(--ink); font: 12px var(--font-mono);
 }
 .share-box a.btn { text-decoration: none; }
+
+/* Highlights in the reader (same yellow as the editor's mark) */
+.read-page mark { background: rgba(250, 204, 21, .55); color: inherit; padding: 0 3px; border-radius: 3px; }
+[data-reading="dark"] .read-page mark { background: rgba(250, 204, 21, .35); }

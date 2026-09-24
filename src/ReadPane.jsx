@@ -16,10 +16,11 @@ export function normaliseBody(text) {
 /** Render **bold**, *italic* and single newlines inside one paragraph. */
 export function renderInline(text) {
   const out = []
-  const parts = text.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*|\n)/)
+  const parts = text.split(/(<mark>[\s\S]*?<\/mark>|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\n)/)
   parts.forEach((part, i) => {
     if (!part) return
     if (part === '\n') out.push(<br key={i} />)
+    else if (/^<mark>[\s\S]*<\/mark>$/.test(part)) out.push(<mark key={i}>{renderInline(part.slice(6, -7))}</mark>)
     else if (/^\*\*[^*]+\*\*$/.test(part)) out.push(<strong key={i}>{part.slice(2, -2)}</strong>)
     else if (/^\*[^*]+\*$/.test(part)) out.push(<em key={i}>{part.slice(1, -1)}</em>)
     else out.push(part)

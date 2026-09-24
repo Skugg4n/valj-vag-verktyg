@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.24.2 — Färgmarkeringar överlever och syns i läsläget — 2026-09-24
+
+### Fixed
+- **Gulmarkeringar försvann** så fort dokumentet ritades om, eftersom de inte
+  hade någon plats i den lagrade texten. De sparas nu som `<mark>` i scenens
+  text och överlever alla omritningar, projektbyten och omladdningar.
+
+### Added
+- Markeringarna **visas i läsläget** och i den exporterade HTML-läsaren, med
+  samma gula ton som i editorn. I korten och i den delade bokläsaren visas
+  texten utan markering (men utan skräptecken).
+
 ## v0.24.1 — ⌘F öppnar alltid sökrutan när dokumentet syns — 2026-09-23
 
 ### Fixed

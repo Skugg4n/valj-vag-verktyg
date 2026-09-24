@@ -83,3 +83,15 @@ describe('embedded runtime: paragraphs and inline markdown', () => {
     expect(inline(ps[0])).toBe('<em>[MUSIK: tema]</em> och <strong>fet</strong><br>rad två')
   })
 })
+
+describe('embedded runtime: highlights', () => {
+  it('renders <mark> and escapes everything else', () => {
+    const html = buildReaderHTML([node('001', 'A', 'x')], 'T')
+    const src = html.match(/<script>([\s\S]*?)function render\(\)/)[1]
+    const escSrc = html.match(/function esc\(s\)\{[^\n]*\}/)[0]
+    // eslint-disable-next-line no-new-func
+    const { inline } = new Function(src + '\n' + escSrc + '\nreturn { inline }')()
+    expect(inline('a <mark>gul</mark> <b>x</b>')).toBe('a <mark>gul</mark> &lt;b&gt;x&lt;/b&gt;')
+    expect(html).toContain('mark{background')
+  })
+})

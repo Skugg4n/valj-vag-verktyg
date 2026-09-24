@@ -66,6 +66,7 @@ p.fl::first-letter{font-size:3.4em;float:left;line-height:.85;padding:6px 8px 0 
 .choice .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dim);margin-right:12px}
 .bc{display:flex;flex-wrap:wrap;gap:6px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dim);max-width:620px;margin:36px auto 0;padding:14px 24px 0;border-top:1px solid var(--rule)}
 .bc .c{cursor:pointer;padding:2px 5px;border-radius:3px}.bc .c:hover{background:rgba(0,0,0,.05)}.bc .cur{color:var(--ink);font-weight:600}
+mark{background:rgba(250,204,21,.55);color:inherit;padding:0 3px;border-radius:3px}
 </style>
 </head>
 <body>
@@ -84,7 +85,7 @@ const REF=/\\[#(\\d{3})\\]|#(\\d{3})/g;
 function outs(t){const o=[];let m;REF.lastIndex=0;while(m=REF.exec(t||"")){const id=m[1]||m[2];if(!o.includes(id)&&map.has(id))o.push(id);}return o;}
 function clean(t){return (t||"").replace(/\\[#\\d{3}\\]/g,"").replace(/(^|[^\\w])#\\d{3}(?!\\d)/g,"$1").replace(/\\\\\\n/g,"\\n").replace(/\\\\([\\[\\]])/g,"$1").replace(/[ \\t]+\\n/g,"\\n").replace(/[ \\t]+([.,!?;:])/g,"$1").replace(/[ \\t]{2,}/g," ").trim();}
 function paras(t){return clean(t).split(/\\n{2,}/).map(p=>p.trim()).filter(Boolean);}
-function inline(p){return esc(p).replace(/\\*\\*([^*\\n]+)\\*\\*/g,"<strong>$1</strong>").replace(/\\*([^*\\n]+)\\*/g,"<em>$1</em>").replace(/\\n/g,"<br>");}
+function inline(p){return esc(p).replace(/&lt;mark&gt;([\\s\\S]*?)&lt;\\/mark&gt;/g,"<mark>$1</mark>").replace(/\\*\\*([^*\\n]+)\\*\\*/g,"<strong>$1</strong>").replace(/\\*([^*\\n]+)\\*/g,"<em>$1</em>").replace(/\\n/g,"<br>");}
 function render(){
   const n=map.get(cur);if(!n)return;
   const idx=STORY.nodes.findIndex(x=>x.id===cur);

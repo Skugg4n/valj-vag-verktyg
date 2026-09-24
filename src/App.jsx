@@ -48,6 +48,7 @@ export function plainForReader(text) {
   return cleanStoredText(text || '')
     .replace(/\*\*([^*\n]+)\*\*/g, '$1')
     .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/<\/?mark>/g, '')
 }
 
 function estimateNodeHeight(text) {
