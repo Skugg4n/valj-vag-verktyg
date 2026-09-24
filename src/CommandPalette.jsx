@@ -3,7 +3,7 @@ import {
   Network, Columns2, FileText, BookOpen,
   Plus, FilePlus, LayoutGrid,
   RotateCcw, RotateCw, Upload, Download,
-  History, Settings, HelpCircle, Layers, Lightbulb, BarChart3, SunMoon,
+  History, Settings, HelpCircle, Layers, Lightbulb, BarChart3, SunMoon, Presentation,
 } from 'lucide-react'
 
 export default function CommandPalette({ open, onClose, actions, extraSection }) {
@@ -125,6 +125,7 @@ function buildSections(a) {
         { id: 'insights', label: 'Insikter & analys...', icon: <BarChart3 />, run: a.showInsights },
         { id: 'history',  label: 'Versionshistorik...', icon: <History />,    run: a.showHistory },
         { id: 'settings', label: 'Inställningar...', icon: <Settings />,   run: a.showSettings },
+        { id: 'stage',    label: 'Scenläge (uppläsning)', icon: <Presentation />, run: a.openStage },
         { id: 'theme',    label: 'Byt tema (ljust/mörkt)', icon: <SunMoon />, run: a.toggleTheme },
         { id: 'help',     label: 'Hjälp',            icon: <HelpCircle />, run: a.openHelp },
       ],

@@ -20,6 +20,7 @@ import { toPublishedNodes } from './storyExport.js'
 import { makeShareId } from './utils/shareId.js'
 import { shareUrl } from './routing.js'
 import { loadLS, saveLS } from './utils/persistence.js'
+import { stripCues } from './stageCues.js'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -45,10 +46,12 @@ import { setDebug as setDebugFlag, debugLog, isDebug } from './utils/debug.js'
 // The public reader renders plain text: drop markdown emphasis markers and
 // escapes, keep refs and line breaks (cleanStoredText handles quotes/breaks).
 export function plainForReader(text) {
-  return cleanStoredText(text || '')
-    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
-    .replace(/\*([^*\n]+)\*/g, '$1')
-    .replace(/<\/?mark>/g, '')
+  return stripCues(
+    cleanStoredText(text || '')
+      .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+      .replace(/\*([^*\n]+)\*/g, '$1')
+      .replace(/<\/?mark>/g, '')
+  ).trim()
 }
 
 function estimateNodeHeight(text) {
@@ -1527,6 +1530,7 @@ export default function App() {
           showHistory,
           showSettings: () => setSettingsOpen(true),
           toggleTheme: theme.toggle,
+          openStage: () => { window.dispatchEvent(new CustomEvent('vv-set-mode', { detail: 'read' })); setTimeout(() => window.dispatchEvent(new CustomEvent('vv-open-stage')), 50) },
           openHelp,
         }}
         extraSection={{ title: 'Projekt', items: projectSwitchItems }}

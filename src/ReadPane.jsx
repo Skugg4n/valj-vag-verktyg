@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Share2, Presentation } from 'lucide-react'
+import StagePane from './StagePane.jsx'
 import { loadLS, saveLS } from './utils/persistence.js'
 
 const CHOICE_RE = /\[#(\d{3})]|#(\d{3})/g
@@ -16,10 +17,11 @@ export function normaliseBody(text) {
 /** Render **bold**, *italic* and single newlines inside one paragraph. */
 export function renderInline(text) {
   const out = []
-  const parts = text.split(/(<mark>[\s\S]*?<\/mark>|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\n)/)
+  const parts = text.split(/(<mark>[\s\S]*?<\/mark>|\{[^{}]*\}|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\n)/)
   parts.forEach((part, i) => {
     if (!part) return
     if (part === '\n') out.push(<br key={i} />)
+    else if (/^\{[^{}]*\}$/.test(part)) { const t = part.slice(1, -1).trim(); if (t) out.push(<span key={i} className="read-cue">{t}</span>) }
     else if (/^<mark>[\s\S]*<\/mark>$/.test(part)) out.push(<mark key={i}>{renderInline(part.slice(6, -7))}</mark>)
     else if (/^\*\*[^*]+\*\*$/.test(part)) out.push(<strong key={i}>{part.slice(2, -2)}</strong>)
     else if (/^\*[^*]+\*$/.test(part)) out.push(<em key={i}>{part.slice(1, -1)}</em>)
@@ -51,6 +53,12 @@ export function splitChoices(text, nodeMap) {
 export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, onShare }) {
   const [theme, setTheme] = useState(() => loadLS('read-theme', 'paper'))
   const [editorMode, setEditorMode] = useState(false)
+  const [stage, setStage] = useState(false)
+  useEffect(() => {
+    const open = () => setStage(true)
+    window.addEventListener('vv-open-stage', open)
+    return () => window.removeEventListener('vv-open-stage', open)
+  }, [])
 
   const nodeMap = useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes])
   const firstId = useMemo(() => {
@@ -155,11 +163,17 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
             aria-pressed={theme === 'dark'}
           >Mörk</button>
         </span>
+        <button className="btn ghost sm" title="Scenläge: stor text, {ljud} som bubblor" onClick={() => setStage(true)}>
+          <Presentation />
+          Scen
+        </button>
         <button className="btn ghost sm" title="Dela" onClick={onShare}>
           <Share2 />
           Dela
         </button>
       </div>
+
+      {stage && <StagePane nodes={nodes} startId={currentId} onExit={() => setStage(false)} />}
 
       <div className={`read-stage${editorMode ? ' editor-mode' : ''}`}>
         <article className="read-page">

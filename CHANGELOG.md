@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.25.0 — Scenläge för uppläsning med musiker — 2026-09-24
+
+### Added
+- **Scenläge** (knappen "Scen" i läsläget, eller ⌘K "Scenläge"): hela skärmen,
+  mycket stor text, en scen i taget. Allt som skrivs i `{klammerparenteser}`
+  lyfts ur texten och visas som numrerade gula bubblor i en spalt till höger,
+  med en liten siffra i texten där ljudet ska in. Gulmarkeringar visas som
+  vanligt. Valen är stora knappar, grön för första och röd för andra.
+  Tangenter: 1/G och 2/R väljer, Backsteg går tillbaka, + och − ändrar
+  textstorlek, Esc avslutar. Textstorleken sparas.
+- I vanliga läsläget visas `{...}` som små chips i texten.
+- I den delade publiklänken tas `{...}` bort helt.
+
 ## v0.24.2 — Färgmarkeringar överlever och syns i läsläget — 2026-09-24
 
 ### Fixed

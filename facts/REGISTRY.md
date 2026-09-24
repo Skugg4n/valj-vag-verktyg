@@ -10,6 +10,7 @@
 | Topbar | src/Topbar.jsx | Slim 44px bar: project menu slot, save pill, search, share, avatar | → AppShell, ProjectMenu, UserMenu |
 | GraphPane | src/GraphPane.jsx | Skiss/Split graph wrapper: ReactFlow, toolbar, zoom, minimap, scene search | → NodeCard |
 | DocPane | src/DocPane.jsx | Innehåll doc editor (TipTap) with outline, focus mode, status bar | → TipTap extensions |
+| StagePane | src/StagePane.jsx | Scenläge: fullscreen reader for reader + musician, {cues} as bubbles, green/red choices, keyboard | → ReadPane, stageCues |
 | ReadPane | src/ReadPane.jsx | Läsa mode: paper/dark, drop-cap, choices, breadcrumb | → App |
 | NodeCard | src/NodeCard.jsx | Graph node card (accent bar, active glow, idea styling, search dim/match) | → GraphPane, constants |
 | CommandPalette | src/CommandPalette.jsx | ⌘K palette (Lägen/Skapa/Verktyg/Visa/Projekt) | → App |
@@ -47,6 +48,7 @@
 | Name | Path | Description | Related |
 |------|------|-------------|---------|
 | docSync | src/utils/docSync.ts | nodesToDoc / docToNodes (nodes are the source of truth), chooseNextSceneId | → DocPane, App |
+| stageCues | src/stageCues.js | extractCues / stripCues / splitMarkers for {cue} instructions | → StagePane, ReadPane, App |
 | graphNav | src/utils/graphNav.ts | pickNodeInDirection for cmd+arrow | → App |
 | manuscriptImport | src/utils/manuscriptImport.ts | parseManuscript: markdown manus → nodes (h1/h2 `[NNN]` headings, refs, layered layout) | → App |
 | storyAnalysis | src/storyAnalysis.js | Pure CYOA structural analysis (reachability, dead ends, longest path, loops) | → InsightsModal |
@@ -112,6 +114,8 @@
 | manuscriptImport.test | src/__tests__/manuscriptImport.test.ts | Manuscript parsing, refs, empty scenes, layout | → manuscriptImport |
 | SearchReplace.test | src/__tests__/SearchReplace.test.ts | Matching, cycling, replace | → SearchReplace |
 | plainForReader.test | src/__tests__/plainForReader.test.js | Published text is plain (no markdown markers) | → App |
+| StagePane.test | src/__tests__/StagePane.test.jsx | Bubbles, markers, choice colours, keys | → StagePane |
+| stageCues.test | src/__tests__/stageCues.test.js | Cue extraction and stripping | → stageCues |
 | SceneRef.test | src/__tests__/SceneRef.test.ts | Pill parse/serialise, bracket auto-close | → SceneRef |
 | NodeCardFocus.test | src/__tests__/NodeCardFocus.test.jsx | Title focus after cmd+Enter | → NodeCard |
 | GraphPaneBridge.test | src/__tests__/GraphPaneBridge.test.jsx | viewportRef exposure | → GraphPane |

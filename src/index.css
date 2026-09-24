@@ -2134,3 +2134,70 @@ textarea:focus {
 /* Highlights in the reader (same yellow as the editor's mark) */
 .read-page mark { background: rgba(250, 204, 21, .55); color: inherit; padding: 0 3px; border-radius: 3px; }
 [data-reading="dark"] .read-page mark { background: rgba(250, 204, 21, .35); }
+
+/* ===== Stage mode (presentation for reader + musician) ===== */
+.stage {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column;
+  background: #0b0d12; color: #f2efe8;
+  font-family: var(--font-doc);
+  --stage-scale: 1.6;
+}
+.stage-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,.08);
+  font-family: var(--font-ui); font-size: 13px; color: #9aa3b2;
+}
+.stage-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04); color: #d6dbe4; font: 13px var(--font-ui); cursor: pointer;
+}
+.stage-btn:hover { background: rgba(255,255,255,.1); }
+.stage-btn:disabled { opacity: .35; cursor: default; }
+.stage-chapter { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin-left: 8px; }
+.stage-body { flex: 1; overflow: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 32px clamp(24px, 5vw, 72px); }
+.stage-body.has-cues { grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); }
+.stage-text { max-width: 1100px; font-size: calc(17px * var(--stage-scale)); line-height: 1.45; }
+.stage-text h1 { font-size: calc(26px * var(--stage-scale)); line-height: 1.15; margin: 0 0 .6em; font-weight: 700; }
+.stage-text p { margin: 0 0 .8em; }
+.stage-text mark { background: rgba(250, 204, 21, .45); color: inherit; padding: 0 .15em; border-radius: .2em; }
+.stage-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 1.5em; height: 1.5em; margin: 0 .15em; padding: 0 .35em;
+  border-radius: 999px; background: #f0b955; color: #1a1400;
+  font: 700 calc(11px * var(--stage-scale)) var(--font-ui); vertical-align: super; line-height: 1;
+}
+.stage-cues { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; gap: 12px; font-family: var(--font-ui); }
+.stage-cue {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: #f0b955; color: #1a1400; border-radius: 14px; padding: 12px 14px;
+  font-size: calc(13px * var(--stage-scale)); line-height: 1.35; font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0,0,0,.35);
+}
+.stage-cue-n {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 1.9em; height: 1.9em; border-radius: 999px; background: #1a1400; color: #f0b955; font-weight: 700;
+}
+.stage-choices {
+  display: flex; gap: 12px; padding: 14px clamp(24px, 5vw, 72px) 22px;
+  border-top: 1px solid rgba(255,255,255,.08); font-family: var(--font-ui);
+}
+.stage-choice {
+  flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  padding: 14px 18px; border-radius: 14px; border: 2px solid transparent; cursor: pointer; text-align: left;
+  color: #fff; font-size: calc(14px * var(--stage-scale));
+}
+.stage-choice.green { background: #1f7a4d; }
+.stage-choice.red { background: #a23b3b; }
+.stage-choice.neutral { background: #2a3140; }
+.stage-choice:hover { filter: brightness(1.12); }
+.stage-choice-key { font: 700 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.stage-choice-label { font-weight: 600; line-height: 1.25; }
+.stage-empty { color: #9aa3b2; font-family: var(--font-ui); }
+/* Cues in the ordinary reader: small inline chips */
+.read-page .read-cue {
+  display: inline-block; font: 600 11px var(--font-ui); letter-spacing: .04em;
+  background: rgba(240,185,85,.28); color: inherit; padding: 1px 7px; border-radius: 999px; vertical-align: middle; margin: 0 2px;
+}
+@media (max-width: 760px) { .stage-body.has-cues { grid-template-columns: 1fr; } .stage-cues { position: static; } }

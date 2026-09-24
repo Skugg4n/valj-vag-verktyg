@@ -21,7 +21,11 @@ i Advanced-editorn (valj-vag-verktyg.vercel.app, "Importera markdown").
    till publiken. De ligger kvar i scenens text och visas kursiva.
 7. **Skisser markeras med `*[SKISS]*`** först i stycket. Samma sak för
    `*[UTKAST ...]*` och `*[NAV ...]*`. Allt som står i `*[...]*` är regi.
-8. Undvik markdown-tabeller, bilder och rubriker av nivå tre och djupare.
+8. **Ljud- och regi-instruktioner till musikern skrivs i klammerparenteser:**
+   `{Ljudeffekt: gupp}`, `{Musik: hemmatemat, svagt}`. I scenläget lyfts de ut
+   som numrerade bubblor bredvid texten; i publikens delade version tas de bort.
+   Gulmarkering i editorn är kvar för sådant som ska stå kvar i texten.
+9. Undvik markdown-tabeller, bilder och rubriker av nivå tre och djupare.
    De importeras som text men har ingen betydelse.
 
 ## Minsta exempel
