@@ -37,6 +37,30 @@ describe('StagePane', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Vänster')
   })
 
+  it('arrow down marks the paragraph and lights its cue bubbles; theme toggle switches to light', () => {
+    const { container } = render(<StagePane nodes={NODES} startId="001" onExit={() => {}} />)
+    expect(container.querySelectorAll('.stage-p.active')).toHaveLength(0)
+    act(() => { fireEvent.keyDown(window, { key: 'ArrowDown' }) })
+    const ps = container.querySelectorAll('.stage-p')
+    expect(ps[0].className).toContain('active')
+    expect(container.querySelectorAll('.stage-cue.active')).toHaveLength(2)   // both cues sit in paragraph 1
+    act(() => { fireEvent.keyDown(window, { key: 'ArrowDown' }) })
+    expect(ps[1].className).toContain('active')
+    expect(container.querySelectorAll('.stage-cue.dim')).toHaveLength(2)
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Start')   // "1"/"2" keys were not consumed as mode switches
+    fireEvent.click(screen.getByText('Ljus'))
+    expect(container.querySelector('.stage').getAttribute('data-stage-theme')).toBe('paper')
+  })
+
+  it('a highlight wrapping a cue renders as mark + marker, never as raw tags', () => {
+    const nodes = [{ id: '001', data: { title: 'A', text: '<mark>{Karaktär} Matteläraren ropar.</mark> Sen tyst.' } }]
+    const { container } = render(<StagePane nodes={nodes} startId="001" onExit={() => {}} />)
+    const txt = container.querySelector('.stage-text')
+    expect(txt.textContent).not.toContain('<mark>')
+    expect(txt.querySelector('mark')).toBeTruthy()
+    expect(txt.querySelector('mark .stage-mark').textContent).toBe('1')
+  })
+
   it('Esc exits, +/- change the text scale', () => {
     const onExit = jest.fn()
     const { container } = render(<StagePane nodes={NODES} startId="001" onExit={onExit} />)

@@ -66,7 +66,7 @@ export default function AppShell({
         setFocusMode(false)
         return
       }
-      if (!inEditable && ['1', '2', '3', '4'].includes(e.key)) {
+      if (!inEditable && !document.querySelector('.stage') && ['1', '2', '3', '4'].includes(e.key)) {
         e.preventDefault()
         setMode(MODES[Number(e.key) - 1])
       }

@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.25.1 — Scenläge: ljust tema, läsmarkör, tydligare knappar — 2026-09-24
+
+### Added
+- **Ljus/Mörk** i scenlägets överkant. Valet sparas.
+- **Läsmarkör:** pil ned/upp, scrollhjulet eller ett klick markerar det stycke
+  du är vid. Stycket får en gul kant, övriga tonas ner, och bubblorna som hör
+  till stycket lyser upp medan de andra tonas ner. Så ser musikern var du är.
+
+### Fixed
+- Gulmarkering som omslöt en `{bubbla}` visades som rå kod i scenläget.
+- Tangenterna 1 och 2 bytte vy i appen bakom scenläget. Nu stannar de i
+  scenläget, och knapparna säger "Grön tumme · tangent G" och "Röd tumme ·
+  tangent R" i stället för siffror.
+
 ## v0.25.0 — Scenläge för uppläsning med musiker — 2026-09-24
 
 ### Added

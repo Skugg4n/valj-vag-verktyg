@@ -2201,3 +2201,24 @@ textarea:focus {
   background: rgba(240,185,85,.28); color: inherit; padding: 1px 7px; border-radius: 999px; vertical-align: middle; margin: 0 2px;
 }
 @media (max-width: 760px) { .stage-body.has-cues { grid-template-columns: 1fr; } .stage-cues { position: static; } }
+
+/* Stage: light theme, reading marker, toggle */
+.stage[data-stage-theme="paper"] { background: #f6f1e6; color: #1d1a16; }
+.stage[data-stage-theme="paper"] .stage-bar { border-bottom-color: rgba(0,0,0,.1); color: #6a6258; }
+.stage[data-stage-theme="paper"] .stage-btn { border-color: rgba(0,0,0,.14); background: rgba(0,0,0,.03); color: #2b2620; }
+.stage[data-stage-theme="paper"] .stage-btn:hover { background: rgba(0,0,0,.08); }
+.stage[data-stage-theme="paper"] .stage-choices { border-top-color: rgba(0,0,0,.1); }
+.stage[data-stage-theme="paper"] .stage-choice.neutral { background: #d9d0bf; color: #1d1a16; }
+.stage[data-stage-theme="paper"] .stage-text mark { background: rgba(250, 204, 21, .6); }
+.stage[data-stage-theme="paper"] .stage-hint { color: #6a6258; }
+.stage-toggle { display: inline-flex; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; overflow: hidden; margin-right: 4px; }
+.stage[data-stage-theme="paper"] .stage-toggle { border-color: rgba(0,0,0,.14); }
+.stage-toggle button { border: none; background: transparent; color: inherit; padding: 6px 10px; font: 13px var(--font-ui); cursor: pointer; }
+.stage-toggle button.on { background: #f0b955; color: #1a1400; }
+.stage-p { position: relative; padding-left: 18px; margin-left: -18px; border-left: 4px solid transparent; border-radius: 4px; cursor: pointer; transition: opacity .15s, border-color .15s, background .15s; }
+.stage-p.active { border-left-color: #f0b955; background: rgba(240,185,85,.10); }
+.stage-p.passive { opacity: .55; }
+.stage-cue { transition: opacity .15s, transform .15s; }
+.stage-cue.active { transform: scale(1.03); box-shadow: 0 0 0 3px rgba(240,185,85,.55), 0 8px 24px rgba(0,0,0,.35); }
+.stage-cue.dim { opacity: .45; }
+.stage-hint { font: 12px var(--font-ui); color: #7d8696; margin-top: 2em; }
