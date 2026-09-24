@@ -23,7 +23,7 @@ const COLOR_OPTIONS = [
 
 const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height = DEFAULT_NODE_HEIGHT }) => {
   const { setNodes, getNodes, updateNodeInternals } = useReactFlow()
-  const { updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused, cardColor } = useContext(NodeEditorContext)
+  const { updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused, cardColor, commentCounts } = useContext(NodeEditorContext)
   const isActive = activeNodeId === id || selected
   const { zoom } = useViewport()
   const isOverview = zoom < OVERVIEW_ZOOM_THRESHOLD
@@ -182,6 +182,7 @@ const NodeCard = memo(({ id, data, selected, width = DEFAULT_NODE_WIDTH, height 
         <>
           <div className="node-header">
             <span className="node-id">#{id}</span>
+            {commentCounts?.[id] > 0 && <span className="node-comments" title={`${commentCounts[id]} kommentarer`}>💬 {commentCounts[id]}</span>}
             {selected ? (
               <input
                 ref={titleRef}

@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.27.0 — Kommentarer i arbetslänken — 2026-09-24
+
+### Added
+- **Kommentarer, som i en PDF.** I arbetslänken (`/las/<id>`, fliken Läs) finns
+  en kommentarspalt bredvid texten. Markera ett stycke text och skriv, så
+  fästs kommentaren vid just den passagen; skriv utan markering så gäller den
+  scenen. Namnet anges en gång och sparas i webbläsaren. Ingen inloggning.
+- **Hos dig** syns samma kommentarer i läsläget för det delade projektet, med
+  Klar och Ta bort. Klara kommentarer bleknar. Korten i grafen visar en
+  pratbubbla med antal öppna kommentarer, och kartan i arbetslänken visar
+  samma siffra.
+- Kommentarerna ligger vid den delade berättelsen i databasen och finns kvar
+  när du uppdaterar länken. Nya databasregler för detta är publicerade.
+
 ## v0.26.1 — Arbetslänkens karta visar pilarna — 2026-09-24
 
 ### Fixed

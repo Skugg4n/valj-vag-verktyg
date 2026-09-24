@@ -39,6 +39,7 @@ export default function GraphPane({
   focusTitleId,
   onTitleFocused,
   cardColor,
+  commentCounts,
 }) {
   const [search, setSearch] = useState('')
   // The document's find bar broadcasts its query so the graph dims the same way.
@@ -65,7 +66,7 @@ export default function GraphPane({
   return (
     <ReactFlowProvider>
     <div className="graph-pane" id="graph">
-      <NodeEditorContext.Provider value={{ updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused, cardColor }}>
+      <NodeEditorContext.Provider value={{ updateNodeText, beginEdit, resizingRef, selectNode, activeNodeId, matchSet, focusTitleId, onTitleFocused, cardColor, commentCounts }}>
         <ReactFlow
           style={{ width: '100%', height: '100%' }}
           nodes={nodes}

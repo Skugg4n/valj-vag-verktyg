@@ -21,6 +21,8 @@ import { makeShareId } from './utils/shareId.js'
 import { shareUrl, workUrl } from './routing.js'
 import { loadLS, saveLS } from './utils/persistence.js'
 import { stripCues } from './stageCues.js'
+import { useComments, addComment, setResolved, deleteComment, countBySceneId } from './comments.js'
+import CommentsPanel from './CommentsPanel.jsx'
 import AiSettingsModal from './AiSettingsModal.jsx'
 // import AiSuggestionsPanel from './AiSuggestionsPanel.jsx'
 // import { getSuggestions, proofreadText } from './useAi.js'
@@ -135,6 +137,9 @@ export default function App() {
   const [historyBusy, setHistoryBusy] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [shareInfo, setShareInfo] = useState(null)   // { id, url } for the current project
+  const comments = useComments(shareInfo?.id)
+  const commentCounts = useMemo(() => countBySceneId(comments), [comments])
+  const [readQuote, setReadQuote] = useState('')
   const [shareBusy, setShareBusy] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSavedAt, setLastSavedAt] = useState(null)
@@ -1393,6 +1398,7 @@ export default function App() {
             focusTitleId={focusTitleId}
             onTitleFocused={handleTitleFocused}
             cardColor={cardColor}
+            commentCounts={commentCounts}
           />
         )}
         renderSplit={({ ratio, setRatio }) => (
@@ -1424,6 +1430,8 @@ export default function App() {
                 focusTitleId={focusTitleId}
                 onTitleFocused={handleTitleFocused}
                 cardColor={cardColor}
+            commentCounts={commentCounts}
+                commentCounts={commentCounts}
               />
             </div>
             <div
@@ -1478,7 +1486,23 @@ export default function App() {
             onSelectNode={(id) => {
               const node = nodes.find(n => n.id === id)
               if (node) selectNode(id, node.data)
+              setReadQuote('')
             }}
+            onQuote={shareInfo ? setReadQuote : undefined}
+            sidePanel={shareInfo ? (
+              <CommentsPanel
+                sceneId={activeNodeId || currentId || nodes[0]?.id}
+                sceneTitle={nodes.find(n => n.id === (activeNodeId || currentId))?.data?.title}
+                comments={comments}
+                quoteDraft={readQuote}
+                onClearQuote={() => setReadQuote('')}
+                onAdd={c => addComment(shareInfo.id, c)}
+                onResolve={(id, v) => setResolved(shareInfo.id, id, v)}
+                onDelete={id => deleteComment(shareInfo.id, id)}
+                canModerate
+                showResolved
+              />
+            ) : null}
           />
         )}
         onShowInsights={() => setInsightsOpen(true)}

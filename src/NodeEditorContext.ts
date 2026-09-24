@@ -16,6 +16,8 @@ export interface NodeEditorContextType {
   onTitleFocused: () => void
   /** Theme colour for cards that use the default colour. */
   cardColor?: string
+  /** Unresolved comments per scene id (from the shared story). */
+  commentCounts?: Record<string, number>
 }
 
 const NodeEditorContext = createContext<NodeEditorContextType>({

@@ -10,6 +10,8 @@
 | Topbar | src/Topbar.jsx | Slim 44px bar: project menu slot, save pill, search, share, avatar | → AppShell, ProjectMenu, UserMenu |
 | GraphPane | src/GraphPane.jsx | Skiss/Split graph wrapper: ReactFlow, toolbar, zoom, minimap, scene search | → NodeCard |
 | DocPane | src/DocPane.jsx | Innehåll doc editor (TipTap) with outline, focus mode, status bar | → TipTap extensions |
+| comments | src/comments.js | useComments / addComment / setResolved / deleteComment / countBySceneId (published/{id}/comments) | → PublicRead, App |
+| CommentsPanel | src/CommentsPanel.jsx | PDF-style margin notes for one scene, with quote and moderation | → ReadPane sidePanel |
 | PublicRead | src/PublicRead.jsx | /las/:id working link: read view with marks and cues, stage mode, read-only scene map | → ReadPane, StagePane, useFirestoreSync |
 | StagePane | src/StagePane.jsx | Scenläge: fullscreen reader for reader + musician, {cues} as bubbles, green/red choices, keyboard | → ReadPane, stageCues |
 | ReadPane | src/ReadPane.jsx | Läsa mode: paper/dark, drop-cap, choices, breadcrumb | → App |
@@ -115,6 +117,7 @@
 | manuscriptImport.test | src/__tests__/manuscriptImport.test.ts | Manuscript parsing, refs, empty scenes, layout | → manuscriptImport |
 | SearchReplace.test | src/__tests__/SearchReplace.test.ts | Matching, cycling, replace | → SearchReplace |
 | plainForReader.test | src/__tests__/plainForReader.test.js | Published text is plain (no markdown markers) | → App |
+| comments.test | src/__tests__/comments.test.jsx | Panel listing, submit with quote/name, moderation | → CommentsPanel |
 | PublicRead.test | src/__tests__/PublicRead.test.jsx | Rich copy preferred, tabs, no share button | → PublicRead |
 | StagePane.test | src/__tests__/StagePane.test.jsx | Bubbles, markers, choice colours, keys | → StagePane |
 | stageCues.test | src/__tests__/stageCues.test.js | Cue extraction and stripping | → stageCues |

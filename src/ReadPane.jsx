@@ -51,7 +51,7 @@ export function splitChoices(text, nodeMap) {
   return { body, choices }
 }
 
-export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, onShare }) {
+export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, onShare, sidePanel = null, onQuote }) {
   const [theme, setTheme] = useState(() => loadLS('read-theme', 'paper'))
   const [editorMode, setEditorMode] = useState(false)
   const [stage, setStage] = useState(false)
@@ -178,8 +178,15 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
 
       {stage && <StagePane nodes={nodes} startId={currentId} onExit={() => setStage(false)} />}
 
-      <div className={`read-stage${editorMode ? ' editor-mode' : ''}`}>
-        <article className="read-page">
+      <div className={`read-stage${editorMode ? ' editor-mode' : ''}${sidePanel ? ' with-panel' : ''}`}>
+        <article
+          className="read-page"
+          onMouseUp={onQuote ? () => {
+            const sel = window.getSelection?.()
+            const t = sel ? String(sel).trim() : ''
+            if (t) onQuote(t)
+          } : undefined}
+        >
           {chapterLabel && <span className="chapter-num">{chapterLabel}</span>}
           {node.data.title && <h1>{node.data.title}</h1>}
           {paragraphs.map((p, i) => (
@@ -228,6 +235,7 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
           </nav>
           )}
         </article>
+        {sidePanel}
       </div>
     </div>
   )

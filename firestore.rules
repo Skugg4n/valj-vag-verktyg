@@ -30,6 +30,34 @@ service cloud.firestore {
                     );
       allow delete: if request.auth != null
                     && (resource.data.ownerUid == request.auth.uid || isAdmin());
+
+      // PDF-style comments on a shared story. Anyone with the link (signed in
+      // anonymously) can read and add; only the story owner may resolve or
+      // delete, and a commenter may edit their own text.
+      match /comments/{commentId} {
+        function storyOwner() {
+          return get(/databases/$(database)/documents/published/$(shareId)).data.ownerUid == request.auth.uid;
+        }
+        allow read: if true;
+        allow create: if request.auth != null
+                      && request.resource.data.authorUid == request.auth.uid
+                      && request.resource.data.text is string
+                      && request.resource.data.text.size() > 0
+                      && request.resource.data.text.size() <= 2000
+                      && request.resource.data.author is string
+                      && request.resource.data.author.size() <= 60
+                      && request.resource.data.sceneId is string
+                      && request.resource.data.quote is string
+                      && request.resource.data.quote.size() <= 300
+                      && request.resource.data.resolved == false;
+        allow update: if request.auth != null && (
+                        storyOwner()
+                        || (resource.data.authorUid == request.auth.uid
+                            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text']))
+                      );
+        allow delete: if request.auth != null
+                      && (storyOwner() || resource.data.authorUid == request.auth.uid || isAdmin());
+      }
     }
 
     // Pseudonymous analytics event log (append-only). Anyone signed in (incl.

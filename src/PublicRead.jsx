@@ -5,6 +5,8 @@ import { getPublished } from './useFirestoreSync.js'
 import ReadPane from './ReadPane.jsx'
 import StagePane from './StagePane.jsx'
 import { useTheme } from './theme.js'
+import { useComments, addComment, countBySceneId } from './comments.js'
+import CommentsPanel from './CommentsPanel.jsx'
 
 // Working link for collaborators (/las/:shareId): the Advanced read view with
 // highlights and {cue} chips, the stage mode, and a read-only map of the
@@ -44,7 +46,7 @@ function MapNode({ data }) {
   return (
     <div className="pr-node" style={{ background: data.color }}>
       <Handle type="target" position={Position.Left} isConnectable={false} />
-      <span className="pr-node-id">#{data.id}</span>
+      <span className="pr-node-id">#{data.id}{data.comments ? <span className="pr-node-badge" title={`${data.comments} kommentarer`}>{data.comments}</span> : null}</span>
       <span className="pr-node-title">{data.title || '(utan titel)'}</span>
       <Handle type="source" position={Position.Right} isConnectable={false} />
     </div>
@@ -57,6 +59,9 @@ export default function PublicRead({ shareId }) {
   const [tab, setTab] = useState('read')
   const [activeId, setActiveId] = useState(null)
   useTheme()   // follows the system light/dark like the editor does
+  const comments = useComments(shareId)
+  const counts = useMemo(() => countBySceneId(comments), [comments])
+  const [quote, setQuote] = useState('')
 
   useEffect(() => {
     let alive = true
@@ -71,10 +76,11 @@ export default function PublicRead({ shareId }) {
   }, [shareId])
 
   const nodes = useMemo(() => richToNodes(state.story), [state.story])
+  useEffect(() => { if (!activeId && nodes.length) setActiveId([...nodes].sort((a, b) => a.id.localeCompare(b.id))[0].id) }, [nodes, activeId])
   const edges = useMemo(() => edgesFrom(nodes), [nodes])
   const mapNodes = useMemo(() => nodes.map(n => ({
     ...n,
-    data: { ...n.data, id: n.id, color: n.data.color === '#1f2937' ? 'var(--card)' : n.data.color },
+    data: { ...n.data, id: n.id, comments: counts[n.id] || 0, color: n.data.color === '#1f2937' ? 'var(--card)' : n.data.color },
     style: { width: n.width, height: n.height },
   })), [nodes])
 
@@ -102,7 +108,23 @@ export default function PublicRead({ shareId }) {
 
       {tab === 'read' && (
         <div className="pr-body">
-          <ReadPane nodes={nodes} startId={activeId || undefined} activeNodeId={activeId} onSelectNode={setActiveId} />
+          <ReadPane
+            nodes={nodes}
+            startId={activeId || undefined}
+            activeNodeId={activeId}
+            onSelectNode={id => { setActiveId(id); setQuote('') }}
+            onQuote={setQuote}
+            sidePanel={
+              <CommentsPanel
+                sceneId={activeId || nodes[0]?.id}
+                sceneTitle={nodes.find(n => n.id === (activeId || nodes[0]?.id))?.data?.title}
+                comments={comments}
+                quoteDraft={quote}
+                onClearQuote={() => setQuote('')}
+                onAdd={c => addComment(shareId, c)}
+              />
+            }
+          />
         </div>
       )}
       {tab === 'stage' && (

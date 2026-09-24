@@ -12,6 +12,12 @@ jest.mock('../useFirestoreSync.js', () => ({
     ] },
   })),
 }))
+jest.mock('../comments.js', () => ({
+  useComments: () => [{ id: 'k1', sceneId: '001', text: 'Trumma här?', author: 'Cecilia', quote: '', resolved: false }],
+  addComment: jest.fn(async () => {}),
+  countBySceneId: (cs) => { const o = {}; for (const c of cs) { if (!c.resolved) o[c.sceneId] = (o[c.sceneId] || 0) + 1 } return o },
+}))
+jest.mock('../CommentsPanel.jsx', () => ({ __esModule: true, default: ({ comments, sceneId }) => <aside className="cmt-panel">{comments.filter(c => c.sceneId === sceneId).length} kommentarer</aside> }))
 global.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} }
 global.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} }
 
@@ -31,9 +37,11 @@ describe('PublicRead (/las/:id)', () => {
     expect(container.querySelector('.read-page mark').textContent).toBe('Matteläraren')
     expect(container.querySelector('.read-cue').textContent).toBe('Ljudeffekt')
     expect(screen.queryByTitle('Dela')).toBeNull()
+    expect(container.querySelector('.cmt-panel').textContent).toBe('1 kommentarer')
     fireEvent.click(screen.getByRole('tab', { name: 'Karta' }))
     await waitFor(() => expect(container.querySelectorAll('.react-flow__node')).toHaveLength(2))
     expect(container.querySelectorAll('.pr-node .react-flow__handle')).toHaveLength(4)
+    expect(container.querySelector('.pr-node-badge').textContent).toBe('1')
     fireEvent.click(screen.getByRole('tab', { name: 'Scen' }))
     expect(container.querySelector('.stage')).toBeTruthy()
     expect(container.querySelector('.stage-cue').textContent).toBe('1Ljudeffekt')
