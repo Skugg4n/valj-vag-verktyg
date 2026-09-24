@@ -49,11 +49,25 @@ export default function ExportModal({
             </span>
           </button>
           {shareInfo && (
-            <div className="share-box">
-              <input className="share-url" readOnly value={shareInfo.url} onFocus={e => e.target.select()} aria-label="Delningslänk" />
-              <button className="btn ghost sm" onClick={() => navigator.clipboard?.writeText(shareInfo.url)} title="Kopiera länken"><Copy size={14} /> Kopiera</button>
-              <a className="btn ghost sm" href={shareInfo.url} target="_blank" rel="noopener">Öppna</a>
-              <button className="btn ghost sm" onClick={() => onUnshare?.()} disabled={shareBusy} title="Länken slutar fungera"><Ban size={14} /> Sluta dela</button>
+            <div className="share-links">
+              <div className="share-row">
+                <span className="share-label">Publik</span>
+                <input className="share-url" readOnly value={shareInfo.url} onFocus={e => e.target.select()} aria-label="Publik länk" />
+                <button className="btn ghost sm" onClick={() => navigator.clipboard?.writeText(shareInfo.url)} title="Kopiera"><Copy size={14} /></button>
+                <a className="btn ghost sm" href={shareInfo.url} target="_blank" rel="noopener">Öppna</a>
+              </div>
+              {shareInfo.workUrl && (
+                <div className="share-row">
+                  <span className="share-label">Arbete</span>
+                  <input className="share-url" readOnly value={shareInfo.workUrl} onFocus={e => e.target.select()} aria-label="Arbetslänk" />
+                  <button className="btn ghost sm" onClick={() => navigator.clipboard?.writeText(shareInfo.workUrl)} title="Kopiera"><Copy size={14} /></button>
+                  <a className="btn ghost sm" href={shareInfo.workUrl} target="_blank" rel="noopener">Öppna</a>
+                </div>
+              )}
+              <div className="share-row">
+                <span className="export-desc">Publik: bokläsaren utan regi. Arbete: läsvy med markeringar och ljudbubblor, scenläge och karta, för den du jobbar med.</span>
+                <button className="btn ghost sm" onClick={() => onUnshare?.()} disabled={shareBusy} title="Båda länkarna slutar fungera"><Ban size={14} /> Sluta dela</button>
+              </div>
             </div>
           )}
           <button className="export-opt" onClick={run(onExportJSON)}>

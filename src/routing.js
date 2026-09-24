@@ -3,6 +3,8 @@
 export function parseRoute(pathname, hostname = '') {
   const play = pathname.match(/^\/spela\/([^/]+)\/?$/)
   if (play) return { name: 'play', shareId: play[1] }
+  const read = pathname.match(/^\/las\/([^/]+)\/?$/)
+  if (read) return { name: 'read', shareId: read[1] }
   // Admin dashboard — reachable on any host; gated client-side to the admin uid.
   if (/^\/admin(\/|$)/.test(pathname)) return { name: 'admin' }
   // Dedicated workshop subdomain (verkstad. or verkstaden.): everything that
@@ -14,4 +16,9 @@ export function parseRoute(pathname, hostname = '') {
 
 export function shareUrl(shareId, origin = window.location.origin) {
   return `${origin}/spela/${shareId}`
+}
+
+/** Working link: read view with highlights and cues, stage mode and scene map. */
+export function workUrl(shareId, origin = window.location.origin) {
+  return `${origin}/las/${shareId}`
 }

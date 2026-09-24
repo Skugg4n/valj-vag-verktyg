@@ -168,10 +168,12 @@ export default function ReadPane({ nodes, startId, activeNodeId, onSelectNode, o
           <Presentation />
           Scen
         </button>
-        <button className="btn ghost sm" title="Dela" onClick={onShare}>
-          <Share2 />
-          Dela
-        </button>
+        {onShare && (
+          <button className="btn ghost sm" title="Dela" onClick={onShare}>
+            <Share2 />
+            Dela
+          </button>
+        )}
       </div>
 
       {stage && <StagePane nodes={nodes} startId={currentId} onExit={() => setStage(false)} />}

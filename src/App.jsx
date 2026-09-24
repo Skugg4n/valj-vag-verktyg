@@ -18,7 +18,7 @@ import { parseManuscript, projectNameFromFile } from './utils/manuscriptImport.t
 import { useTheme } from './theme.js'
 import { toPublishedNodes } from './storyExport.js'
 import { makeShareId } from './utils/shareId.js'
-import { shareUrl } from './routing.js'
+import { shareUrl, workUrl } from './routing.js'
 import { loadLS, saveLS } from './utils/persistence.js'
 import { stripCues } from './stageCues.js'
 import AiSettingsModal from './AiSettingsModal.jsx'
@@ -974,7 +974,7 @@ export default function App() {
   useEffect(() => {
     if (!projectId) { setShareInfo(null); return }
     const sid = loadLS('share-ids', {})[projectId]
-    setShareInfo(sid ? { id: sid, url: shareUrl(sid) } : null)
+    setShareInfo(sid ? { id: sid, url: shareUrl(sid), workUrl: workUrl(sid) } : null)
   }, [projectId])
 
   const publishedNodes = () =>
@@ -992,10 +992,20 @@ export default function App() {
         title: projectName.trim() || 'Berättelse',
         nodes: publishedNodes(),
         sourceProjectId: projectId,
+        // Working copy for collaborators (/las/:id): text as written, with
+        // <mark> highlights and {cues}, plus the map layout.
+        rich: {
+          nodes: nodes
+            .filter(n => n.type !== 'group' && !n.data?.isIdea && !String(n.id).startsWith('idea-'))
+            .map(n => ({
+              id: n.id, title: n.data?.title || '', text: cleanStoredText(n.data?.text || ''),
+              color: n.data?.color || '#1f2937', position: n.position, width: n.width || 220, height: n.height || 100,
+            })),
+        },
       })
       if (ok) {
         const url = shareUrl(sid)
-        setShareInfo({ id: sid, url })
+        setShareInfo({ id: sid, url, workUrl: workUrl(sid) })
         try { await navigator.clipboard?.writeText(url) } catch { /* clipboard may be blocked */ }
       } else {
         alert('Kunde inte publicera just nu. Försök igen.')

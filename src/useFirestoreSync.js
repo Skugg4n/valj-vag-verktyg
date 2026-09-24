@@ -240,6 +240,7 @@ export default function useFirestoreSync({ user, setProjects, projectId }) {
             nodes: story.nodes || [],
             ownerUid: u.uid,
             sourceProjectId: story.sourceProjectId || '',
+            ...(story.rich ? { rich: story.rich } : {}),
             updatedAt: serverTimestamp(),
             createdAt: serverTimestamp(),
           },

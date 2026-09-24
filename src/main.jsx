@@ -8,6 +8,7 @@ import { parseRoute } from './routing.js'
 const App = lazy(() => import('./App.jsx'))
 const WorkshopApp = lazy(() => import('./WorkshopApp.jsx'))
 const PublicReader = lazy(() => import('./PublicReader.jsx'))
+const PublicRead = lazy(() => import('./PublicRead.jsx'))
 const AdminApp = lazy(() => import('./AdminApp.jsx'))
 
 class ErrorBoundary extends Component {
@@ -46,6 +47,13 @@ const fallback = <div style={{ padding: 24, fontFamily: 'sans-serif' }}>Laddarâ€
 
 function Root() {
   // Public reader â€” no auth required.
+  if (route.name === 'read') {
+    return (
+      <Suspense fallback={fallback}>
+        <PublicRead shareId={route.shareId} />
+      </Suspense>
+    )
+  }
   if (route.name === 'play') {
     return (
       <Suspense fallback={fallback}>

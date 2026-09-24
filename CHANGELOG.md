@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.26.0 — Arbetslänk: dela läsvyn med markeringar, scenläge och karta — 2026-09-24
+
+### Added
+- **Två länkar från "Dela via länk".** Publik (`/spela/<id>`): bokläsaren utan
+  regi, som förut. **Arbete** (`/las/<id>`): en sida utan inloggning för den
+  du jobbar med, med tre flikar: Läs (läsvyn med gulmarkeringar och
+  ljud-chips), Scen (scenläget med bubblor) och Karta (scenerna som noder med
+  kopplingar, klicka på en scen för att läsa den). Uppdateras med "Uppdatera
+  delad länk", tas bort med "Sluta dela".
+- Publiceringen sparar en arbetskopia av texten som den är skriven, bredvid
+  den rensade publika kopian. Verkstaden påverkas inte.
+
 ## v0.25.2 — Scenläge: lugnare, en spalt, bubblor under stycket — 2026-09-24
 
 ### Changed
