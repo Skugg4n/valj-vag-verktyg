@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.29.1 — Scennummer och hopplista i enkla läsversionen — 2026-09-30
+
+### Changed
+- Stort scennummer uppe till höger, så två läsare kan stämma av med en blick.
+  Tryck på numret för en lista över alla scener och hoppa dit direkt.
+- Raden om enkel version och sparad kopia ligger nu längst ner, under texten.
+
 ## v0.29.0 — Enkla läsversionen fungerar utan nät — 2026-09-30
 
 ### Added

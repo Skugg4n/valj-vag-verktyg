@@ -99,9 +99,15 @@
     '#vl-bar{padding:10px 0;border-bottom:1px solid #d8cfbd;margin-bottom:8px;font-family:Helvetica,Arial,sans-serif;font-size:15px;}' +
     '#vl-bar:after{content:"";display:table;clear:both;}' +
     '#vl-bar a,#vl-bar button{display:inline-block;margin:3px 6px 3px 0;padding:8px 12px;border:1px solid #b9ae98;border-radius:6px;background:#fffaf0;color:#1c1a17;text-decoration:none;font:inherit;-webkit-appearance:none;}' +
-    '#vl-right{float:right;}' +
-    '#vl-off{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#2f7d46;margin:2px 0 0;}' +
-    '#vl-name{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#7a705f;margin:8px 0 0;}' +
+    '#vl-num{float:right;margin:0 0 0 8px !important;padding:4px 12px !important;font-size:30px !important;font-weight:bold;letter-spacing:.04em;font-family:Helvetica,Arial,sans-serif;}' +
+    '#vl-jump{display:none;padding:8px 0 4px;border-bottom:1px solid #d8cfbd;margin-bottom:8px;font-family:Helvetica,Arial,sans-serif;}' +
+    '#vl-jump.open{display:block;}' +
+    '#vl-jump a{display:inline-block;-webkit-box-sizing:border-box;box-sizing:border-box;width:48%;margin:0 2% 8px 0;padding:8px 10px;border:1px solid #d8cfbd;border-radius:6px;background:#fffaf0;color:#1c1a17;text-decoration:none;font-size:14px;line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;vertical-align:top;}' +
+    '#vl-jump a.now{border-color:#1c1a17;font-weight:bold;}' +
+    '#vl-jump a b{display:inline-block;min-width:34px;color:#7a705f;font-weight:normal;}' +
+    '#vl-foot{margin-top:40px;padding-top:10px;border-top:1px solid #d8cfbd;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#7a705f;}' +
+    '#vl-foot p{margin:4px 0;}' +
+    '#vl-off{color:#2f7d46;}' +
     '#vl-scene h1{font-size:1.5em;margin:0.6em 0 0.5em;line-height:1.2;}' +
     '#vl-scene p{line-height:1.55;margin:0 0 1em;}' +
     '#vl-scene mark{background:#ffe680;color:inherit;padding:0 2px;}' +
@@ -129,17 +135,19 @@
     root.id = 'vl'
     root.innerHTML =
       '<div id="vl-bar">' +
+        '<button type="button" id="vl-num" title="Visa alla scener">···</button>' +
         '<a href="#" id="vl-back">‹ Tillbaka</a>' +
         '<a href="#start">Börja om</a>' +
-        '<span id="vl-right">' +
-          '<button type="button" id="vl-minus">A−</button>' +
-          '<button type="button" id="vl-plus">A+</button>' +
-          (canRunFull ? '<a href="/' + kind + '/' + encodeURIComponent(shareId) + '" id="vl-full">Full version</a>' : '') +
-        '</span>' +
+        '<button type="button" id="vl-minus">A−</button>' +
+        '<button type="button" id="vl-plus">A+</button>' +
       '</div>' +
-      '<p id="vl-name"></p>' +
-      '<p id="vl-off"></p>' +
-      '<div id="vl-scene"><p class="vl-msg">Laddar berättelsen…</p></div>'
+      '<div id="vl-jump"></div>' +
+      '<div id="vl-scene"><p class="vl-msg">Laddar berättelsen…</p></div>' +
+      '<div id="vl-foot">' +
+        '<p id="vl-name"></p>' +
+        '<p id="vl-off"></p>' +
+        (canRunFull ? '<p><a href="/' + kind + '/' + encodeURIComponent(shareId) + '" id="vl-full">Full version</a></p>' : '') +
+      '</div>'
     document.body.appendChild(root)
 
     var scene = document.getElementById('vl-scene')
@@ -171,11 +179,28 @@
 
     var byId = {}
     var firstId = null
+    var allIds = []
+    // Big scene number top right; tap it for a list of every scene to jump to.
+    var numEl = document.getElementById('vl-num')
+    var jumpEl = document.getElementById('vl-jump')
+    numEl.onclick = function () {
+      if (jumpEl.className === 'open') { jumpEl.className = ''; return }
+      var html = ''
+      var now = (window.location.hash || '').replace(/^#/, '')
+      for (var i = 0; i < allIds.length; i++) {
+        var n = byId[allIds[i]]
+        html += '<a href="#' + n.id + '"' + (n.id === now ? ' class="now"' : '') + '><b>' + esc(n.id) + '</b> ' + esc(n.title || '') + '</a>'
+      }
+      jumpEl.innerHTML = html
+      jumpEl.className = 'open'
+    }
     function show() {
       var id = (window.location.hash || '').replace(/^#/, '')
       if (!byId[id]) id = firstId
       if (!id) return fail('Berättelsen är tom.')
       scene.innerHTML = sceneHtml(byId[id], byId)
+      numEl.innerHTML = esc(id)
+      jumpEl.className = ''
       window.scrollTo(0, 0)
     }
 
@@ -186,6 +211,7 @@
       byId = {}
       for (var i = 0; i < nodes.length; i++) { byId[nodes[i].id] = nodes[i]; ids.push(nodes[i].id) }
       ids.sort()
+      allIds = ids
       firstId = ids[0] || null
       if (story.title) document.title = story.title
       nameEl.innerHTML = ''
