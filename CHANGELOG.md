@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.29.0 — Enkla läsversionen fungerar utan nät — 2026-09-30
+
+### Added
+- **Läsning utan nät i gamla webbläsare.** Delade länkar leder i gamla
+  webbläsare till en egen sida (`/enkel.html?las=<id>`) som sparas på enheten
+  tillsammans med senast hämtade berättelse. Sidan visar "Sidan är sparad på
+  enheten" när den är klar, och "utan nät, sparad kopia från ..." när den
+  läser från kopian.
+
 ## v0.28.0 — Enkel läsversion för gamla webbläsare — 2026-09-30
 
 ### Added

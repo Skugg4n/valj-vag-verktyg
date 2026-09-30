@@ -100,6 +100,7 @@
     '#vl-bar:after{content:"";display:table;clear:both;}' +
     '#vl-bar a,#vl-bar button{display:inline-block;margin:3px 6px 3px 0;padding:8px 12px;border:1px solid #b9ae98;border-radius:6px;background:#fffaf0;color:#1c1a17;text-decoration:none;font:inherit;-webkit-appearance:none;}' +
     '#vl-right{float:right;}' +
+    '#vl-off{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#2f7d46;margin:2px 0 0;}' +
     '#vl-name{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#7a705f;margin:8px 0 0;}' +
     '#vl-scene h1{font-size:1.5em;margin:0.6em 0 0.5em;line-height:1.2;}' +
     '#vl-scene p{line-height:1.55;margin:0 0 1em;}' +
@@ -133,14 +134,16 @@
         '<span id="vl-right">' +
           '<button type="button" id="vl-minus">A−</button>' +
           '<button type="button" id="vl-plus">A+</button>' +
-          (canRunFull ? '<a href="' + window.location.pathname + '" id="vl-full">Full version</a>' : '') +
+          (canRunFull ? '<a href="/' + kind + '/' + encodeURIComponent(shareId) + '" id="vl-full">Full version</a>' : '') +
         '</span>' +
       '</div>' +
       '<p id="vl-name"></p>' +
+      '<p id="vl-off"></p>' +
       '<div id="vl-scene"><p class="vl-msg">Laddar berättelsen…</p></div>'
     document.body.appendChild(root)
 
     var scene = document.getElementById('vl-scene')
+    var nameEl = document.getElementById('vl-name')
     var size = Number(store('vv-lite-size')) || 20
     function applySize() { scene.style.fontSize = size + 'px' }
     applySize()
@@ -150,6 +153,18 @@
       if (e && e.preventDefault) e.preventDefault()
       window.history.back()
       return false
+    }
+
+    // Tells the reader when the page itself is stored on the device (old
+    // browsers with an application cache), so it can be checked before leaving.
+    var ac = window.applicationCache
+    if (ac && ac.addEventListener) {
+      var offEl = document.getElementById('vl-off')
+      var ready = function () { offEl.innerHTML = 'Sidan är sparad på enheten. Fungerar utan nät.' }
+      ac.addEventListener('cached', ready, false)
+      ac.addEventListener('noupdate', ready, false)
+      ac.addEventListener('updateready', function () { try { ac.swapCache() } catch (e) { /* ignore */ } ready() }, false)
+      if (ac.status === 1 || ac.status === 4) ready()
     }
 
     function fail(text) { scene.innerHTML = '<p class="vl-msg">' + text + '</p>' }
@@ -164,27 +179,53 @@
       window.scrollTo(0, 0)
     }
 
+    function use(story, note) {
+      // The working link shows highlights and cues (rich copy); the public link the plain copy.
+      var nodes = (kind === 'las' && story.rich && story.rich.nodes && story.rich.nodes.length) ? story.rich.nodes : (story.nodes || [])
+      var ids = []
+      byId = {}
+      for (var i = 0; i < nodes.length; i++) { byId[nodes[i].id] = nodes[i]; ids.push(nodes[i].id) }
+      ids.sort()
+      firstId = ids[0] || null
+      if (story.title) document.title = story.title
+      nameEl.innerHTML = ''
+      nameEl.appendChild(document.createTextNode((story.title || 'Berättelse') + ' · enkel version' + (note ? ' · ' + note : '')))
+      window.onhashchange = show
+      show()
+    }
+
+    // Offline: the last fetched copy is kept on the device and used when the
+    // network is gone (the page itself is kept by the app cache, see enkel.html).
+    var saveKey = 'vv-lite-story-' + kind + '-' + shareId
+    function saved() {
+      try { var o = JSON.parse(store(saveKey) || 'null'); return o && o.story ? o : null } catch (e) { return null }
+    }
+    function useSaved(fallbackText) {
+      var o = saved()
+      if (!o) return fail(fallbackText)
+      use(o.story, 'utan nät, sparad kopia från ' + o.at)
+    }
+    function stamp() {
+      var d = new Date()
+      function two(n) { return (n < 10 ? '0' : '') + n }
+      return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()) + ' ' + two(d.getHours()) + ':' + two(d.getMinutes())
+    }
+
     var xhr = new XMLHttpRequest()
     xhr.open('GET', 'https://firestore.googleapis.com/v1/projects/' + PROJECT +
       '/databases/(default)/documents/published/' + encodeURIComponent(shareId) + '?key=' + KEY, true)
     xhr.onreadystatechange = function () {
       if (xhr.readyState !== 4) return
       if (xhr.status === 404) return fail('Berättelsen hittades inte. Be den som gjorde berättelsen om en ny länk.')
-      if (xhr.status !== 200) return fail('Kunde inte hämta berättelsen (fel ' + xhr.status + '). Kontrollera nätet och ladda om sidan.')
+      if (xhr.status !== 200) return useSaved('Kunde inte hämta berättelsen (fel ' + xhr.status + '). Kontrollera nätet och ladda om sidan.')
       var story
-      try { story = decodeFields(JSON.parse(xhr.responseText).fields) } catch (e) { return fail('Kunde inte läsa berättelsen.') }
-      // The working link shows highlights and cues (rich copy); the public link the plain copy.
-      var nodes = (kind === 'las' && story.rich && story.rich.nodes && story.rich.nodes.length) ? story.rich.nodes : (story.nodes || [])
-      var ids = []
-      for (var i = 0; i < nodes.length; i++) { byId[nodes[i].id] = nodes[i]; ids.push(nodes[i].id) }
-      ids.sort()
-      firstId = ids[0] || null
-      if (story.title) {
-        document.title = story.title
-        document.getElementById('vl-name').appendChild(document.createTextNode(story.title + ' · enkel version'))
-      }
-      window.onhashchange = show
-      show()
+      try { story = decodeFields(JSON.parse(xhr.responseText).fields) } catch (e) { return useSaved('Kunde inte läsa berättelsen.') }
+      var kept = false
+      try {
+        window.localStorage.setItem(saveKey, JSON.stringify({ at: stamp(), story: { title: story.title, nodes: story.nodes, rich: story.rich } }))
+        kept = !!saved()
+      } catch (e) { kept = false }
+      use(story, kept ? 'sparad för läsning utan nät' : '')
     }
     xhr.send(null)
   }

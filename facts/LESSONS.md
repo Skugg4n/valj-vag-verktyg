@@ -74,3 +74,8 @@ tell a user their work is "saved" without being precise about WHERE (this device
 vs the cloud account), never use plain sign-in to "upgrade" an anonymous user
 (link the credential so data carries over), and reassure only after a confirmed
 save, not optimistically.
+
+## 2026-09-30 — Offline för gamla webbläsare ligger på en egen sida
+- Application cache sätts med `manifest` på `<html>` och gäller då hela sidan. Lägg den aldrig på `index.html`: Safari 10 till 14 kör appen och stöder samtidigt app-cache, och skulle få en fastfrusen index som pekar på gamla filnamn efter nästa deploy.
+- Därför: `public/enkel.html` har manifestet, och `index.html` skickar bara dit webbläsare utan modulstöd.
+- Ändras `public/lite.js` eller `public/enkel.html` måste kontrollsumman i `public/enkel.appcache` uppdateras (testet i `lite.test.js` säger till).

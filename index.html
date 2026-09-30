@@ -18,6 +18,8 @@
         var canRunFull = 'noModule' in document.createElement('script');
         var asked = /[?&]enkel\b/.test(window.location.search);
         if (!m || (canRunFull && !asked)) return;
+        // Old browsers go to the stand-alone page, which also works offline.
+        if (!canRunFull) { window.location.replace('/enkel.html?' + m[1] + '=' + m[2]); return; }
         window.__VV_LITE__ = { kind: m[1], shareId: m[2], canRunFull: canRunFull };
         var s = document.createElement('script');
         s.src = '/lite.js';

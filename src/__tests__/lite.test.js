@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { createHash } from 'crypto'
 
 // public/lite.js is a plain ES5 script for old browsers; load it as one.
 const src = readFileSync(join(process.cwd(), 'public/lite.js'), 'utf-8')
@@ -37,5 +38,14 @@ describe('lite reader', () => {
 
   it('offers a restart when a scene has no choices', () => {
     expect(L.sceneHtml({ id: '009', title: 'Slut', text: 'Klart.' }, {})).toContain('href="#start"')
+  })
+})
+
+describe('offline manifest', () => {
+  it('carries the checksum of the cached files, so old browsers refetch them after a change', () => {
+    // If this fails: lite.js or enkel.html changed. Put the new checksum in public/enkel.appcache.
+    const read = f => readFileSync(join(process.cwd(), 'public', f))
+    const sum = createHash('md5').update(Buffer.concat([read('lite.js'), read('enkel.html')])).digest('hex')
+    expect(read('enkel.appcache').toString()).toContain(`# files: ${sum}`)
   })
 })

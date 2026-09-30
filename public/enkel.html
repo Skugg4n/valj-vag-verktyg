@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="sv" manifest="/enkel.appcache">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Berättelse</title>
+  </head>
+  <body>
+    <!-- Simple reader as its own page, so old browsers can keep it for
+         reading without network (application cache). Reached from
+         /las/<id> and /spela/<id> in browsers that cannot run the app. -->
+    <script>
+      (function () {
+        var m = window.location.search.match(/[?&](las|spela)=([^&#]+)/);
+        if (!m) { document.body.appendChild(document.createTextNode('Ingen berättelse vald.')); return; }
+        window.__VV_LITE__ = { kind: m[1], shareId: decodeURIComponent(m[2]), canRunFull: 'noModule' in document.createElement('script') };
+      })();
+    </script>
+    <script src="/lite.js"></script>
+  </body>
+</html>
