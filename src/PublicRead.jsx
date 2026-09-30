@@ -104,6 +104,7 @@ export default function PublicRead({ shareId }) {
           <button role="tab" aria-selected={tab === 'stage'} className={tab === 'stage' ? 'on' : ''} onClick={() => setTab('stage')}>Scen</button>
           <button role="tab" aria-selected={tab === 'map'} className={tab === 'map' ? 'on' : ''} onClick={() => setTab('map')}>Karta</button>
         </nav>
+        <a className="pr-lite" href="?enkel" title="Enkel läsversion utan karta, scenläge och kommentarer. Fungerar även i gamla webbläsare.">Enkel</a>
       </header>
 
       {tab === 'read' && (

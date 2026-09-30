@@ -12,6 +12,7 @@
 | DocPane | src/DocPane.jsx | Innehåll doc editor (TipTap) with outline, focus mode, status bar | → TipTap extensions |
 | comments | src/comments.js | useComments / addComment / setResolved / deleteComment / countBySceneId (published/{id}/comments) | → PublicRead, App |
 | CommentsPanel | src/CommentsPanel.jsx | PDF-style margin notes for one scene, with quote and moderation | → ReadPane sidePanel |
+| lite reader | public/lite.js | ES5 simple reader for old browsers on /las/:id and /spela/:id (or ?enkel); booted by inline script in index.html, reads Firestore REST | → index.html, main.jsx |
 | PublicRead | src/PublicRead.jsx | /las/:id working link: read view with marks and cues, stage mode, read-only scene map | → ReadPane, StagePane, useFirestoreSync |
 | StagePane | src/StagePane.jsx | Scenläge: fullscreen reader for reader + musician, {cues} as bubbles, green/red choices, keyboard | → ReadPane, stageCues |
 | ReadPane | src/ReadPane.jsx | Läsa mode: paper/dark, drop-cap, choices, breadcrumb | → App |

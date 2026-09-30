@@ -1,0 +1,194 @@
+/* Simple reader for old browsers (written in ES5 on purpose: no let/const,
+   arrow functions, template strings, fetch or modules). Runs on the same
+   /las/:id and /spela/:id addresses as the full app, when the browser cannot
+   run the app or when the address has ?enkel. Reads the shared story straight
+   from the Firestore REST API. Scene is kept in the #hash so the browser's
+   back button works. */
+(function () {
+  'use strict'
+
+  var PROJECT = 'valj-vag-verktyg'
+  var KEY = 'AIzaSyChwl6YmRGzaaWYqUPJ9WxG0U-9Em4EzMM'
+  var REF_G = /\[#(\d{3})\]|#(\d{3})/g
+
+  // ── Firestore REST value -> plain JS ─────────────────────────────────────
+  function decode(v) {
+    if (!v) return null
+    if (v.stringValue !== undefined) return v.stringValue
+    if (v.integerValue !== undefined) return Number(v.integerValue)
+    if (v.doubleValue !== undefined) return v.doubleValue
+    if (v.booleanValue !== undefined) return v.booleanValue
+    if (v.arrayValue) {
+      var arr = v.arrayValue.values || []
+      var out = []
+      for (var i = 0; i < arr.length; i++) out.push(decode(arr[i]))
+      return out
+    }
+    if (v.mapValue) return decodeFields(v.mapValue.fields)
+    return null
+  }
+  function decodeFields(fields) {
+    var o = {}
+    for (var k in fields || {}) {
+      if (Object.prototype.hasOwnProperty.call(fields, k)) o[k] = decode(fields[k])
+    }
+    return o
+  }
+
+  // ── Text -> HTML ─────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+  function inline(s) {
+    return esc(s)
+      .replace(/&lt;mark&gt;/g, '<mark>').replace(/&lt;\/mark&gt;/g, '</mark>')
+      .replace(/\{([^{}]*)\}/g, function (_m, t) { t = t.replace(/^\s+|\s+$/g, ''); return t ? '<span class="vl-cue">' + t + '</span>' : '' })
+      .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>')
+  }
+  function bodyOf(text) {
+    return String(text || '')
+      .replace(/\\\n/g, '\n')
+      .replace(/\\([\[\]])/g, '$1')
+      .replace(REF_G, '')
+      .replace(/[ \t]+([.,!?;:…»)\]])/g, '$1')
+      .replace(/ {2,}/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/^\s+|\s+$/g, '')
+  }
+  function choicesOf(text, byId) {
+    var out = []
+    var seen = {}
+    var m
+    REF_G.lastIndex = 0
+    while ((m = REF_G.exec(String(text || '')))) {
+      var id = m[1] || m[2]
+      if (seen[id]) continue
+      seen[id] = true
+      out.push({ id: id, label: (byId[id] && byId[id].title) || ('Gå till #' + id), exists: !!byId[id] })
+    }
+    return out
+  }
+  function sceneHtml(node, byId) {
+    var html = ''
+    if (node.title) html += '<h1>' + esc(node.title) + '</h1>'
+    var paras = bodyOf(node.text).split(/\n{2,}/)
+    for (var i = 0; i < paras.length; i++) {
+      if (paras[i].replace(/\s/g, '')) html += '<p>' + inline(paras[i]) + '</p>'
+    }
+    var ch = choicesOf(node.text, byId)
+    html += '<div class="vl-choices">'
+    if (!ch.length) html += '<a class="vl-choice" href="#start">Slut · Börja om</a>'
+    for (var j = 0; j < ch.length; j++) {
+      if (ch[j].exists) html += '<a class="vl-choice vl-c' + (j < 2 ? j : 2) + '" href="#' + ch[j].id + '">' + esc(ch[j].label) + '</a>'
+    }
+    html += '</div>'
+    return html
+  }
+
+  var api = { decode: decode, decodeFields: decodeFields, inline: inline, bodyOf: bodyOf, choicesOf: choicesOf, sceneHtml: sceneHtml }
+  window.VVLite = api
+
+  // ── Page ─────────────────────────────────────────────────────────────────
+  var CSS =
+    'html,body{margin:0;padding:0;background:#f6f1e7 !important;color:#1c1a17 !important;}' +
+    'body{font-family:Georgia,"Times New Roman",serif;-webkit-text-size-adjust:100%;}' +
+    '#root{display:none !important;}' +
+    '#vl{max-width:720px;margin:0 auto;padding:0 18px 60px;}' +
+    '#vl-bar{padding:10px 0;border-bottom:1px solid #d8cfbd;margin-bottom:8px;font-family:Helvetica,Arial,sans-serif;font-size:15px;}' +
+    '#vl-bar:after{content:"";display:table;clear:both;}' +
+    '#vl-bar a,#vl-bar button{display:inline-block;margin:3px 6px 3px 0;padding:8px 12px;border:1px solid #b9ae98;border-radius:6px;background:#fffaf0;color:#1c1a17;text-decoration:none;font:inherit;-webkit-appearance:none;}' +
+    '#vl-right{float:right;}' +
+    '#vl-name{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#7a705f;margin:8px 0 0;}' +
+    '#vl-scene h1{font-size:1.5em;margin:0.6em 0 0.5em;line-height:1.2;}' +
+    '#vl-scene p{line-height:1.55;margin:0 0 1em;}' +
+    '#vl-scene mark{background:#ffe680;color:inherit;padding:0 2px;}' +
+    '.vl-cue{display:inline-block;background:#e8dcc2;border:1px solid #cdbd98;border-radius:10px;padding:0 8px;font-family:Helvetica,Arial,sans-serif;font-size:0.8em;line-height:1.5;}' +
+    '.vl-choices{margin-top:1.4em;}' +
+    '.vl-choice{display:block;margin:0 0 12px;padding:14px 16px;border:2px solid #b9ae98;border-radius:8px;background:#fffaf0;color:#1c1a17;text-decoration:none;font-family:Helvetica,Arial,sans-serif;font-weight:bold;}' +
+    '.vl-c0{border-color:#3d9a57;background:#e9f6ec;}' +
+    '.vl-c1{border-color:#c4483e;background:#fbebe9;}' +
+    '.vl-msg{font-family:Helvetica,Arial,sans-serif;padding:30px 0;}'
+
+  function store(key, val) {
+    try {
+      if (val === undefined) return window.localStorage.getItem(key)
+      window.localStorage.setItem(key, val)
+    } catch (e) { /* private mode */ }
+    return null
+  }
+
+  function start(kind, shareId, canRunFull) {
+    var style = document.createElement('style')
+    style.appendChild(document.createTextNode(CSS))
+    document.getElementsByTagName('head')[0].appendChild(style)
+
+    var root = document.createElement('div')
+    root.id = 'vl'
+    root.innerHTML =
+      '<div id="vl-bar">' +
+        '<a href="#" id="vl-back">‹ Tillbaka</a>' +
+        '<a href="#start">Börja om</a>' +
+        '<span id="vl-right">' +
+          '<button type="button" id="vl-minus">A−</button>' +
+          '<button type="button" id="vl-plus">A+</button>' +
+          (canRunFull ? '<a href="' + window.location.pathname + '" id="vl-full">Full version</a>' : '') +
+        '</span>' +
+      '</div>' +
+      '<p id="vl-name"></p>' +
+      '<div id="vl-scene"><p class="vl-msg">Laddar berättelsen…</p></div>'
+    document.body.appendChild(root)
+
+    var scene = document.getElementById('vl-scene')
+    var size = Number(store('vv-lite-size')) || 20
+    function applySize() { scene.style.fontSize = size + 'px' }
+    applySize()
+    document.getElementById('vl-minus').onclick = function () { size = Math.max(14, size - 2); store('vv-lite-size', String(size)); applySize() }
+    document.getElementById('vl-plus').onclick = function () { size = Math.min(40, size + 2); store('vv-lite-size', String(size)); applySize() }
+    document.getElementById('vl-back').onclick = function (e) {
+      if (e && e.preventDefault) e.preventDefault()
+      window.history.back()
+      return false
+    }
+
+    function fail(text) { scene.innerHTML = '<p class="vl-msg">' + text + '</p>' }
+
+    var byId = {}
+    var firstId = null
+    function show() {
+      var id = (window.location.hash || '').replace(/^#/, '')
+      if (!byId[id]) id = firstId
+      if (!id) return fail('Berättelsen är tom.')
+      scene.innerHTML = sceneHtml(byId[id], byId)
+      window.scrollTo(0, 0)
+    }
+
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET', 'https://firestore.googleapis.com/v1/projects/' + PROJECT +
+      '/databases/(default)/documents/published/' + encodeURIComponent(shareId) + '?key=' + KEY, true)
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return
+      if (xhr.status === 404) return fail('Berättelsen hittades inte. Be den som gjorde berättelsen om en ny länk.')
+      if (xhr.status !== 200) return fail('Kunde inte hämta berättelsen (fel ' + xhr.status + '). Kontrollera nätet och ladda om sidan.')
+      var story
+      try { story = decodeFields(JSON.parse(xhr.responseText).fields) } catch (e) { return fail('Kunde inte läsa berättelsen.') }
+      // The working link shows highlights and cues (rich copy); the public link the plain copy.
+      var nodes = (kind === 'las' && story.rich && story.rich.nodes && story.rich.nodes.length) ? story.rich.nodes : (story.nodes || [])
+      var ids = []
+      for (var i = 0; i < nodes.length; i++) { byId[nodes[i].id] = nodes[i]; ids.push(nodes[i].id) }
+      ids.sort()
+      firstId = ids[0] || null
+      if (story.title) {
+        document.title = story.title
+        document.getElementById('vl-name').appendChild(document.createTextNode(story.title + ' · enkel version'))
+      }
+      window.onhashchange = show
+      show()
+    }
+    xhr.send(null)
+  }
+
+  var boot = window.__VV_LITE__
+  if (boot && boot.shareId) start(boot.kind, boot.shareId, boot.canRunFull)
+})()

@@ -88,7 +88,8 @@ function Root() {
   )
 }
 
-createRoot(document.getElementById('root')).render(
+// The simple reader (public/lite.js) has taken over the page: do not mount.
+if (!window.__VV_LITE__) createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <Root />

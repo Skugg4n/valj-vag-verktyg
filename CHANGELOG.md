@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.28.0 — Enkel läsversion för gamla webbläsare — 2026-09-30
+
+### Added
+- **Enkel läsversion på samma adress.** Delade länkar (`/las/<id>` och
+  `/spela/<id>`) visar en enkel läsvy i webbläsare som inte kan köra appen,
+  t.ex. en iPad med iOS 9: text, markeringar, ljud/regi, valen som stora
+  knappar, Tillbaka, Börja om och textstorlek. Ingen karta, inget scenläge,
+  inga kommentarer.
+- **Knappen Enkel** i arbetslänken öppnar samma vy i en modern webbläsare
+  (`?enkel`), och **Full version** leder tillbaka.
+
 ## v0.27.0 — Kommentarer i arbetslänken — 2026-09-24
 
 ### Added
